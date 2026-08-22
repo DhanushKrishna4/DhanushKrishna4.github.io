@@ -2776,7 +2776,20 @@ body.menu-open .nav .btn-ghost::after {
      The stops are his 68% and 83%. On the centre line that puts the fade
      between y=131 and y=566 of a 967-tall box, so it starts above the card and
      finishes a third of the way down its flank. */
-  background: radial-gradient(circle at 50% -190%, var(--signal-0) 68%, var(--signal) 83%);
+  /* Solid, not a gradient that starts transparent.
+
+     It was radial-gradient(circle at 50% -190%, --signal-0 68%, --signal 83%),
+     and --signal-0 is the accent at ZERO alpha — so the top of this footer was
+     see-through and what showed through it was .ground-light, the fixed sage
+     canvas behind the record section. The sage therefore never went away: it
+     hung above the card as a sage-to-accent wash for the whole approach and was
+     still there with the footer fully on screen.
+
+     The reference does not blend one ground into the next, it COVERS — the
+     arriving section paints its own ground from its own top edge and the
+     previous one is simply gone. That is what makes his transitions read as
+     panels rather than as a fade. */
+  background: var(--signal);
   color: var(--ink);
   /* His inset is a constant 1.25rem against a root derived from the viewport
      and capped with it: 14.8 at 1280, 16.7 at 1440, 20 at 1728, 22.2 from 1920
