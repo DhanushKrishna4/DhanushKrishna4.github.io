@@ -1682,12 +1682,12 @@ body.menu-open .nav .btn-ghost::after {
    across. It is never seen: .slides-over is pulled back up by exactly this much
    and covers it the whole way. */
 .stick-run {
-  height: 100svh;
+  height: 100vh;
 }
 .slides-over {
   position: relative;
   z-index: 1;
-  margin-top: -100svh;
+  margin-top: -100vh;
 }
 
 /* The olive run: one ground, one field, and everything else stacked over it. */
@@ -1720,7 +1720,7 @@ body.menu-open .nav .btn-ghost::after {
 .ground-field-in {
   position: sticky;
   top: 0;
-  height: 100svh;
+  height: 100vh;
 }
 .ground-olive > .open,
 .ground-olive > .sec {
@@ -1736,16 +1736,42 @@ body.menu-open .nav .btn-ghost::after {
      alone is 524px — barely half a screen, which released the panel while it
      was still contracting and made the whole move read as a stutter. His runs
      about 1300px of scroll from full bleed to the panel leaving the top. Two
-     screens gives 100svh of pin, and the olive left over at the end is not dead
+     screens gives 100vh of pin, and the olive left over at the end is not dead
      space: it is where the panel drifts up into, which his has too. */
-  min-height: 200svh;
+  /* vh, not svh, and that distinction is the whole reason the page reaches the
+     bottom of a phone. On iOS svh is the viewport with the browser toolbars
+     EXPANDED, so a sticky box at 100svh ends exactly where the toolbar begins
+     and no ground ever paints behind it — the page stopped in a hard line above
+     the chrome. vh is the LARGE viewport, so these boxes run under the toolbar
+     the way the reference's do.
+
+     Not dvh, which is the unit that looks most correct and is the one to avoid
+     here: it tracks the toolbar as it retracts, so every pinned height below
+     would resize mid-scroll and ScrollTrigger would be measuring a viewport
+     that moves while it is being scrolled through. vh and svh are both fixed;
+     only dvh is live.
+
+     The cost is that content near the bottom of one of these boxes sits close
+     to the toolbar at rest — the hero's status card clears it by about thirty
+     pixels, which is the same margin the reference leaves itself. */
+  min-height: 200vh;
 }
 .hero {
   position: sticky;
   top: 0;
   z-index: 2;
-  height: 100svh;
-  padding: 0 var(--shell);
+  height: 100vh;
+  /* The box is the LARGE viewport so the paper runs under the browser toolbar,
+     but the content is centred and would ride down with it — measured, the
+     status card's bottom landed at 760 of 844 with the toolbar starting around
+     764, which is four pixels of clearance and not a margin.
+
+     calc(100vh - 100svh) IS the toolbar's height, whatever it happens to be on
+     that device: large viewport minus small viewport. It resolves to exactly 0
+     on every browser without a retracting toolbar, so this costs nothing on
+     desktop and needs no query to gate it. The ground still fills 100vh; only
+     the content is held above the chrome. */
+  padding: 0 var(--shell) calc(100vh - 100svh);
   display: grid;
   align-items: center;
   overflow: hidden;
@@ -1778,8 +1804,8 @@ body.menu-open .nav .btn-ghost::after {
   position: sticky;
   top: 0;
   z-index: 1;
-  height: 100svh;
-  margin-top: -100svh;
+  height: 100vh;
+  margin-top: -100vh;
   padding: 0;
   display: grid;
   align-content: center;
@@ -1856,7 +1882,7 @@ body.menu-open .nav .btn-ghost::after {
   /* One in-flow child now that the headline and the standfirst are gone, so
      space-between would park the card at the top. */
   align-content: end;
-  min-height: 100svh;
+  min-height: 100vh;
 }
 
 .hero-foot {
@@ -2143,8 +2169,8 @@ body.menu-open .nav .btn-ghost::after {
   position: sticky;
   top: 0;
   z-index: 3;
-  height: 100svh;
-  margin-top: -100svh;
+  height: 100vh;
+  margin-top: -100vh;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -2187,8 +2213,8 @@ body.menu-open .nav .btn-ghost::after {
   position: sticky;
   top: 0;
   z-index: 3;
-  height: 100svh;
-  margin-top: -100svh;
+  height: 100vh;
+  margin-top: -100vh;
   display: grid;
   place-items: center;
   pointer-events: none;
@@ -2754,8 +2780,17 @@ body.menu-open .nav .btn-ghost::after {
      Percentages here resolve against WIDTH, which is what makes this track his
      at every size. Capped at 1920 like every other measure on this card,
      because his root stops growing there too. */
+  /* The bottom picks up the toolbar's height on top of its own padding. The
+     page bottom is a RESTING position — iOS expands the toolbar again when you
+     reach it — and measured at max scroll the email button's bottom sat at 785
+     of 844 with the toolbar starting near 764, so it was behind the chrome for
+     the one reader who scrolled all the way down to press it.
+
+     Only the bottom, and only this much: the accent ground still runs the full
+     height and paints under the toolbar, which is what the reference's footer
+     does. calc(100vh - 100svh) is 0 anywhere without a retracting toolbar. */
   padding: calc(min(100vw, 1920px) * 0.141) calc(min(100vw, 1920px) / 86.4)
-    calc(min(100vw, 1920px) / 86.4);
+    calc(min(100vw, 1920px) / 86.4 + (100vh - 100svh));
   overflow: hidden;
 }
 /* His container stops at 1920, so his card stops at 1876 and stays there — the
