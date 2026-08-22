@@ -1,18 +1,48 @@
 # Dhanush Krishna — Portfolio
 
-My personal portfolio. Dark, motion-led and built from scratch: a fixed contour
-field the whole page scrolls over, colour grounds that scrub into one another
-rather than meeting on an edge, and per-line scroll reveals throughout.
+Single-page portfolio for a final-year Computer Science student in Abu Dhabi,
+working in machine learning and cybersecurity.
 
-Live at **[dhanushkrishna4.github.io](https://dhanushkrishna4.github.io)**.
+**[dhanushkrishna4.github.io](https://dhanushkrishna4.github.io)**
 
-## Stack
+## What's on it
 
-- **Vite 8** + **React 19** + **TypeScript**
-- **GSAP** with ScrollTrigger for the scroll-driven work
+Seven sections, read top to bottom:
+
+| | |
+|---|---|
+| **Hero** | Name, a status card, and a faceted orb rendered in three.js |
+| **Marquee** | A band of running type under the opening |
+| **Statement** | The thesis, set as the largest type on the page |
+| **Work** | Six projects — Nexus, VoiceGuide AI, URL Shortener, Stock Dashboard, AI Summarizer, Price Tracker |
+| **About** | The longer version, with a pull quote |
+| **Track record** | Internships, skills and the stack behind them |
+| **Contact** | Links, availability, and a mail button |
+
+## How it's built
+
+No CSS framework and no component library — every element is written by hand.
+
+- **Vite 8**, **React 19**, **TypeScript**
+- **GSAP** + ScrollTrigger for everything scroll-driven
 - **Lenis** for smooth scrolling
-- **three.js** for the hero
-- Hand-written CSS — no framework
+- **three.js** for the hero object
+- Mona Sans, Bodoni Moda and Archivo, self-hosted via Fontsource
+
+A few things worth knowing if you read the source:
+
+- **One canvas, not seven.** The contour field behind the page is a single fixed
+  layer the whole document scrolls over, so there is no seam where two sections
+  meet.
+- **The grounds change by scrubbing, not switching.** Colour is animated across
+  the join between sections rather than flipping at the boundary, so you cannot
+  point at where one ground became the next.
+- **Text arrives a line at a time.** Each line is clipped and sits under a solid
+  block; what you watch is the block leaving. Links roll character by character
+  on hover, each letter on its own clock.
+- **Shapes are measured, not declared.** The work-card outlines and the footer
+  card's silhouette are drawn from measured boxes at runtime, so they hold their
+  proportions at any width.
 
 ## Running it
 
@@ -25,13 +55,5 @@ npm run lint     # oxlint
 
 ## Deployment
 
-Pushing to `main` builds and publishes to GitHub Pages via
-`.github/workflows/deploy.yml`.
-
-## Notes on the code
-
-The CSS carries long comments explaining why particular numbers are what they
-are — sizes measured rather than guessed, easing curves matched to a reference,
-and a record of the things that turned out to be measurement errors rather than
-layout bugs. They are there deliberately; the reasoning is the part that is easy
-to lose.
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds and
+publishes to GitHub Pages.
