@@ -136,7 +136,7 @@ export default function Work() {
      them reads through every card at once. Ours drew a field and it was
      competing with the frames for the same pixels. */
   return (
-    <section className="sec t-ink on-dark slides-over" id="work" data-tone="dark" ref={root}>
+    <section className="sec t-ink on-dark slides-over" id="work" data-tone="dark" data-ground="ink" ref={root}>
       <div className="wrap">
         {/* The inner span carries the reveal, not .eyebrow/.a/.b themselves —
             those are full-width blocks, so a block covering one would sweep in

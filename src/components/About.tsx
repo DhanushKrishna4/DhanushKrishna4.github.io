@@ -57,7 +57,7 @@ export default function About() {
   }, []);
 
   return (
-    <section className="sec" id="about" data-tone="light" ref={root}>
+    <section className="sec" id="about" data-tone="light" data-ground="light" ref={root}>
       {/* The ink section's bottom edge, bulging down into this one. It belongs
           to this section rather than the one above because it has to sit ON the
           paper — it is ink painted over paper, not paper cut away. */}

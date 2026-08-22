@@ -415,6 +415,11 @@ body.is-ready {
   background: var(--paper);
 }
 
+/* body.is-ready above is the pre-script default only. From the moment
+   lib/tone.ts runs, the canvas colour is written INLINE from whichever ground
+   is under the top of the window — see the note there for why it cannot be a
+   set of static rules. */
+
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;

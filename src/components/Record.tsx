@@ -117,7 +117,7 @@ export default function Record() {
   }, []);
 
   return (
-    <section className="sec" id="record" data-tone="light" ref={root}>
+    <section className="sec" id="record" data-tone="light" data-ground="light" ref={root}>
       <div className="wrap">
         <header className="sec-title">
           <p className="eyebrow">Where I have worked</p>

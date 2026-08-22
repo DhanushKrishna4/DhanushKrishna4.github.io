@@ -98,7 +98,7 @@ export default function App() {
         {/* The olive-to-ink handover: the statement holds at the top of the
             window and the ink section scrolls up over it at 1:1. His mechanism
             exactly — see the note on .stick-item in the stylesheet. */}
-        <div className="ground-olive">
+        <div className="ground-olive" data-ground="olive">
           {/* The field needs a layer of its own. Sticky still takes its space in
               the flow, so the canvas on its own pushed everything below it down
               by a screen and added that to the document height. Absolute here,

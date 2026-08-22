@@ -86,6 +86,7 @@ export default function Statement() {
     <section
       className="sec t-olive on-dark stick-item"
       data-tone="dark"
+      data-ground="olive"
       ref={root}
       aria-label="What the work is"
     >

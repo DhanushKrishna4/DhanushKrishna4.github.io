@@ -135,6 +135,11 @@ export default function Hero() {
              off this one flag, so they move together, which they should: on his
              they are one theme change. */
           nav?.setAttribute('data-tone', k > 0.035 ? 'dark' : 'light');
+          /* The canvas too, on the same flag. This is the one section without a
+             single ground — it starts paper and turns olive under the fog — so a
+             static data-ground cannot describe it, and this overrides the one
+             tone.ts set on entry. */
+          if (root.current) root.current.dataset.ground = k > 0.035 ? 'olive' : 'paper';
           /* The picture scales WITH the panel, it is not cropped by it.
 
              The panel ends at 472x305 in a 1440x900 viewport — 0.328 of the
@@ -163,7 +168,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="hero" id="top" data-tone="light" ref={root}>
+    <section className="hero" id="top" data-tone="light" data-ground="paper" ref={root}>
       <Contours seed={3} count={9} />
 
       <div className="hero-figure">
