@@ -720,18 +720,31 @@ body.is-ready {
   background: var(--signal);
   /* Parked above: `translate` places it, `transform` animates it, so the two do
      not have to be combined into one value. */
-  translate: -50% -100%;
+  /* The offsets live in `transform`, NOT in the standalone `translate`
+     property, and that is the whole reason this survives a build.
+
+     It was written as translate: -50% -100% beside transform: translateY(),
+     which is correct CSS and behaves perfectly in dev. The production minifier
+     drops the standalone property outright: the built stylesheet contains ZERO
+     occurrences of `translate:`, and the browser reports `translate: none` on
+     the deployed page while dev reports `-50% -100%`. With it gone the disc no
+     longer starts above the button, so hovering slid it downward out of the
+     overflow box and the fill never appeared at all.
+
+     Only the deployed site was ever broken, which is exactly why it looked like
+     it broke on its own. A single property cannot be half-applied, so folding
+     both offsets into transform means this cannot come back. */
   /* Parked a hair higher than flush. At exactly flush the disc's bottom edge
      lands on the button's top edge and antialiasing leaves a one-pixel line of
      accent showing along it — visible on the white close button, where there is
      no rule to hide behind. */
-  transform: translateY(-1.5px);
+  transform: translate(-50%, calc(-100% - 1.5px));
   transition: transform 0.8s var(--ease);
   z-index: -1;
 }
 .btn-ghost:hover::before,
 .btn-ghost:focus-visible::before {
-  transform: translateY(calc(var(--btn-h) * 1.23));
+  transform: translate(-50%, calc(-100% + var(--btn-h) * 1.23));
 }
 /* The bars close as it fills, on the same clock — so this number and the
    disc's have to move together. Stroke width is in the transition because the
