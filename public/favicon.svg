@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Dhanush Krishna">
+  <!-- Colours are literal, not currentColor. A favicon is rendered with no CSS
+       context, so a custom property or currentColor resolves to black — which is
+       exactly what this file used to do. -->
+  <rect width="256" height="256" rx="46" fill="#D2FF00"/>
+  <g transform="translate(128 128) scale(1.22) translate(-128 -128)">
+    <path fill="#111112" fill-rule="evenodd" d="M59.44,63.46 L 143.33,63.46 L 156.04,79.6 L 153.98,89.28 L 185.28,63.46 L 224,63.46 L 145.74,128 L 196.57,192.54 L 157.85,192.54 L 137.52,166.72 L 135.46,176.4 L 115.9,192.54 L 32,192.54 Z M78.64,102.19 L 92.33,90.89 L 97.17,90.89 L 81.39,165.11 L 65.26,165.11 Z M107.68,102.19 L 121.37,90.89 L 126.21,90.89 L 110.44,165.11 L 94.3,165.11 Z"/>
+  </g>
+</svg>

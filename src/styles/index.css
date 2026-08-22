@@ -1,0 +1,3439 @@
+/* =============================================================================
+   Dhanush Krishna — portfolio, built in the reference site's idiom.
+
+   The teardown that produced this found three things separating that site from
+   ours, in order of cost:
+
+     COMPOSITION  free. Its reactive hero object never crosses the wordmark and
+                  never covers the face. It is rendered near-transparent hairline
+                  so it reads as an overlay rather than as a competing object.
+     MOTIVE       nearly free. Every effect is tied to the subject — his helmet
+                  going onto his head, his signature signing itself. Nothing is
+                  abstract, so nothing needs the copy read first to land.
+     ASSETS       expensive. Real photography for every item, and a second
+                  photograph waiting behind every hover.
+
+   This file is the first two. The third is a slot, honestly marked.
+
+   The other structural lesson: it changes ground six times, each transition
+   scroll-linked. Ours runs paper, olive, ink, paper, sage, signal. A page that
+   holds one value for its whole length reads as monotonous no matter how good
+   any single screen is.
+   ========================================================================== */
+
+:root {
+  /* ── grounds, in the order the page uses them ─────────────────────────── */
+  /* These are the reference site's own values, read off the running site rather
+     than approximated, and dropped into the roles ours already had. Dhanush
+     asked to match it directly.
+     He also runs #535450 as a muted text colour and #dde1d2 as a light tint;
+     ours are derived with alpha off ink and land in the same place. */
+  /* His light ground, and it is #f4f4ed — the SAME value as the light type in
+     --bone below, which is worth saying out loud because the two tokens now
+     share a number while keeping separate roles.
+
+     This was #fcfcfa on the strength of a reading taken "off his hero". His
+     hero is the olive band at the top of the page, so whatever that sampled it
+     was not the light ground — the light ground is not on screen at that scroll
+     at all. Re-measured properly: three separate light sections of his, sampled
+     as painted pixels rather than computed style, twelve of twelve #f4f4ed. His
+     body computes the same once it has scrubbed past the dark run.
+
+     So the eight units went the other way. Ours was eight units LIGHTER and
+     cooler than his, which is most of why our light run read as white against
+     his cream. */
+  --paper: #f4f4ed;
+  --sage: #b4b8a5;
+  --olive: #282c20;
+  --ink: #111112;
+  /* The contour field's STROKE colour, and only the strokes.
+
+     Measured off the reference site at 1280x720 and dpr 2, against a capture whose
+     paper came back rgb(252,252,250) and whose accent came back #d2ff00 — both
+     byte-identical to ours, which is the control that says the pipeline is not
+     shifting anything. His stroke pixels run rgb(231,231,221), (232,232,223),
+     (238,238,230): red and green equal, blue eight to ten below, and the gap
+     widening as the stroke darkens. That is a warm ink. Ours ran (246,246,244),
+     (245,245,243) — blue exactly two below at every depth, which is the paper's
+     own tint and no ink tint at all. Neutral, where his is olive.
+
+     The hue is not free of the weight: his deltas from paper are 1 : 1 : 1.38,
+     and reaching that ratio needs the blue channel at zero and the other two no
+     darker than 71. #111112 cannot be that colour at any opacity. So the stroke
+     ink lightens and the band alphas rise to land the strokes back on his
+     measured depth.
+
+     Its own token rather than --ink because the type's ink is a different
+     colour and a different decision. It is the field's `color` now that the
+     field is strokes and nothing else; for the two commits when the field also
+     painted soft masses this had to be held separately, because replacing
+     `color` turned every large tonal area on the page olive. */
+  --field-line: #474700;
+  /* The same field on the menu's olive, which is a different measurement and
+     not the paper one inverted.
+
+     His panel field is not generated at all — it is one static SVG,
+     blobs_nav.svg, three stroked paths on a layer at 12% opacity, and the
+     stroke is this colour. Read off the file rather than off a screenshot, then
+     checked against the screenshot: a fully covered pixel of it lands 14.9
+     above his olive by luminance, and his brightest measured pixel is 14.4.
+
+     It is not bone. Bone lifts all three channels together; his lifts red and
+     green about three times as hard as blue, so his lines read as olive-green
+     on olive where a neutral ink reads as grey haze on it. */
+  --field-line-panel: #a7b54d;
+
+  /* One accent, and now his exactly. Fifth value in this slot — lime, red,
+     amber, back to lime, now his lime. #D8F23F to #D2FF00 is a real change:
+     measured 16.6 ΔE apart, which is why the claim that ours "was the reference site's
+     colour" was wrong every time I made it.
+     `signal` keeps its name through every one of those, which is the whole
+     argument for naming an accent after its job: --acid could not survive
+     becoming red, and --oxblood could not survive becoming bronze.
+
+     NOTE ON PROVENANCE: everything drawn — mark, wordmark, lockups, signature —
+     is the brand handoff, the one with the 11 in the counter. The colour is not
+     from any handoff at all: it is the reference site's. So
+     design/dk-monogram-handoff.md is the authority on every asset and is not
+     the authority on these five values. See the note at the top of that file.
+
+     It is a ground the ink mark sits on, never a colour the mark takes. */
+  --signal: #d2ff00;
+  /* The same accent at zero alpha, for the footer's fade. Written out rather
+     than `transparent`, which is transparent BLACK — engines that interpolate
+     un-premultiplied drag the midtones through grey and the fade goes dirty.
+     It has to track --signal by hand; there is no way to spell "that colour,
+     alpha 0" that is safe everywhere. */
+  --signal-0: rgb(210 255 0 / 0);
+  /* The accent one step down, and the light one step down, both his and both
+     used in one place: the band's two lines.
+
+     His marquee is drawn in a WebGL canvas, so there is no DOM to read a colour
+     off — these came out of the rendered pixels, as the modal ink of each line.
+     His upper line is #b2c73a where we were using the full #d2ff00, and his
+     lower is #dde1d2 where we were using the reverse white. Both are quieter
+     than the values they replace, which is the point: the lines run behind the
+     panel and are not meant to compete with the signature crossing them.
+
+     #b2c73a is his own `lime-off` — it appears by that name in his bundle
+     beside the lime. #dde1d2 is the light tint already noted in the palette
+     comment at the top of this file, finally used for something. */
+  --signal-off: #b2c73a;
+  --tint: #dde1d2;
+  /* The olive one step UP, and the only thing it is for is the footer's reveal
+     block. His statement wipes its lines with the accent; his footer wipes them
+     with this instead — a lighter tint of the card the lines sit on, not the
+     lime. Read off his footer's .high-line-reveal as rgb(59,60,56). The accent
+     would be right for a wipe on the olive ground and is far too loud for one
+     happening inside the dark card. */
+  --olive-tint: #3b3c38;
+
+  /* Light ink on the dark grounds, and NOT the same value as the paper it is
+     the reverse of. This was an alias, on the reasoning that reverse and paper
+     are one colour in a brand system — true of most, and not true of his.
+
+     Measured on his wordmark once it has gone light over olive: computed
+     rgb(244,244,237). The claim that used to sit here — that his page ground is
+     252,252,250, so his reverse ink is deliberately darker than his paper — was
+     wrong in its premise: his ground measures #f4f4ed too. His light type and
+     his light ground are one colour, and now so are ours.
+
+     The two tokens stay separate anyway, because their ROLES are separate and
+     only one of them is safe to move. Every one of the eleven places this is
+     used is a `color` on a dark ground, never a ground itself, so bone and paper
+     sharing a value cannot put light type on light paper. */
+  --bone: #f4f4ed;
+  /* His two muted inks, taken as SOLID values rather than derived as an alpha
+     off the ink and the reverse. He runs #535450 on light and #b9bbad on dark,
+     and the pair below now says exactly that.
+
+     Both were alphas, and both landed in the wrong place because of it. On
+     paper, 0.59 of ink blends to rgb(110,110,108) where his muted is
+     rgb(83,84,80) — ours was 27 units too light, which is most of why our light
+     sections read softer than his. On the dark grounds, 0.62 of bone blends to
+     rgb(158,159,155) where his is rgb(185,187,173) — ours was 27 units too DARK,
+     the opposite error, so the card copy was more buried than his.
+
+     An alpha also means the token is a different colour on every ground it
+     touches, and that is not a feature here: it is why this same declaration
+     computed 4.63 on paper and 3.71 on sage. A solid says one thing.
+
+     The split by ground was already right and stays: .eyebrow takes --ash and
+     .on-dark .eyebrow overrides to --ash-inv, so light ink is never asked to sit
+     on a dark ground or the reverse.
+
+     Contrast after: 6.91 on paper (was 4.63), 9.68 on ink, 7.32 on olive. The
+     sage ground still computes 3.76 and still fails — it needs 4.5 and no text
+     colour gets it there, because the failure is the GROUND, not the ink. Left
+     alone deliberately; see the note where sage is defined. */
+  /* One body size for page prose, his — and his is 1.1574vw exactly, measured at
+     three widths: 11.85 at 1024, 16.67 at 1440, 22.22 at 1920, with the leading
+     ratio and the character measure both constant across all three.
+
+     Ours was four sizes (18.24 / 15.2 / 14.4 and a 12.8 list) with no rule
+     connecting them. This is the rule.
+
+     The floor is the one deliberate departure. 1.1574vw crosses 14px at a 1210px
+     viewport, so this follows his ramp exactly from 1210 upward and simply stops
+     there rather than following him down to 11.85px at 1024. His body blocks run
+     about 170 characters; our About paragraph is 773 across thirteen lines, and
+     that is not the same reading job. The cap sits above his 1920 value so it
+     never binds on a desktop. */
+  --body: clamp(0.875rem, 1.1574vw, 1.45rem);
+  --ash: #535450;
+  --ash-inv: #b9bbad;
+  --rule: rgba(17, 17, 18, 0.14);
+  --rule-inv: rgba(244, 244, 237, 0.16);
+  /* How far the ink hangs into the paper at the join. His 8rem, expressed the
+     way his renders rather than the way he writes it — see the .visor note.
+     Named because the section it lands on has to keep its heading clear of it,
+     and those two numbers must not be able to drift apart. */
+  --visor: 7.41vw;
+  /* His card outline, taken literally rather than converted to an alpha of our
+     own rule colour. He draws it on #111112 and our ink ground IS #111112 — the
+     same value in both palettes — so the colour lands identically. Our
+     --rule-inv would have been about half his contrast, which an opaque card
+     could carry and an outline-only one cannot. */
+  --frame: #535450;
+
+  /* ── type ─────────────────────────────────────────────────────────────── */
+  /* Two families, not three. The serif is the editorial voice and carries the
+     name, the section titles and the pull quotes; the grotesk is everything
+     that has to be read quickly. No script face — the reference site's third voice is his
+     own handwriting, which is an asset rather than a font, so the signature
+     here is a drawn path and the rest stays honest. */
+  /* The grotesk is his: Mona Sans, GitHub's typeface, open licence.
+     The serif is NOT his. He sets Brier, a commercial face from Displaay that
+     is not on npm or any free foundry and cannot be shipped without a bought
+     licence. Bodoni Moda holds the slot — same register, high-contrast Didone,
+     used in the same sparing way — until that licence exists. */
+  --f-serif: 'Bodoni Moda Variable', 'Bodoni MT', Didot, Georgia, serif;
+  --f-sans: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --shell: clamp(1.25rem, 4vw, 4rem);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* His two curves, and they are NOT one house curve. The audit called 0.75s
+     cubic-bezier(0.65,0.05,0,1) "essentially everything on his site" after
+     counting occurrences without looking at what carried them. Eighty of his
+     ninety uses are a single component — the helmet grid. The rest are his
+     toggle and one hero clip.
+
+     --ease-grid is that curve: an in-out that leaves slowly, crosses fast and
+     arrives dead flat. It belongs on the gallery-card response and the toggle
+     fill, which are the two roles of ours that map to his.
+
+     --ease-link is his SECOND curve, a hard expo-out, on exactly four elements
+     of his: the panel links Home / On Track / Off Track / Calendar. Ours are the
+     same four in the same panel.
+
+     Neither replaces --ease. Our letter roll is 190 of our transitions and has
+     no counterpart in his CSS at all — his rolling characters are driven by
+     script rather than a transition, which is why they settle in about 300ms and
+     not his 750. That is the C16 retraction confirmed from the other side. */
+  --ease-grid: cubic-bezier(0.65, 0.05, 0, 1);
+  --ease-link: cubic-bezier(0.19, 1, 0.22, 1);
+  /* One step per letter for every rolling label on the site, defined once here
+     so the nav button and the footer cannot drift apart — which they had.
+
+     28.8ms is 36 taken down by another 20%, on request. It has to move together
+     with the roll's own duration below or the gesture is not 20% faster, it is
+     20% faster in the middle and the same at the end. */
+  --roll-step: 28.8ms;
+  /* The mark's morph: moves early, settles late. */
+  /* Linear: his own easing is already baked into the traced keyframes. */
+  --ease-mark: linear;
+
+  /* GSAP's eases, as the cubic-beziers that reproduce them.
+     The menu is a GSAP timeline on his site and names its eases from that
+     library, so these are the shapes it actually runs. GSAP's numbering is not
+     the usual one — power1 is quad, power2 cubic, power3 quart — and `back.out`
+     overshoots past its end value, which is why two of these have a y beyond 1.
+
+     Fitted rather than taken from the usual easings.net table: those are eyeball
+     approximations and miss by 2–9% of the travel, which on a 0.8s sweep is a
+     visible 40ms of lag. Each of these is a least-max-error fit to the real
+     function, sampled at 201 points — scratchpad/ease.mjs. Worst case is
+     back.out(1.2) at 1.5%; the rest are under 0.3%. */
+  --e-out-quad: cubic-bezier(0.192, 0.3823, 0.5496, 1.0009); /* power1.out */
+  --e-out-cubic: cubic-bezier(0.2578, 0.7535, 0.4969, 1.0279); /* power2.out */
+  --e-out-quart: cubic-bezier(0.2596, 1.0271, 0.5281, 1.0038); /* power3.out */
+  --e-io-cubic: cubic-bezier(0.6245, -0.0413, 0.3759, 1.0422); /* power2.inOut */
+  --e-back-12: cubic-bezier(0.2126, 0.7694, 0.2895, 1.1949); /* back.out(1.2) */
+  --e-back-11: cubic-bezier(0.2948, 1.1431, 0.4833, 1.0818); /* back.out(1.1) */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* No native scrollbar, which is his: he sets scrollbar-width: none on the
+     root and we were leaving it auto. This is half of what he does — he draws
+     his own in its place, and that half is in components/ScrollIndicator.tsx.
+     Do not read this rule on its own and conclude the page has no scrollbar.
+
+     It is not only a cosmetic difference. The page runs on smooth scroll, so
+     the bar the browser draws is reporting the raw scroll position rather than
+     the one on screen — it arrives at the bottom slightly before the page does.
+     Hiding it removes a small permanent contradiction as well as a line of
+     chrome down the edge of every ground.
+
+     What it costs, and it is a real cost he also pays: the scrollbar is a
+     position indicator and a drag target, and both are gone. Keyboard, wheel,
+     trackpad and the skip link are unaffected — nothing here traps scroll — but
+     a reader who navigates by dragging the bar has lost that. Overlay
+     scrollbars take no layout width on this platform, so nothing shifts.
+
+     Both spellings: scrollbar-width is the standard and Safari only took it in
+     18.2, so the pseudo-element covers the versions before that. */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* The drawn scrollbar that replaces the native one. Behaviour is in
+   components/ScrollIndicator.tsx; the numbers below are his, measured off the
+   running site at 1440x900.
+
+   Everything here is in viewport units because his is: the track is 80vh set
+   10vh down, so it is inset by the same amount top and bottom at any window
+   height and never needs a breakpoint.
+
+   The blend mode is the interesting rule. The thumb is white, and difference
+   inverts it against whatever is behind — light on the olive and the ink,
+   dark on the paper and the signal — so one element covers seven grounds
+   without knowing which one it is over. It is also why the track's own
+   background must be transparent rather than unset: difference against a
+   painted track would invert the track too. */
+.scroll-indicator {
+  position: fixed;
+  top: 10vh;
+  right: 0;
+  width: 5.6px;
+  height: 80vh;
+  z-index: 70;
+  background: transparent;
+  border-radius: 14px;
+  mix-blend-mode: difference;
+  /* His leaves this at auto, which puts a 5.6px column down the right edge of
+     the page that swallows clicks for an element with nothing to click. */
+  pointer-events: none;
+  /* autoAlpha writes both of these; they are here so the first paint, before
+     the effect has run, is not a bar sitting at the top of the page. */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.scroll-indicator-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Both replaced from script — the height is a function of how long the
+     document turned out to be. */
+  height: 10%;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.75);
+  will-change: transform;
+}
+
+body {
+  margin: 0;
+  /* The entry colour, not the page colour.
+     The loader fills the screen with the accent, but it cannot paint before
+     React mounts — and the first frame measured was white, so the sequence began
+     with a white flash. The body carries the accent from the very first
+     paint and only becomes paper once the aperture has finished opening, by
+     which point every section is painting its own ground anyway. */
+  background: var(--signal);
+  color: var(--ink);
+  font-family: var(--f-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+body.is-ready {
+  background: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.on-dark :focus-visible {
+  outline-color: var(--signal);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── shared type ───────────────────────────────────────────────────────── */
+
+/* The display lockup: serif word over heavy grotesk word, tight leading, the
+   two optically aligned at the same width. the reference site's wordmark is exactly this and
+   it is the single most recognisable thing about the site. */
+.lockup {
+  display: block;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+/* The two lines are set to the same optical width, which is what makes the
+   lockup read as one mark rather than as two stacked words. A Didone at a given
+   size is wider per character than a heavy grotesk, so the sizes cannot match —
+   measured at the hero, the serif ran 1285px against the grotesk's 1170px. */
+.lockup .a {
+  display: block;
+  font-family: var(--f-serif);
+  font-weight: 500;
+  font-size: 0.93em;
+  letter-spacing: -0.012em;
+}
+.lockup .b {
+  display: block;
+  font-family: var(--f-sans);
+  font-weight: 800;
+  font-size: 1.02em;
+  letter-spacing: -0.035em;
+}
+
+/* Section headings share the lockup idea at a smaller size — serif line over
+   sans line, so every section title is recognisably from the same system. */
+/* His section heading, measured at three widths rather than one: 60px at 1440,
+   42.67 at 1024, 80 at 1920. That is 4.1667vw exactly, every time — no clamp on
+   his at all, and no breakpoint stepping.
+
+   Ours was clamp(1.6rem, 3.6vw, 3.1rem), which capped at 49.6px and then STOPPED
+   — identical type at 1440 and at 1920, where his had grown by a third. The
+   floor and ceiling here are set so neither binds across desktop: 4.1667vw
+   passes 1.9rem at about 730px wide, and 5rem is 80px, which is exactly his
+   value at 1920. Above that ours holds while his keeps growing, which is the
+   same cap the footer card already takes.
+
+   0.886 leading, his, replacing the 0.82 this inherited from .lockup. Looser,
+   not tighter — the two lines of his headings sit further apart than ours did. */
+.sec-head {
+  font-size: clamp(1.9rem, 4.1667vw, 5rem);
+  line-height: 0.886;
+}
+/* His serif line runs 1.0417x the sans — 62.5 against 60 — where ours ran 0.93
+   against 1.02, so ours was the SMALLER of the two and his is the larger. That
+   inversion is why the lockup read differently even before the size gap. */
+.sec-head .a {
+  font-size: 1.0417em;
+  letter-spacing: -0.0267em;
+}
+/* The serif line takes the accent-off, but only on a dark ground — his rule,
+   and checked across all seven of his headings rather than the two that first
+   suggested it:
+
+     dark    helmets    sans #f4f4ed   serif #b2c73a
+             footer     sans #f4f4ed   serif #b2c73a
+             statement  sans #dde1d2   serif #b2c73a
+     light   on track / world drivers' champion / partners & campaigns /
+             what's up on socials — both lines ink, no accent anywhere
+
+   Three on dark and four on light, so it is the GROUND that decides, not the
+   section. Our footer title and our statement already did this; the section
+   headings were the one place that did not, which made Work the only heading on
+   the site with no accent in it. About and Record sit on light and are already
+   right — they need no rule and get none. */
+.on-dark .sec-head .a {
+  color: var(--signal-off);
+}
+/* -0.02778em, his, at both sizes. Ours was -0.035 on the sans and -0.012 on the
+   serif: one too tight, the other far too loose.
+
+   The weight is the axes, not the property — the same decoy the statement
+   carries. His computes font-weight 700 and also sets "wght" 750, and the axis
+   wins. Ours was a plain 800. */
+.sec-head .b {
+  font-size: 1em;
+  letter-spacing: -0.0278em;
+  font-weight: 400;
+  font-variation-settings: 'wdth' 93, 'wght' 750;
+}
+
+.eyebrow {
+  font-family: var(--f-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.on-dark .eyebrow {
+  color: var(--ash-inv);
+}
+
+/* ── the notch ─────────────────────────────────────────────────────────── */
+/* the reference site's cards all carry the same cut corner. It is the cheapest identity
+   signal on that site — one shape, used without exception, and you can
+   recognise a screenshot from it alone.
+   Done as two stacked clips rather than a border, because clip-path cuts the
+   border off: the outer element is the rule colour, the inner is inset by 1px
+   and carries the fill, so the sliver that shows through reads as a hairline
+   that follows the notch exactly. */
+/* The same cut on the opposite corner, for the status card. His NEXT RACE card
+   takes it top right, which is the one place on that card a cut is visible at
+   all — the other three corners sit against the edge of the screen or under the
+   content. A plain chamfer rather than the stepped notch above: at 26px on a
+   corner the step reads as a mistake, and his is a straight diagonal. */
+.notch-tr {
+  --nd: 26px;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - var(--nd)) 0, 100% var(--nd), 100% 100%, 0 100%);
+}
+
+/* ── buttons ───────────────────────────────────────────────────────────── */
+/* His STORE button and the toggle beside it, measured off the running site at
+   1440px rather than approximated:
+
+     store    118 x 60, radius 7.2px, 17px side padding
+     toggle    60 x 60, radius 9.87px
+     label     16.67px / 800, no tracking
+     gap between the two controls, 10px
+
+   Ours were 42 tall with an 11.8px label, which is why they read as small next
+   to his. The two radii genuinely differ — the square toggle is rounded more
+   than the wide button — so they are set separately rather than shared.
+
+   Width is the one dimension not matched, deliberately: RÉSUMÉ is a longer word
+   than STORE and the button has to fit it. */
+.btn {
+  /* His control height is 4.1667vw RENDERED, with no clamp: 42.66 at 1024, 60 at
+     1440, 79.99 at 1920. Ours had the coefficient right and the bounds wrong —
+     the 48px floor and 60px ceiling both bound, so we were bigger than him below
+     1152 and stuck at 60 where he reached 80.
+
+     Rendered is the word that matters on this button. His nav sits at scale(1.2)
+     at rest and drops to 1.0 on scroll; ours sits at 1.0 and drops to 0.8333, and
+     1/1.2 is 0.8333, so the two shrink by the identical ratio and only the frame
+     of reference differs. Every number in this rule is therefore his COMPUTED
+     value times 1.2 — read the rendered box, not the declaration. */
+  --btn-h: clamp(2.5rem, 4.1667vw, 5rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--btn-h);
+  /* 1.1111vw = his 16px rendered at 1440, where ours was a flat 17. */
+  padding: 0 clamp(9px, 1.1111vw, 22px);
+  /* Matched to his *rendered* corner, not to his declared one, because they
+     are not the same number.
+
+     His stylesheet says 7.2px and so did ours. Sampling the corner at 3x with a
+     background-independent 50%-coverage crossing, his profile starts 20.8
+     device px in from the left edge and ours started 17.5 — fitting a circle to
+     each puts his at about 8.7 CSS px and ours at 7.4, which is what our 7.2
+     should give. So his visible rect is rounder than the element's CSS claims;
+     something else is painting it, exactly as with his toggle.
+
+     Two earlier passes called this matched. The first read "6 vs 5" off a 1x
+     screenshot, where a pixel of quantisation hides the whole difference; the
+     second blamed the extra 13px of button length for the perceived gap. The
+     length argument is still true and was not the main thing. */
+  /* 0.6vw = his 8.64 rendered. Ours was 8.6 fixed — right at 1440 by luck and
+     wrong at every other width, because his scales and ours did not. */
+  border-radius: clamp(5px, 0.6vw, 12px);
+  /* 1.3889vw = his 20px rendered at 1440. Ours was 16.64, which is 17% short.
+     The audit claimed the opposite — that ours was 19% too BIG against a 14px
+     label — because it read his hidden source copy instead of the .char spans
+     actually on screen. The visible label computes 16.67px at scale 1.2. */
+  font-size: clamp(0.75rem, 1.3889vw, 1.67rem);
+  font-weight: 800;
+  /* His label is condensed. The weight was already right; the width axis was
+     missing altogether. */
+  font-variation-settings: 'wdth' 86;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* The fill, which is the TOGGLE's gesture — his accent button rolls its label
+     and his toggle fills, so these two never shared a clock and are not meant
+     to. Left at 0.672 while the roll went to 0.5376, which is the same reason
+     they are literals here rather than one shared variable. His nav-ham runs
+     border-color and background-color over 0.75s on --ease-grid; ours was 0.672s
+     on our own curve. */
+  transition:
+    background 0.75s var(--ease-grid),
+    color 0.75s var(--ease-grid);
+}
+/* The icon in em, so it grows with the label rather than staying a fixed 16x19.
+   His icon is 32% of his button's height and ours is 31.7% — that ratio was
+   already right, and the only thing wrong was that ours could not scale. The
+   width keeps our own glyph's proportion: his is a shopping bag and ours is a
+   document, so matching his 18.13 width would distort ours. */
+.btn-signal > svg {
+  width: 0.808em;
+  height: 0.96em;
+}
+/* No lift. Ours rose 2px on hover, which is the ordinary answer and not his —
+   his two controls stay exactly where they are and change instead: the accent
+   button rolls its label, the toggle fills. */
+.roll {
+  display: inline-flex;
+  vertical-align: bottom;
+}
+/* One column per letter. Each clips to a single line and holds two copies of
+   its own character, so the letters can leave at different moments — which is
+   the whole point, and what the single-block version was missing. */
+.rl {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.15em;
+}
+.rl span {
+  display: block;
+  line-height: 1.15em;
+  /* 0.84s / 45ms, taken down 20% twice: 0.672 / 36ms, now 0.5376 / 28.8ms. The
+     stagger scales with the duration every time, or the word finishes rolling
+     later than its last letter starts and the gesture is not 20% shorter — it
+     is 20% shorter in the middle and the same at the end. */
+  transition: transform 0.5376s var(--ease);
+  /* A fixed step PER LETTER, so a long label takes longer than a short one.
+
+     This was briefly a fixed total spread divided across the word instead,
+     which sounds equivalent and is not: it makes every label finish at the same
+     moment regardless of length, so the per-letter beat ran anywhere from 8.6ms
+     on the email address to 60ms on "Work" — a slower beat on the SHORTER word.
+     Only six-letter labels happened to match the nav button. A stagger is a
+     rhythm, and a rhythm is a fixed interval; the word takes as long as it is
+     long. */
+  transition-delay: calc(var(--i, 0) * var(--roll-step));
+}
+.btn:hover .rl span,
+.btn:focus-visible .rl span,
+.menu-link:hover .rl span,
+.menu-link:focus-visible .rl span,
+.menu-socials a:hover .rl span,
+.menu-socials a:focus-visible .rl span {
+  transform: translateY(-100%);
+}
+/* The roll's clipped column has to be as tall as the line it sits in, or it
+   overhangs and adds space above — the footer hit exactly this. These two carry
+   their own line-heights, so they carry their own column heights. */
+.menu-link .rl,
+.menu-link .rl span {
+  height: 0.94em;
+  line-height: 0.94;
+}
+/* 1em, his. This appeared to clip the bottom quarter off GITHUB, LINKEDIN and
+   EMAIL, and the cause was not here — it was the .wipe entrance these links also
+   carry, whose clip-path cropped to the element's box. The footer links use this
+   identical roll at 1em and were always fine, which is what gave it away: they
+   have no .wipe on them. Fixed at the keyframe instead of padded around here. */
+.menu-socials .rl,
+.menu-socials .rl span {
+  height: 1em;
+  line-height: 1;
+}
+/* The toggle's accent descends as an arc, not as a level.
+
+   Four wrong versions before this, each fixing the last complaint and
+   introducing the next:
+
+     1. transition on `background`     cross-fades the square at once — the
+                                       "poof"
+     2. disc from the pointer          follows the cursor; his does not
+     3. disc from the top edge's       spawns from a point and opens outward in
+        midpoint                       every direction, including upward
+     4. full-width panel sliding down  right origin, but its leading edge is a
+                                       dead straight line at every moment
+
+   Zoomed frames of his settle it: the boundary between accent and paper is a
+   curve that bulges downward, deepest at the centre and shallowest at the
+   sides, sweeping from the top edge to the bottom. That is the bottom arc of a
+   circle wider than the button passing through it.
+
+   So: a disc 145% of the button's width, parked directly above with its lowest
+   point on the top edge, translating down far enough to cover. Its sagitta
+   across the button is about a fifth of the height, which is the depth his arc
+   has. The button's own radius clips it, and the corners are inside the disc by
+   the time it lands because the button's widest points sit between its rounded
+   corners rather than at them. */
+.btn-ghost {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-ghost::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 145%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--signal);
+  /* Parked above: `translate` places it, `transform` animates it, so the two do
+     not have to be combined into one value. */
+  translate: -50% -100%;
+  /* Parked a hair higher than flush. At exactly flush the disc's bottom edge
+     lands on the button's top edge and antialiasing leaves a one-pixel line of
+     accent showing along it — visible on the white close button, where there is
+     no rule to hide behind. */
+  transform: translateY(-1.5px);
+  transition: transform 0.8s var(--ease);
+  z-index: -1;
+}
+.btn-ghost:hover::before,
+.btn-ghost:focus-visible::before {
+  transform: translateY(calc(var(--btn-h) * 1.23));
+}
+/* The bars close as it fills, on the same clock — so this number and the
+   disc's have to move together. Stroke width is in the transition because the
+   close mark is finer than the bars and the two are the same strokes; see the
+   morph below. */
+.btn-icon .bar {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transition:
+    transform 0.8s var(--ease),
+    stroke-width 0.8s var(--ease);
+}
+.btn-icon:hover .bar-a,
+.btn-icon:focus-visible .bar-a {
+  transform: translateX(-2.8px);
+}
+.btn-icon:hover .bar-b,
+.btn-icon:focus-visible .bar-b {
+  transform: translateX(2.8px);
+}
+/* On the dark grounds the icon has to flip to ink once the accent is under it,
+   and the rule follows the ground rather than the fill. */
+.nav[data-tone='dark'] .btn-ghost:hover {
+  color: var(--ink);
+}
+.btn-signal {
+  background: var(--signal);
+  color: var(--ink);
+}
+/* Paper on every ground, including the dark ones. His close button is white on
+   olive for the same reason: the toggle is chrome rather than content, and
+   chrome that changes colour under you is harder to find twice.
+   The rule is his, measured off the edge profile rather than guessed at twice.
+   Sampling luminance across the left edge of the button, his comes to 2.25px of
+   ink-equivalent coverage at a darkest value of 42; ours was 1.93px at 17. So
+   his is both wider and *lighter* than what we had — and 42 is the luminance of
+   #282c20 exactly, which is our own --olive. His CSS carries that as the
+   border-colour even though the visible edge is drawn in a canvas, so it is not
+   a coincidence. Wider and softer reads heavier than narrow and black. */
+.btn-ghost {
+  /* Transparent, as his is — the page and its field run straight through the
+     control and only the rule and the bars are drawn. It fills with paper in
+     one place only, which is also his: while the menu is open, where the close
+     button sits on olive and has to read as a control rather than as a hole. */
+  background: transparent;
+  color: var(--ink);
+}
+/* The rule is its own layer, above the fill.
+   It was an inset box-shadow on the button and the accent covered it, because
+   painting order puts a negative-z-index child *after* the element's own
+   background and borders rather than before them — so the disc came out on top
+   of the outline and the hovered control lost its edge. His keeps a dark rule
+   over the accent. A pseudo-element sits above the disc and solves it without
+   giving the fill a positive z-index, which would put it over the icon. */
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2.35px var(--olive);
+  pointer-events: none;
+}
+/* Both icons are sized from the button rather than fixed, so the ratio holds at
+   every breakpoint — his scale with his and ours did not.
+
+   The close mark was nearly twice the size it should be. Measured against his,
+   normalised by button width: his X spans 19.9% of the button with a stroke of
+   3.29%, ours spanned 37.5% with 5.49%. The *proportions* were already right —
+   stroke to length is 0.20 on both — so only the overall size was wrong. The
+   0.207 below is that 19.9% divided by the share of the viewBox the ink
+   actually occupies, since the drawn extent includes the stroke. */
+.ico {
+  height: auto;
+}
+/* The full button, because his canvas is the full button and the traced
+   coordinates are in that space. */
+/* The button's own width, not the token: his canvas is the width of his button
+   and the traced coordinates are in that space. Against --btn-h it overflowed
+   any button the flex row had shrunk. */
+.ico-bars {
+  width: 100%;
+}
+.btn-icon {
+  width: var(--btn-h);
+  /* Square, and not negotiable. The width was set but the button sits in a flex
+     row and nothing stopped it shrinking, so on a narrower bar it rendered
+     42.2 x 48 — a vertical rectangle. That was invisible while the mark was a
+     fifth of the button and became very visible once the mark was traced into
+     the button's full width, because `overflow: hidden` then cut it. */
+  flex: none;
+  aspect-ratio: 1;
+  padding: 0;
+  /* Rendered, not declared — same story as the accent button. His toggle's CSS
+     says 9.87px and its corner traces like 11.7: sampled at 3x, his profile
+     runs 24.5, 21.5, 18.5, 16.5 device px in from the edge where ours at 10px
+     ran 21, 18.1, 16.2, 14.3. Both his controls come out about 1.19x rounder
+     than their stylesheet claims — and the cause is now known rather than
+     guessed: it is not the canvas, it is scale(1.2) on his nav at rest. 9.87 x
+     1.2 = 11.84, which is the 11.7 that trace found.
+  0.8222vw is that 11.84 written so it tracks --btn-h, which now reaches 80px at
+     1920 — a fixed 10.15px radius on an 80px box reads as a different shape. */
+  border-radius: clamp(6.5px, 0.8222vw, 15.8px);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.15rem;
+  border-radius: 999px;
+  background: var(--signal);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: transform 0.3s var(--ease);
+}
+.pill:hover {
+  transform: translateY(-2px);
+}
+.pill-ghost {
+  background: transparent;
+  border: 1px solid var(--rule);
+}
+.on-dark .pill-ghost {
+  border-color: var(--rule-inv);
+  color: var(--bone);
+}
+
+/* ── the contour field ─────────────────────────────────────────────────── */
+/* the reference site's grounds are never flat and never still: contours morph and large soft
+   masses drift behind them. See components/Contours.tsx — this is a canvas now,
+   so the alphas live there rather than here. All this has to do is place it and
+   tell it what colour the ground wants, which .on-dark then flips without the
+   field needing to know which section it is in. */
+.contours {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: var(--field-line);
+}
+/* Only the two dark grounds invert. The signal footer is a light ground as far
+   as the field is concerned, so it keeps ink and needs no rule of its own. */
+.on-dark .contours {
+  color: var(--bone);
+}
+/* The panel is a dark ground and was never told so — it is not a section, so it
+   never picked up .on-dark, and it sat there drawing the PAPER ink onto olive.
+   #474700 has no blue in it at all, so on this ground the lines came out both
+   far too faint and pointing the wrong way: measured 2.5 above the ground at the
+   median against his 7.4, with the blue channel four BELOW it. Dhanush spotted
+   it as the lines not being as visible as his.
+
+   The weight is his depth rather than ours: our own olive sections run to 26
+   above their ground and his panel stops at 14.4, so this is not the site's
+   field with the ink swapped. It is fitted to his — swept, and scored on the
+   median, upper quartile and ninetieth together rather than on any one of them,
+   because a single quantile can be matched by curves that look nothing alike:
+
+     his          p50  7.4   p75 10.8   p90 14.4
+     0.409        p50  4.7   p75  7.4   p90  8.9
+     0.644        p50  7.0   p75 11.7   p90 13.4     <-
+     0.800        p50  9.0   p75 14.1   p90 17.3
+
+   What this cannot fix, and should not be read as fixing: his brightest pixel
+   is 14.4 and ours is 22.8. His panel field is a single stroke weight, so every
+   fully covered pixel of it sits at the same depth and everything below that is
+   antialiasing. Ours has three weight bands by design, tuned on paper, and the
+   top one has to overshoot for the middle of the distribution to land. 22.8 is
+   in family with our own dark sections rather than with his panel. Flattening
+   the bands here would match him exactly and would make this field a different
+   object from the one on every other ground, which is the worse trade. */
+/* EVERY olive ground takes this ink, which is the whole claim — he uses one
+   colour on all of them, and until now ours only used it on two.
+
+   That left a seam. The opening band and the section under it are the same
+   olive, they meet edge to edge, and they were drawing their fields in different
+   colours at different weights: #a7b54d at 0.66 above the join and bone at full
+   strength below it. A ground change is invisible when the ground changes; here
+   nothing changed but the lines, so the join read as a hard horizontal edge
+   across the page — Dhanush saw it as the background being two pieces.
+
+   The opening band is his olive too, and takes the same ink. Measured on a
+   text-free corner of his band: delta (9.4, 10.2, 3.5) from the ground, the same
+   warm ratio as his panel, where ours was (11.7, 11.5, 11.7) — neutral, which
+   on this ground reads as grey haze rather than as olive-green line.
+
+   Scoped through .mq rather than to .open, because the hero is inside .open as
+   well and its field sits on PAPER, where the paper ink is already correct. */
+/* The shared olive field, plus the two section-scoped selectors that used to do
+   this job. Those now match nothing: the marquee and the statement stopped
+   drawing their own canvases when the run was consolidated onto one field, and
+   the field that replaced them hangs off .ground-field, which is inside neither
+   of them. So the one canvas on this ground fell back to .contours' default and
+   drew the PAPER ink onto olive at full weight.
+
+   This is the identical failure recorded under .menu .contours below — a dark
+   ground that was never told it was one — reintroduced by moving the canvas. It
+   is worth being blunt about the symptom, because it does not look like a
+   miscolour: #474700 has no blue in it at all, so on olive the lines come out
+   both far too faint and pointing the wrong way. Measured against his at the
+   same scroll, in ground-only tiles: his p50 sits at R+14 G+15 B+5, ours was
+   R+3 G+2 B-3. Dhanush spotted it as the lines not being as visible as his. */
+.ground-field .contours,
+.open .mq .contours,
+.t-olive .contours {
+  color: var(--field-line-panel);
+  /* Swept against a text-free corner of his band, scored on the median, upper
+     quartile and ninetieth together as before. At 0.66 the colour lands within a
+     unit on every channel — ours (10.0, 11.1, 3.5) against his (9.4, 10.2, 3.5).
+     Its own number rather than the menu panel's 0.644: near it, and arrived at
+     separately, because his band measures very slightly deeper than his panel
+     does (p50 9.9 against 7.4). */
+  --field-weight: 0.66;
+}
+.menu .contours {
+  color: var(--field-line-panel);
+  --field-weight: 0.644;
+}
+
+/* ── nav ───────────────────────────────────────────────────────────────── */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  /* The bar is inset tighter than the page, which is his arrangement and not an
+     oversight. Measured at 1440: his wordmark sits 18px from the left, his
+     toggle 17px from the right, and both 17px from the top. Ours were 59, 58
+     and 26 — the bar was using --shell, the page gutter, which is 57.6px at
+     that width. A fixed bar hugging the corners while the content stays inset
+     is most of why his chrome reads as chrome. */
+  padding: clamp(12px, 1.2vw, 17px);
+  pointer-events: none;
+}
+.nav > * {
+  pointer-events: auto;
+}
+/* The mark and links take their colour from the section currently under the
+   bar, set as a data attribute by a scroll trigger.
+
+   This was `mix-blend-mode: difference` twice, and both attempts failed for
+   instructive reasons. On the bar it inverted the accent pill inside it to its
+   complement,
+   because a blended parent takes its whole subtree with it. Moved onto the two
+   elements that need it, it stopped working altogether: the bar is
+   `position: fixed`, which always creates a stacking context, so its children
+   had nothing but transparency to blend against and white stayed white.
+   Blending cannot reach the page from inside a fixed bar, so the tone is
+   tracked explicitly instead — which is also what the reference site's site does. */
+.nav-mark {
+  color: var(--ink);
+  transition: color 0.35s var(--ease);
+}
+.nav[data-tone='dark'] .nav-mark {
+  color: var(--bone);
+}
+/* The panel is olive whatever section it opened over, so the bar has to go
+   light for as long as it is up. This wins over the scroll-driven tone rather
+   than fighting it: lib/tone.ts keeps setting data-tone underneath, and gets
+   its colour back untouched the moment the class comes off.
+
+   It waits a quarter-second first, which is the detail his second frame is
+   about: the sheet has already covered the wordmark and the wordmark is still
+   ink, so for that moment it is simply not there — dark on dark — and then it
+   lifts. Changing colour on the same frame as the click loses that entirely and
+   reads as the bar being repainted rather than passed over. Measured off his
+   brand mark's own pixels: it holds until ~250ms and is done by ~700ms. */
+body.menu-open .nav-mark {
+  color: var(--bone);
+  transition: color 0.45s var(--ease) 0.25s;
+}
+/* Coming back is NOT the mirror of going out. His wordmark is a Rive artboard
+   and its colour is flipped by a state change fired at the click, outside the
+   timeline entirely — so the reversal that governs everything else does not
+   reach it. Measured on his close: it holds ink-side until ~200ms and is back
+   by ~366ms, where the mirrored figure would have been 567ms. */
+body.menu-closing .nav-mark {
+  transition: color 0.18s var(--ease) 0.2s;
+}
+/* His centre monogram does not change colour — it leaves. 0.4s, from the click,
+   and it comes back on the way out. */
+body.menu-open .nav-badge {
+  animation: fade-out 0.4s var(--e-out-cubic) both;
+}
+body.menu-closing .nav-badge {
+  animation: fade-out-r 0.4s var(--e-out-cubic) reverse both;
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes fade-out-r {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+/* The centre mark belongs to the top of the page and nowhere else. His is gone
+   within 40px of scroll and does not come back at any point on the way down. */
+.nav-badge {
+  transition: opacity 0.42s var(--e-out-cubic);
+}
+.nav[data-top='false'] .nav-badge {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Off the top, the toggle stops being an outline and becomes a filled plate —
+   the same control the open menu already uses, which is not a coincidence: his
+   is one Rive artboard with one colour input, and the menu and the dark grounds
+   are both just asking it for the filled state.
+
+   Held to the dark grounds rather than applied everywhere below the top, which
+   is where his goes further than ours should. A paper plate on paper is what
+   makes his bar vanish over the hero — deliberate there, because the ground is
+   about to turn olive underneath it — but on our paper and sage sections
+   nothing arrives to rescue it, and the control would simply be a light square
+   on a light ground with no edge. It keeps its outline there. */
+.nav[data-tone='dark'] .btn-ghost {
+  /* No background here. It used to fill instantly and there was nothing left
+     for the plate to do — the wipe would have been over before it started. */
+  color: var(--ink);
+}
+/* The outline is not animated at all, and that was the mistake — twice. It does
+   not snap off and it does not fade: it is COVERED. Magnified with the scroll
+   frozen, a paper plate wipes down over the button from the top with an
+   elliptical leading edge, and the black rule disappears underneath it as the
+   edge passes — top first, then the sides, and for a moment the only rule left
+   is a shallow arc across the bottom. It is the menu panel's sweep at button
+   scale, which in hindsight is the only thing it was ever going to be.
+
+   So the rule stays exactly as it is, at full strength, and gets hidden. */
+.btn-ghost .btn-plate {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--paper);
+  pointer-events: none;
+  clip-path: ellipse(100% 0% at 50% 0);
+  /* His holds for about 130ms after the trigger and then takes 390ms, measured
+     off a frozen scroll: nothing at +91, begun by +187, a bottom arc still left
+     at +432, gone by +516. Without the hold ours arrived a third of a second
+     early and the outline never got its moment. */
+  transition: clip-path 0.39s var(--e-out-quad) 0.13s;
+  /* Between the outline (auto) and the mark (2). */
+  z-index: 1;
+}
+.nav[data-tone='dark'] .btn-ghost .btn-plate {
+  /* Past 100 so the bottom corners are cleared rather than left with the
+     ellipse's own curve cutting across them. */
+  clip-path: ellipse(100% 135% at 50% 0);
+}
+.btn-icon .ico {
+  position: relative;
+  z-index: 2;
+}
+/* The open menu overrides both, and needs the extra `.nav` to do it: the tone
+   rule above scores three classes and `body.menu-open .btn-ghost` only scores
+   two, so the first version of this lost and the close button rendered as a
+   white square with a bone X on it — invisible, and only when the menu was
+   opened from a dark section. */
+body.menu-open .nav .btn-ghost {
+  background: var(--paper);
+  color: var(--ink);
+}
+/* Bars into the close mark — traced off his, not modelled.
+
+   His mark is a Rive artboard on a canvas, so there is no path to read. It was
+   captured instead: 61 frames of the canvas at rAF, 240x240, then each frame
+   thresholded to the dark ink, thinned to a one-pixel centreline with
+   Zhang-Suen, and the skeleton walked into two stroke polylines. The keyframes
+   below are those polylines, resampled to thirteen points and written as twelve
+   cubics so every stop shares a structure and the CSS `d` property can
+   interpolate between them. scratchpad/{cap4x,skel,emit}.mjs is the chain.
+
+   Everything the arc model could not do is in here because it was measured
+   rather than invented: the bars change *length* before anything bends; the top
+   stroke's right end curls up and over into a genuinely closed ring; the bottom
+   stroke does something different, lifting its left end into a bracket and then
+   an arch; and the two are staggered by about 130ms rather than moving together.
+
+   The topology changes three times — two separate lines, then a lollipop once
+   the ring closes, then a single connected X once the strokes cross — so the
+   walk splits components at their junctions and pairs the branches whose
+   directions are most opposite. Seven frames around the crossing came out
+   degenerate and are interpolated across from the good frames either side.
+
+   Coordinates are his 240px canvas quartered into a 60-unit box. His canvas is
+   the width of his button, which is why the SVG is now the full button rather
+   than 42.67% of it, and why the resting bars have moved: measured off the
+   artboard they are 12 units long with an 11-unit stagger, where the earlier
+   figures came from a small raster and were wrong. */
+/* The hover nudge is for the bars only — it would drag the crossed mark off
+   centre for as long as the pointer sat on the button. */
+body.menu-open .nav .bar,
+body.menu-closing .nav .bar {
+  transform: none;
+}
+
+/* No rule while the menu is open. On the olive ground his close button is a
+   plain white square with an X in it and nothing around it — the outline is
+   what makes a transparent control legible, and once the button is filled there
+   is nothing left for it to do. */
+body.menu-open .nav .btn-ghost::after {
+  box-shadow: none;
+}
+/* The bar's lockup, sized to the reference's.
+   Measured as the ink bounding box in the top-left corner of each site at
+   1440px: his is 130 x 59, ours was 77 x 26. Height is the thing to match, not
+   width — his two words are five and six letters against our seven and seven,
+   so at equal type size ours is simply longer and matching widths would mean
+   setting it 40% smaller than his. Scaled on height, ours lands at 175 wide,
+   which the bar has room for. */
+.nav-mark {
+  display: block;
+  font-size: clamp(1.5rem, 2.65vw, 2.6rem);
+  /* The same 0.8333, about the other corner. Our set size was matched to his at
+     the top of his page, where his carries scale(1.2) — so this is not the
+     wordmark getting smaller than it was, it is the 1.2 coming off. */
+  transform: scale(calc(1 - 0.1667 * var(--nav-k, 0)));
+  transform-origin: left top;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  /* His, measured: 10px between the two controls. At rest — the scale below
+     takes it to 8.3 once the bar has shrunk, and his measures 8.5. */
+  gap: 10px;
+  /* Anchored to the corner it lives in, so the right edge does not move while
+     the controls come down from 60 to 50. */
+  transform: scale(calc(1 - 0.1667 * var(--nav-k, 0)));
+  transform-origin: right top;
+}
+
+/* The monogram, centred on the bar.
+   Absolutely positioned rather than made a flex child, because the wordmark and
+   the actions are different widths and a three-item flex row would centre it
+   between them rather than on the page. */
+.nav-badge {
+  position: absolute;
+  left: 50%;
+  /* Follows the bar's own padding, so the monogram stays level with the
+     wordmark whatever the inset resolves to. */
+  top: clamp(12px, 1.2vw, 17px);
+  transform: translateX(-50%);
+  color: var(--ink);
+  transition: color 0.35s var(--ease);
+}
+.nav[data-tone='dark'] .nav-badge {
+  color: var(--bone);
+}
+/* The handoff asks for 40 grid units of clear space on all sides — a quarter of
+   cap height, so 5.5px at this rendered size. Nothing may enter it. */
+.nav-badge svg {
+  display: block;
+  padding: 6px;
+  box-sizing: content-box;
+}
+@media (max-width: 620px) {
+  .nav-badge {
+    display: none;
+  }
+}
+/* ── the menu panel ────────────────────────────────────────────────────── */
+/* Olive, full bleed, under the bar rather than over it — the wordmark, the
+   résumé button and the close button all stay live while it is open, which is
+   what the reference does and is also why lib/inert.ts spares the header. */
+/* One clip-path ellipse, which is what his is.
+
+     clip-path: ellipse(120% R% at 50% (R/5)%)
+
+   with R animating 0 to 100. The centre's y is always exactly a fifth of the
+   radius, so the shape's bottom edge sweeps from the top of the viewport down
+   to 1.2R while its top stays above it, and the 120% horizontal radius makes
+   that bottom edge a very shallow arc. That arc is the curve.
+
+   ── where the numbers in this section come from ─────────────────────────────
+
+   Not from frames, and no longer from sampling the running page either. His
+   menu is one paused GSAP timeline built in his bundle, and the whole thing is
+   legible there: every position, duration, stagger and ease. It was read off,
+   then checked against a 60fps capture of the live site, and the two agree to
+   the frame. scratchpad/pg9.mjs is the capture, pg10.mjs the reduction.
+
+   Two earlier attempts at these timings were sampled at 5fps because his hero's
+   WebGL and Rive starve requestAnimationFrame in a headless browser, and 5fps
+   over a 0.8s animation is four data points. Both produced numbers that looked
+   plausible and were wrong. Launching with the real GPU is what fixed it.
+
+   His timeline, at 1x. He has an eighth tween at 0.40 that draws a stroke over
+   whichever entry you are currently on; Dhanush does not want that, so it is
+   left out here rather than built and hidden:
+
+     0.00  panel        ellipse 0 → 100                 0.80  power3.out
+     0.00  centre mark  opacity 1 → 0                   0.40  power2.out
+     0.15  images       ellipse + y 25 → 0    ×0.06     0.80  power3.out
+     0.35  links        ellipse(30%) + y 20   ×0.08     0.60  back.out(1.2)
+     0.50  small caps   inset + y 15 → 0      ×0.04     0.70  back.out(1.1)
+     0.60  ground       opacity 0 → 0.12                0.60  power1.out
+     0.70  accent block scaleX 1 → 0          ×0.05     0.60  power2.inOut
+
+   The last of those ends at 1.55s. That is NOT the timeline's length — see the
+   note on the exit below, which is where the length actually matters.
+
+   The previous version of this file had one thing badly wrong and one thing
+   subtly wrong. Badly: it claimed nothing inside the panel is animated and the
+   clip reveals the lot. Eight separate tweens say otherwise — what is true is
+   that the contents must not be animated *out* ahead of the ground, which is a
+   different claim and is handled by the reversal below. Subtly: the sweep was a
+   twenty-stop keyframe table traced off the live site, and the trace carried a
+   one-frame sampling lag that put it 6% off the real curve at the start, where
+   the eye is most likely to catch it. It is one ease, and the ease is quartic.
+
+   ── the exit ───────────────────────────────────────────────────────────────
+
+   His close is `timeline.timeScale(1.5).reverse()` — not a separate animation,
+   the same one played backwards at one and a half times the speed. CSS can say
+   that exactly: `animation-direction: reverse` walks the same keyframes in
+   reverse *and* mirrors the timing function, so each element only needs its
+   delay restated. For an element starting at s and running for d inside a
+   timeline of length T, reversed and sped up:
+
+     delay = (T - s - d) / 1.5        duration = d / 1.5
+
+   with T = 1.9 — and that 1.9 is the one number here no amount of looking at
+   frames could have produced. The last VISIBLE thing on his timeline ends at
+   1.55s; the timeline itself runs to 1.9 because it also carries a 1.7s tween
+   that drives his helmet's Rive scrub and draws nothing this page has. Reversal
+   is measured from the whole length, so that silent tween sets when everything
+   else leaves. Built against 1.55 first, and the panel retracted 230ms early —
+   which reads, correctly, as the exit being rushed. The whole exit is 1.267s.
+
+   Two things sit outside the timeline and so do not reverse with it: the centre
+   monogram and the wordmark's colour. Both are fired straight from his toggle
+   handler, both play forward at their own speed in each direction, and both are
+   noted where they are set. */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--olive);
+  color: var(--bone);
+  overflow: hidden;
+  visibility: hidden;
+  clip-path: ellipse(120% 0% at 50% 0%);
+}
+.menu[data-open='true'] {
+  visibility: visible;
+  clip-path: ellipse(120% 100% at 50% 20%);
+  animation: sheet 0.8s var(--e-out-quart) both;
+}
+.menu[data-closing='true'] {
+  visibility: visible;
+  /* `both`, so the 0.5s wait holds the last keyframe — the whole sheet — rather
+     than falling through to the base rule's empty ellipse and vanishing on the
+     first frame of closing. That wait is where the contents leave. */
+  animation: sheet-r 0.5333s var(--e-out-quart) 0.7333s reverse both;
+}
+/* Every one of these is declared twice, the second copy suffixed `-r` and used
+   only by the closing rules.
+
+   Not tidiness — necessity. Two rules that name the same animation do not start
+   a second animation when the selector flips; they UPDATE the running one. The
+   open animation has already finished by the time anything closes, so pointing
+   the closing rule at the same name hands it a finished animation with new
+   delays and it never plays a frame. The panel simply vanished. Distinct names
+   are what make the exit an animation of its own, and `reverse` on identical
+   keyframes is what keeps it the entrance exactly backwards. */
+@keyframes sheet {
+  from { clip-path: ellipse(120% 0% at 50% 0%); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); }
+}
+@keyframes sheet-r {
+  from { clip-path: ellipse(120% 0% at 50% 0%); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); }
+}
+/* The same sweep with his 25px lift on it — what his photo tiles ride in on. */
+@keyframes sheet-rise {
+  from { clip-path: ellipse(120% 0% at 50% 0%); transform: translateY(25px); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); transform: none; }
+}
+@keyframes sheet-rise-r {
+  from { clip-path: ellipse(120% 0% at 50% 0%); transform: translateY(25px); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); transform: none; }
+}
+/* The display lines start from a *narrow* ellipse — 30% of the line's width,
+   not 120% — so the first thing to appear is a band across the middle of the
+   word that then spreads outward to the ends. Reading that off his frames as a
+   downward wipe is what made the earlier version look like a different
+   animation: a wipe uncovers the top of the glyphs first, and his uncovers
+   their waist first. */
+@keyframes line-in {
+  from { clip-path: ellipse(30% 0% at 50% 0%); transform: translateY(20px); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); transform: none; }
+}
+@keyframes line-in-r {
+  from { clip-path: ellipse(30% 0% at 50% 0%); transform: translateY(20px); }
+  to { clip-path: ellipse(120% 100% at 50% 20%); transform: none; }
+}
+
+/* The half his photographs occupy. Ours is the monogram, very low contrast,
+   running off two edges so it reads as a ground rather than as a logo someone
+   forgot to size. */
+.menu-ghost {
+  position: absolute;
+  left: -7vw;
+  bottom: -6vh;
+  color: var(--bone);
+  opacity: 0.05;
+  pointer-events: none;
+}
+.menu-ghost svg {
+  height: clamp(280px, 62vh, 620px);
+  width: auto;
+}
+
+.menu-in {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: clamp(6rem, 15vh, 9.5rem) var(--shell) clamp(1.75rem, 5vh, 3rem);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 2rem;
+}
+
+.menu-nav {
+  display: grid;
+  align-content: center;
+  /* Centred, his. Measured on his open panel: Home, On Track, Off Track and
+     Calendar all sit on ONE centre — 1135 to the pixel, spread 0 — while their
+     left and right edges spread 84px either side. Ours was ranged right, every
+     line ending at 1382 with the lefts spread 390.
+
+     justify-items is the one that actually places them, since each link is a
+     shrink-wrapped grid item; text-align follows so a wrapped line agrees. */
+  justify-items: center;
+  text-align: center;
+}
+/* Each item is revealed on its own clock, not just by the sheet passing over
+   it. His frames settle this and so does his source: eight tweens, staggered.
+   The top-left image is already a tall band while the top-middle one is still
+   nothing, and those two sit at the same height — a single clip sweeping down
+   would uncover both at the same rate.
+
+   The left half of his panel is a two-column photo collage, five tiles rising
+   25px under the sweep. There are no photographs in this project yet, so that
+   half is the monogram, and it takes the tiles' timing.  */
+.menu-ghost {
+  clip-path: ellipse(120% 0% at 50% 0%);
+}
+.menu-link {
+  clip-path: ellipse(30% 0% at 50% 0%);
+}
+.menu .contours {
+  opacity: 0;
+}
+@keyframes ground-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ground-in-r {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.menu[data-open='true'] .menu-ghost {
+  animation: sheet-rise 0.8s var(--e-out-quart) 0.15s both;
+}
+.menu[data-open='true'] .menu-link {
+  animation: line-in 0.6s var(--e-back-12) calc(0.35s + var(--i) * 0.08s) both;
+}
+.menu[data-open='true'] .contours {
+  animation: ground-in 0.6s var(--e-out-quad) 0.6s both;
+}
+
+/* Out is the same eight animations reversed — see the derivation above the
+   panel. What this replaces was hand-timed to fill a pause, and got the order
+   right by accident and the shape wrong: it emptied the panel from the small
+   caps upward, where his unwinds strictly last-in-first-out. */
+.menu[data-closing='true'] .menu-ghost {
+  animation: sheet-rise-r 0.5333s var(--e-out-quart) 0.6333s reverse both;
+}
+.menu[data-closing='true'] .menu-link {
+  animation: line-in-r 0.4s var(--e-back-12) calc(0.6333s - var(--i) * 0.0533s) reverse both;
+}
+.menu[data-closing='true'] .contours {
+  animation: ground-in-r 0.4s var(--e-out-quad) 0.4667s reverse both;
+}
+
+.menu-link {
+  display: block;
+  font-family: var(--f-sans);
+  /* 4.8611vw, his — 49.78 at 1024, 70 at 1440, 93.33 at 1920. Ours was
+     clamp(2.1rem, 6.4vw, 5.2rem), which capped at 83.2px: 19% larger than him at
+     1440 and frozen above about 1300 where his keeps growing.
+
+     The same coefficient carries his footer headline, which is worth noting
+     rather than treating as coincidence — panel and sign-off are one size on his
+     site. */
+  font-size: clamp(1.9rem, 4.8611vw, 5.9rem);
+  font-weight: 800;
+  /* 0.94, his, against the 1.02 ours had. */
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  /* --tint, his: his panel links sit at #dde1d2, not at the sage ours used.
+     Only the link for the page you are ON drops to #b4b8a5 on his, which is a
+     distinction a one-page site has nothing to say about, so every link here
+     takes the brighter value. */
+  color: var(--tint);
+  /* His panel links exactly: color 0.6s on the expo-out. Ours was 0.3s on the
+     site's own curve — half the length and a different shape. */
+  transition: color 0.6s var(--ease-link);
+}
+/* #b2c73a on hover, his — the accent one step down, not the full lime and not
+   the bone ours went to. */
+.menu-link:hover,
+.menu-link:focus-visible {
+  color: var(--signal-off);
+}
+
+.menu-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: clamp(1.4rem, 3.5vh, 2.6rem);
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--sage);
+}
+/* The emblem beside the eyebrow arrives with it and NOT under the block — his
+   frame 10 has the wreath fully drawn while the line beside it is still lime.
+   So it shares the small caps' reveal and skips their accent. */
+.menu-badge svg {
+  clip-path: inset(0 100% 0 0);
+}
+.menu[data-open='true'] .menu-badge svg {
+  animation: wipe-in 0.7s var(--e-back-11) 0.5s both;
+}
+.menu[data-closing='true'] .menu-badge svg {
+  animation: wipe-in-r 0.4667s var(--e-back-11) 0.4667s reverse both;
+}
+
+.menu-foot {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  text-align: center;
+}
+.menu-foot-k {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.menu-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 3.5vw, 2.6rem);
+}
+.menu-socials a {
+  /* 0.9259vw, his — 9.48 at 1024, 13.33 at 1440, 17.78 at 1920, where ours sat
+     at a flat 0.7rem = 11.2px. His small links are BIGGER than ours were, which
+     is the opposite direction to the headings above them. */
+  font-size: clamp(0.55rem, 0.9259vw, 1.2rem);
+  /* 1, his; ours inherited 1.55 and set these three much further apart. */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* Full bone, his: the small links at the foot of his panel sit at #f4f4ed
+     where ours sat at sage. */
+  color: var(--bone);
+  /* Same panel, same gesture as .menu-link — kept even though nothing here
+     changes colour any more, because :focus-visible and the tone system can
+     still move it and a jump would be the odd one out in this panel. */
+  transition: color 0.6s var(--ease-link);
+}
+/* No colour change on hover, his and deliberate: measured on his panel, TIKTOK
+   holds #f4f4ed from rest through hover while its characters roll. Ours went to
+   full lime. These three get the roll and nothing else — the same rule the
+   footer links already follow. */
+
+
+/* The accent block is how his small-caps text arrives, not just how it leaves.
+
+   His opening frames show it plainly: "MCLAREN F1 SINCE 201#", then "BUSINESS
+   ENQUIRI#", then "TIKTO# INSTAG# YO# T#". Every line comes in left to right
+   with a lime block over it and the text left behind.
+
+   Two halves on one clock, and they are NOT the same clock. The text is clipped
+   from the left over 0.7s from 0.5s; the block only starts retracting at 0.7s,
+   over 0.6s. So the line spends its first fifth of a second arriving entirely
+   underneath the block, which is why his earliest frames show a bare lime bar
+   with no text beside it at all.
+
+   The block is full-width and collapses to the right — scaleX 1 to 0 about a
+   right-hand origin — rather than being a fixed-width bar that travels. Both
+   read the same in a still frame near the end, and completely differently at
+   the start: his covers the whole line, mine covered 1.6em of it. His frame 10
+   settles it, where the block over "MCLAREN F1 SINCE 2019" runs from just after
+   the "MC" all the way to the end of the line. */
+.wipe {
+  position: relative;
+  clip-path: inset(0 100% 0 0);
+}
+.wipe::after {
+  content: '';
+  position: absolute;
+  /* Bled past the text box on all four sides so the block reads as a painted
+     bar rather than as a tight highlight sitting exactly on the glyphs. */
+  top: -0.18em;
+  bottom: -0.18em;
+  left: -0.3em;
+  right: -0.3em;
+  background: var(--signal);
+  pointer-events: none;
+  transform-origin: right center;
+}
+/* The vertical insets are NEGATIVE and that is the point. This used to end at
+   inset(0 -0.3em 0 0): the right edge opened 0.3em past the box and the top and
+   bottom stayed at 0, so the clip cropped to the element's box and any glyph
+   taller than its own line box lost its bottom. It cut the descenders off the
+   menu's social links, and it was silently trimming every other .wipe element
+   too. Opening the top and bottom costs nothing — the wipe is horizontal. */
+@keyframes wipe-in {
+  from { clip-path: inset(0 100% 0 0); transform: translateY(15px); }
+  to { clip-path: inset(-0.35em -0.3em -0.35em 0); transform: none; }
+}
+@keyframes wipe-in-r {
+  from { clip-path: inset(0 100% 0 0); transform: translateY(15px); }
+  to { clip-path: inset(-0.35em -0.3em -0.35em 0); transform: none; }
+}
+@keyframes wipe-block {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+@keyframes wipe-block-r {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+.menu[data-open='true'] .wipe {
+  animation: wipe-in 0.7s var(--e-back-11) calc(0.5s + var(--i, 0) * 0.04s) both;
+}
+.menu[data-open='true'] .wipe::after {
+  animation: wipe-block 0.6s var(--e-io-cubic) calc(0.7s + var(--i, 0) * 0.05s) both;
+}
+.menu[data-closing='true'] .wipe {
+  animation: wipe-in-r 0.4667s var(--e-back-11) calc(0.4667s - var(--i, 0) * 0.0267s) reverse both;
+}
+.menu[data-closing='true'] .wipe::after {
+  animation: wipe-block-r 0.4s var(--e-io-cubic) calc(0.4s - var(--i, 0) * 0.0333s) reverse both;
+}
+
+/* ── hero ──────────────────────────────────────────────────────────────── */
+/* ── the opening sequence ───────────────────────────────────────────────── */
+/* Hero and marquee are one move, and the ground belongs to the pair.
+
+   His is the reference and the mechanism is plain once you scroll it slowly:
+   the hero does not leave, it SHRINKS. A paper panel with rounded corners
+   contracts toward the middle of the screen and the olive is revealed around
+   it, first as a frame at the edges and then as most of the screen, with his
+   marquee lines running across behind it and the signature drawing over the
+   top. Ours scrolled the hero off and slid the olive up under it as a hard
+   horizontal edge — the same two sections in the same order, and none of the
+   move.
+
+   The ground is on the wrapper rather than on the marquee, because the reveal
+   needs olive to be there BEFORE the marquee's own content has scrolled up into
+   place. At a third of the way through his, the panel already has olive on all
+   four sides and his text has only just entered from the left and right.
+
+   Sticky rather than a pinned ScrollTrigger: the hero has to be painted over
+   the marquee for the whole of the transition, and sticky gives that from the
+   stacking context for free, where a pin-spacer would need the marquee pulled
+   back up under it with a negative margin. The pin lasts as long as the marquee
+   is tall, which is where the transition gets its length. */
+/* The olive-to-ink handover.
+
+   His is a relative track holding two panels: the outgoing one is
+   position: sticky, top: 0, and the incoming one is position: relative with a
+   z-index, so it simply scrolls up over the top of it. There is no animation
+   here at all — no scrub, no trigger, no JS. The whole effect is that one of
+   the two stops moving. Measured on his: 875px of scroll moves the incoming
+   panel from 900 to 25, which is scroll distance exactly, 1:1.
+
+   Getting the same result here took one wrong turn worth recording. His
+   outgoing panel is a single screen; ours is a three-screen run, and `top: 0`
+   on the whole run would pin the hero to the window for its entire length. The
+   textbook answer for a tall element is `bottom: 0`, which holds its LAST
+   screenful — and it does not work. Verified with two injected probes as
+   siblings in the same box: `top: 0` sticks, `bottom: 0` never engages at any
+   scroll position, with no transform, no overflow and no contain anywhere in
+   the ancestor chain to explain it.
+
+   So it is built the way his is instead: the last screen is its own sticky
+   panel. The run carries a screen of padding underneath to give that panel
+   somewhere to stick, and the ink section is pulled back up by the same
+   distance so it overlaps that padding rather than adding to the page. The two
+   cancel — the document is exactly as long as it was.
+
+   Only this join. Every other section boundary on the page is an ordinary one. */
+/* Written to out-specify `.ground-olive > .sec` below, which sets every section
+   in the run to position: relative. At a plain `.stick-item` this rule loses on
+   specificity and the panel silently never sticks — it computes as relative and
+   scrolls away, which looks exactly like a sticky that is not supported. */
+.ground-olive > .sec.stick-item {
+  position: sticky;
+  top: 0;
+}
+/* One screen of olive under the statement, which is what the statement sticks
+   across. It is never seen: .slides-over is pulled back up by exactly this much
+   and covers it the whole way. */
+.stick-run {
+  height: 100svh;
+}
+.slides-over {
+  position: relative;
+  z-index: 1;
+  margin-top: -100svh;
+}
+
+/* The olive run: one ground, one field, and everything else stacked over it. */
+.ground-olive {
+  position: relative;
+  background: var(--olive);
+  /* Makes the run a stacking context, so its children's z-indexes (field 0,
+     sections 1) stay its own business and .slides-over only has to beat this
+     one number. Without it, .open at z-index 1 competes directly with the ink
+     section and the winner is decided by DOM order — true today, and one
+     refactor away from not being. */
+  z-index: 0;
+}
+/* Held still for the length of the run and then leaving with it. z-index 0 puts
+   it under the sections, which claim 1. */
+.ground-olive > .ground-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+/* The sticky goes on a plain div rather than on the canvas, because .contours
+   is written to be `position: absolute; inset: 0` and sizes its own backing
+   store from that rect. Overriding its position from outside worked, but it
+   made this rule and the component quietly disagree about what the element is.
+
+   No more than tidiness: I put it here while chasing the still field and
+   believed for a while that it was the cause. It was not — the field was frozen
+   because I had passed `still`, and nothing else. */
+.ground-field-in {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+}
+.ground-olive > .open,
+.ground-olive > .sec {
+  position: relative;
+  z-index: 1;
+  /* Transparent, or they would each paint olive over the shared field. */
+  background: transparent;
+}
+
+.open {
+  position: relative;
+  /* The pin lasts as long as this box is taller than the hero, and the marquee
+     alone is 524px — barely half a screen, which released the panel while it
+     was still contracting and made the whole move read as a stutter. His runs
+     about 1300px of scroll from full bleed to the panel leaving the top. Two
+     screens gives 100svh of pin, and the olive left over at the end is not dead
+     space: it is where the panel drifts up into, which his has too. */
+  min-height: 200svh;
+}
+.hero {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 100svh;
+  padding: 0 var(--shell);
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  background: var(--paper);
+  /* Composed from custom properties rather than animated as a whole string:
+     `inset()` carrying a `round` does not interpolate reliably, and driving four
+     numbers by hand is both exact and engine-independent. See Hero.tsx. */
+  clip-path: inset(var(--ct, 0%) var(--cx, 0%) var(--cb, 0%) var(--cx, 0%) round var(--cr, 0px));
+  /* Scrubbed with the shrink, so the plate settles into the ground as it
+     contracts rather than switching at the end. See FX in Hero.tsx. */
+  filter: saturate(var(--sat, 1)) sepia(var(--sep, 0)) hue-rotate(15deg) contrast(var(--con, 1))
+    brightness(var(--bri, 1));
+}
+/* The marquee is pinned too, over exactly the band the hero occupies.
+
+   This is the thing that was broken. The hero panel was sticky and the marquee
+   was not, so the two were composed on different boxes: the panel held at the
+   middle of the screen while the marquee's own centre — its plate, its caption,
+   its signature — drifted up past it. Everything landed somewhere different on
+   every frame, which is what Dhanush saw. His are one composition because both
+   halves are pinned and share a centre, and the signature is over the panel in
+   every frame of his because there is only one middle for it to be in.
+
+   Pulled back up onto the hero rather than following it, so the two pin as one
+   band rather than in sequence. */
+.ground-olive .mq {
+  background: transparent;
+}
+.open .mq {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 100svh;
+  margin-top: -100svh;
+  padding: 0;
+  display: grid;
+  align-content: center;
+}
+
+/* The focal object sits behind the type and is allowed to bleed off the bottom,
+   exactly as the portrait does. Centre column, never the left column — the
+   wordmark lives there and the one rule taken from the teardown is that the
+   object must not cross it. */
+/* Dead centre, bottom-aligned, bleeding off the edge — the position his
+   portrait holds. It was in a right-hand column before, which is what you do
+   with a supporting element rather than a subject; a centrepiece has to take
+   the middle or it is not one.
+   The wordmark shrinks to make room, and that is the faithful move rather than
+   a concession: his hero carries no headline at all, because the picture is the
+   message and the name is a mark in the corner. */
+.hero-figure {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  pointer-events: none;
+}
+/* The object and the ground it stands on scale together, about the panel's own
+   centre — which is the viewport's, since the panel is centred in it. His
+   shrinking picture takes its whole frame with it rather than sliding a smaller
+   window over a fixed scene. */
+.hero > .contours,
+.hero-figure {
+  transform: scale(var(--fs, 1));
+  transform-origin: 50% 50%;
+}
+/* Wider than the drawing needs, because the callout leaders run outside it.
+   Sized to the object, the labels were clipped by the canvas edge mid-word. */
+.hero-canvas {
+  width: min(94vw, 1280px);
+  height: min(88svh, 900px);
+  align-self: end;
+}
+@media (max-width: 860px) {
+  .hero-canvas {
+    width: 96vw;
+    opacity: 0.6;
+  }
+}
+
+/* The WebGL object. Square-ish, because it is a stone rather than a drawing
+   with callout leaders running outside it — the box above is wide to give those
+   labels room and this one does not need the margin. */
+.hero-core {
+  width: min(92vw, 940px);
+  height: min(86svh, 860px);
+}
+@media (max-width: 860px) {
+  .hero-core {
+    width: 100vw;
+    /* Held back far less than the drawing is. The hairline version had to drop
+       to 0.6 because the title and the card sit on top of it; this one is the
+       only mass on the page, and fading a lit object reads as broken rather
+       than as restrained. */
+    opacity: 0.85;
+  }
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding-block: clamp(6rem, 14vh, 10rem) clamp(4rem, 10vh, 7rem);
+  display: grid;
+  gap: 2rem;
+  /* One in-flow child now that the headline and the standfirst are gone, so
+     space-between would park the card at the top. */
+  align-content: end;
+  min-height: 100svh;
+}
+
+.hero-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+/* The status card, rebuilt to his NEXT RACE card — transparent, rounded, with
+   the label sitting in a tab cut out of the top left.
+
+   Transparent is measured rather than assumed: his card computes to
+   `background: rgba(0, 0, 0, 0)` and the contour field is visible running
+   straight through it. That is why the outline is an SVG stroke and not a
+   border. The two-stacked-clips technique the other cards use cannot do this by
+   construction — it works by putting an opaque fill 1px inside a shape painted
+   in the rule colour, so the fill is load-bearing and the card can never be
+   see-through.
+
+   The rule colour is his too, sampled across his card's edge: solid #535450 at
+   about 0.83px, a good deal darker than the 14% hairline our other cards
+   carry. */
+/* The card leaves on a trigger, not on the scroll.
+
+   This is the distinction Dhanush drew and it is a real one: everything else in
+   the opening is scrubbed, so it tracks the wheel and stops when you stop. This
+   does not. It fires once when you cross the line and then runs to the end on
+   its own clock whatever you do next.
+
+   A transition rather than an animation, which is what makes that free — and
+   also sidesteps the trap this file has hit twice, where two rules naming the
+   same @keyframes update the running animation instead of starting one. A
+   transition reverses cleanly on the way back up, and his card does come back.
+
+   The shape is his, read off the running page rather than guessed from the
+   frames: the card's height never changes at all. It is an ellipse anchored to
+   the card's own top edge with its vertical radius run down to nothing, so the
+   card retracts upward into itself and LOOKS like it is getting shorter.
+
+   Held still at 45px, his runs 120% → 114% → 52% → 12% → 1.9% → 0 across
+   794ms. Fitted, that is about 0.7s on a cubic ease-out. */
+.status {
+  position: relative;
+  width: min(310px, 78vw);
+  clip-path: ellipse(100% 120% at 50% 0);
+  transition: clip-path 0.7s var(--e-out-cubic);
+}
+:root[data-scrolled='true'] .status {
+  clip-path: ellipse(100% 0% at 50% 0);
+}
+.status-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* An SVG clips to its viewport by default, and this outline runs along the
+     edge of it. The path is already inset half a stroke for that reason, but
+     the card's height is content-driven and the viewBox is fixed, so the bottom
+     edge lands within a fraction of the boundary and loses a sliver to
+     antialiasing — measured at 0.85px against 1.0 everywhere else. Not
+     clipping at all is the fix that does not depend on the two staying in
+     step. */
+  overflow: visible;
+}
+.status-frame path {
+  fill: none;
+  stroke: #535450;
+  stroke-width: 1;
+}
+.status-in {
+  position: relative;
+  padding: 0 1.15rem 1.05rem;
+}
+/* The tab. 26px matches the step depth in the frame's path, so the label
+   occupies the cut-out exactly and everything after it begins below the card's
+   own top edge. */
+.status-k {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  /* normal, his — see the note on .eb-line. */
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.status-v {
+  margin-top: 0.85rem;
+  text-align: center;
+  font-family: var(--f-serif);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+.status-sub {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  /* normal, his. */
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+/* His laurel-and-helmet sits between two rules with air around it, and the air
+   is what makes the card read as a badge rather than as a list. */
+.status-emblem {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--rule);
+}
+.status-foot {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: 700;
+  /* normal, his. */
+  letter-spacing: normal;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+
+/* The ink-to-paper join: the ink section's bottom edge does not end straight, it
+   bulges down into the paper as a shallow arc that deepens as you scroll. His
+   `.exe-top-visor`, measured off the running site:
+
+     a strip the full width of the section, 8rem tall in his scale
+     background #111112, the same ink the section above is painted in
+     clip-path: ellipse(70% Y% at 50% 0%), Y scrubbing 0 -> 100
+
+   The ellipse is centred on the strip's own TOP edge, so what survives the clip
+   is its lower half: full width where it meets the ink above, curving away at
+   the sides. It reads as the ink hanging down rather than the paper being cut,
+   which is why it is painted here on the paper rather than clipped out of the
+   section above — and why it is the ink variable and not a hard-coded colour.
+
+   7.41vw, not 8rem. His root font size is derived from the viewport — 9.48px at
+   1024, 13.33 at 1440, 17.78 at 1920 — so his 8rem measures 7.41vw at every one
+   of them. Ours is a fixed 16px, so 8rem here would hold still while his grew.
+
+   100% is the resting value, so when motion is reduced and the scrub never
+   runs, the join is his finished shape rather than a flat edge. */
+.visor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--visor);
+  /* Over the field, under .wrap, which claims 2. */
+  z-index: 1;
+  background: var(--ink);
+  clip-path: ellipse(70% 100% at 50% 0%);
+  pointer-events: none;
+}
+
+/* The light ground. One canvas, fixed to the window, under everything — About
+   and Record paint nothing and this is what shows through them.
+
+   Fixed, not sticky, and the difference is the whole effect. Sticky would slide
+   this up into view as its run arrived, which is the paper handing itself over.
+   Fixed means the paper is already there, unmoved, sitting behind the ink the
+   entire time, and the ink simply leaves. The reverse of the olive join, where
+   the ink arrived over a held olive.
+
+   This is his: .gl-wrap and .gl-background are both position: fixed, one
+   viewport tall, z-index -1. His content scrolls at 1:1 over a ground that
+   never moves.
+
+   z-index 0 and FIRST in <main>, which took a second attempt. z-index -1 is the
+   obvious choice and it is wrong here: html carries a background, so body's is
+   painted as an ordinary block background — and block backgrounds are painted
+   AFTER negative-z-index children, not before. Body's opaque paper sat straight
+   on top of this, hiding the field and the colour fade behind a flat sheet the
+   same colour as the ground. The canvas was drawing the whole time.
+
+   A fixed element is positioned, so at z-index 0 it paints in the positioned
+   layer, which is above body's background. Everything else then sorts by DOM
+   order: this is the first thing in <main>, so the olive run and the ink
+   section paint over it, and About and Record are transparent so it shows.
+
+   The colour is scrubbed to sage across the Record section; see the note in
+   Record.tsx. --paper is the resting value so the ground is right before the
+   scrub has run and when reduced motion means it never does. */
+.ground-light {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--paper);
+  pointer-events: none;
+}
+
+/* ── section shell ─────────────────────────────────────────────────────── */
+.sec {
+  position: relative;
+  padding: clamp(5rem, 12vh, 9rem) var(--shell);
+  overflow: hidden;
+}
+
+/* The section wearing the visor has to start below it. The shell's padding is
+   measured in vh and the visor in vw, so the two drift apart in BOTH directions
+   as the window changes shape — measured before this rule, the heading sat 8px
+   INSIDE the ink at 1280 wide, 1px clear at 1440, and 82px inside at 2560. The
+   heading is dark text and the visor is dark ink, so where they meet the
+   heading simply disappears.
+
+   max() rather than a bigger fixed padding, so the section keeps its normal
+   spacing wherever that already clears the arc. */
+#about {
+  padding-top: max(clamp(5rem, 12vh, 9rem), calc(var(--visor) + 2.5rem));
+}
+.wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+}
+.on-dark {
+  color: var(--bone);
+}
+.t-paper { background: var(--paper); }
+.t-sage   { background: var(--sage); }
+.t-olive  { background: var(--olive); }
+.t-ink   { background: var(--ink); }
+.t-signal { background: var(--signal); }
+
+.sec-title {
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* ── marquee ───────────────────────────────────────────────────────────── */
+/* the reference site runs a race result sideways behind a photograph with his signature
+   drawing itself over the top. Three layers moving in three different registers
+   — type travelling horizontally, a still image, a line drawing forward — is
+   what makes it read as choreography rather than as one effect. */
+.mq {
+  position: relative;
+  padding: clamp(7rem, 22vh, 13rem) 0;
+  background: var(--olive);
+  overflow: hidden;
+}
+.mq-track {
+  display: flex;
+  gap: 3rem;
+  width: max-content;
+  will-change: transform;
+}
+.mq-word {
+  /* Sized off his rendered caps: 79 and 80px against our 96 and 95, so ours was
+     a fifth too big. Scaled by 0.832, which is the ratio between them.
+
+     Leading with it. The distance between his two line tops is 100px on a 79.5
+     cap; scaling ours alone would have left 111. 0.94 brings it to his. */
+  font-size: clamp(2.83rem, 7.49vw, 6.66rem);
+  line-height: 0.905;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* By LINE, not by word. It alternated serif-accent and sans-bone word by word,
+   which reads as one restless line; his is two settled ones, a serif line in the
+   accent above a heavy sans line in bone, travelling against each other. */
+.mq-a .mq-word {
+  font-family: var(--f-serif);
+  font-weight: 500;
+  color: var(--signal-off);
+}
+.mq-b .mq-word {
+  font-family: var(--f-sans);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--tint);
+}
+/* The monogram and its label, pinned with everything else and above the panel.
+   16.7svh puts the mark's top where his is; 17px is his gap to the label. */
+.open-eyebrow {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: 100svh;
+  margin-top: -100svh;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 17px;
+  padding-top: 16.7svh;
+  pointer-events: none;
+  color: var(--signal);
+}
+.open-eyebrow svg {
+  display: block;
+}
+/* One clipped line, and the letters ride up into it. */
+.eb-line {
+  display: flex;
+  overflow: hidden;
+  font-family: var(--f-sans);
+  font-size: 0.52rem;
+  font-weight: 600;
+  /* normal, his. These four are tier one of the caps-tracking finding: the
+     elements whose counterpart on his site was measured directly, not inferred.
+     Forcing his letter-spacing to 0 and re-measuring moved "mclaren f1 since
+     2019", "Next Race", "Zandvoort" and the rest by exactly 0.00px, at 1024,
+     1440 and 1920. He sets small caps solid.
+
+     His rule is about CAPITALS specifically, not about tracking — his "See more
+     helmets and highlights" serif line carries +0.025em, and ours matches it.
+     Only uppercase gives up its tracking. */
+  letter-spacing: normal;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: var(--bone);
+}
+.eb-char {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Pinned on the same band as the hero and the marquee, and above both. */
+.open-sig {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: 100svh;
+  margin-top: -100svh;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.sig {
+  position: absolute;
+  /* Sized on HEIGHT, not width. His drawn signature measures 785 x 558 in a
+     1440x900 viewport and ours was 449 x 437 — his reaches a third further down
+     the screen, which is the whole of what Dhanush was pointing at. Matching
+     his width instead would be wrong: his mark is half as wide again as it is
+     tall and ours is very nearly square, so 785 across would have given us 763
+     down and a signature towering over the panel. 572 across puts our ink at
+     his 558 tall, and the width lands where the drawing puts it. */
+  width: min(40vw, 572px);
+  overflow: visible;
+  /* Down, and by a lot — this is the third go at it and the first two were
+     measuring the wrong thing. Its bounding box was already centred on the
+     panel, dead level with his; what is not level is the INK inside the box.
+     Ours is top-heavy, a wide loop over a light tail, so its centre of mass sits
+     62px above the panel centre. His is the other way up and sits 38px below.
+     A hundred pixels apart at a 900 viewport while both bounding boxes read
+     50.0%, which is why two measurements in a row said they matched. */
+  transform: translateY(14.5svh);
+}
+/* At least 240px wide: below that the 27.9-unit stroke drops under 7px and the
+   tight loops fill in. */
+.sig {
+  min-width: 240px;
+}
+/* Colour only. Weight, caps and joins are the asset's own and are set as
+   attributes on the element in Signature.tsx.
+
+   This block used to also carry `stroke-width: 3`, left over from the invented
+   squiggle it once animated, whose viewBox was 330x160 — a scale at which 3 was
+   sensible. The real signature is 1000x977, where 3 is a hairline. And because
+   a CSS declaration beats an SVG presentation attribute, that stale rule
+   silently governed: the asset shipped at 27.9, was then set to 42, and
+   rendered at 3 throughout. Neither number ever reached the screen.
+
+   The lesson is not "remember to delete stale CSS". It is that any property an
+   SVG asset specifies for itself should be set in exactly one place, and the
+   asset is that place. */
+.sig path {
+  stroke: var(--signal);
+}
+
+/* ── statement ─────────────────────────────────────────────────────────── */
+/* Set to his, measured off the running page at 1440:
+
+                family        size      weight  leading  tracking   colour
+     sans    Mona Sans     105.83px      400     0.90     -0.83px   #dde1d2
+     serif   Brier          110px        700     0.83     -2.5px    #b2c73a
+
+   and centred, where ours was ranged left.
+
+   The two colours are the marquee's, which is the point — the band and the
+   statement are the same voice on the same ground, and ours had them on the
+   full accent and the reverse white while his are both a step down. This is the
+   third place those two values belong and the last one that was not using them.
+
+   His serif is upright and heavy. Ours was italic at 500, which is a different
+   register: his emphasis reads as a shout in another typeface, ours read as an
+   aside. Bodoni Moda still stands in for Brier — that substitution is unchanged
+   and is noted where the token is set. */
+.st {
+  text-align: center;
+}
+/* One row per line. line-height: 0 and the vertical-align below are a pair:
+   an inline-block sits on its parent's baseline by default, which reserves
+   descender space under it that a block-level child never had. Together they
+   make the row exactly as tall as the line inside it, so switching .st-line to
+   inline-block costs no layout — verified line by line, 10 of 10 unmoved.
+
+   overflow stays hidden. It is no longer masking anything — the reveal is a
+   clip-path on the line itself now, and the block is exactly the line's box —
+   but it has been trimming the descenders at line-height 0.9 all along, and
+   removing it here would change the setting rather than the animation. */
+.st-row {
+  display: block;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.st-line {
+  /* Inline-block so the covering block is the width of the WORDS. As a block it
+     was the full 1325px column on every line, and a centred line of text would
+     have been revealed by a block sweeping in from the column's edge with
+     nothing under it. His are inline-block for the same reason. */
+  display: inline-block;
+  vertical-align: top;
+  /* The block is positioned against this. */
+  position: relative;
+  /* Covered before anything runs. See the note in Statement.tsx for why the
+     start state is here rather than written by the effect. */
+  clip-path: inset(0 100% 0 0);
+  /* Smaller than his, and it has to be. His statement is seven lines and this
+     one is ten, so set at his 105.8px it stood 943px tall against a 900px
+     screen and ran off the bottom. 5.32vw is the size at which the whole block
+     clears the section's own padding on a 900-tall screen — the ratios between
+     the two faces, the leading and the tracking are all still his. */
+  font-size: clamp(1.5rem, 5.32vw, 4.8rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  font-family: var(--f-sans);
+  /* The axes, not the weight property.
+
+     His computes to font-weight: 400 and that number is a decoy — the element
+     also carries font-variation-settings: "wdth" 93, "wght" 660, and the axes
+     win. I read the property, set 400, and shipped type two hundred units
+     lighter and a little wider than his. Dhanush called it: same typeface,
+     visibly not the same font.
+
+     Mona Sans is the same variable font on both sides, so this is exact rather
+     than an approximation — unlike the serif beside it, which is his Brier and
+     cannot be. */
+  font-weight: 400;
+  font-variation-settings: 'wdth' 93, 'wght' 660;
+  letter-spacing: -0.008em;
+  color: var(--tint);
+}
+/* The block that covers the line and then leaves.
+
+   #b2c73a rather than the bright lime, which is his: the statement is his one
+   `data-anim-high="right, lime-off"` on the page while nearly everything else
+   is plain lime. At this size a full-bleed #d2ff00 block across ten lines is a
+   flashbang, and the muted one is the same colour as the emphasised words it is
+   about to uncover.
+
+   transform-origin is the whole trick. Scaling to 0 from the right edge walks
+   the block's LEFT edge rightward, so the words come out from the left in
+   reading order. From the left edge it would collapse the other way and the
+   line would appear backwards. */
+.st-hl {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--signal-off);
+  transform: scaleX(1);
+  transform-origin: right center;
+  will-change: transform;
+}
+
+/* No motion: nothing sweeps, and the statement is simply there. This has to
+   undo the covered start state in CSS as well as in script — the class is what
+   ships, so a reader who never runs the effect would otherwise get a blank. */
+@media (prefers-reduced-motion: reduce) {
+  .st-line {
+    clip-path: inset(0 0% 0 0);
+  }
+  .st-hl {
+    transform: scaleX(0);
+  }
+}
+
+.st-line.em {
+  font-family: var(--f-serif);
+  /* His serif runs 1.039x the sans; kept, at the new size. */
+  font-size: clamp(1.56rem, 5.53vw, 4.99rem);
+  /* Its own, because it is set larger: his serif leads 91.3 on 110px, which is
+     0.83 where the sans is 0.90. Inheriting the sans figure put ours 8px loose. */
+  line-height: 0.83;
+  font-weight: 700;
+  letter-spacing: -0.023em;
+  color: var(--signal-off);
+}
+
+/* The light run's muted ink, darker than the rest of the site's.
+
+   --ash is #535450 because that is his, and his is right for HIS ground: he sets
+   muted text on paper and nothing else. Ours does not have one light ground — it
+   has a gradient. About and Record sit on a single fixed canvas that scrubs from
+   paper all the way to sage, so the same ink has to hold at both ends, and
+   #535450 only holds at one:
+
+     on paper #f4f4ed  6.91   passes
+     on fade  #c5c8b8  4.48   fails
+     on fade  #bbbdaa  3.99   fails
+     on sage  #b4b8a5  3.76   fails
+
+   Twelve text runs were below the 4.5 they need, all of them in this stretch.
+   #434440 clears every point of the ramp — 8.88 on paper down to 4.83 on sage —
+   and is still visibly muted rather than ink.
+
+   Scoped to these two sections rather than moved globally, so everything on true
+   paper keeps his value: the hero's status block is the main one, and it never
+   sees the sage end.
+
+   That the muted ink varies by ground is his own pattern, not a departure from
+   it — he already runs #535450 on light and #b9bbad on dark. This is the same
+   rule applied to a ground he does not have.
+
+   One residual, stated rather than buried: where a contour line passes directly
+   under small text the local ground drops to about #a3a897 and this computes
+   4.02. The lines are decorative and a glyph only ever crosses one in part, so
+   chasing it would mean darkening the ink past the point where it reads as
+   muted at all. */
+#about,
+#record {
+  --ash: #434440;
+}
+
+/* ── work ──────────────────────────────────────────────────────────────── */
+.wk-grid {
+  display: grid;
+  gap: clamp(0.9rem, 1.6vw, 1.4rem);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  align-items: start;
+}
+/* The scatter offsets are NOT here. They were, as an nth-child pattern, and it
+   was wrong: this grid is auto-fill, so it is four columns at 1440 and three at
+   1100, and any nth-child pattern is only correct at one of those. The offsets
+   are computed from where each card actually landed — see Work.tsx.
+
+   The cost is one frame of flush grid before the effect runs, which nobody
+   sees: this section is several screens below the fold.
+
+   The cell exists so the scatter and the entrance reveal are not both writing
+   `y` to the same element. The cell carries the offset; the card inside it
+   carries the reveal. */
+.wk-cell {
+  display: flex;
+}
+.wk-card {
+  /* Flex, so the inner panel is forced to the card's full height. As a block it
+     was only as tall as its content while the grid stretched the card to the
+     row. */
+  display: flex;
+  /* No fill. His cards are an outline and nothing else — the ground runs
+     straight through them, which is why his grid reads as drawing on the page
+     rather than a stack of panels sitting on it. This used to paint
+     var(--rule-inv) and let .wk-in sit 1px inside it to fake a border, which is
+     a perfectly good trick for an opaque card and the exact thing that made it
+     opaque. */
+  background: transparent;
+  /* The frame is positioned against this. */
+  position: relative;
+  /* His gallery card is what this maps to: helmet-grid items move on 0.75s
+     --ease-grid. Ours ran 0.4s on the site curve — not quite half his length,
+     and an ease-out where his is an in-out. */
+  transition: transform 0.75s var(--ease-grid);
+}
+
+/* The drawn outline. Geometry is in components/Frame.tsx — only paint here. */
+.frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* The card is the link; the outline must never be the thing under the
+     cursor. */
+  pointer-events: none;
+  overflow: visible;
+}
+.frame path {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 2;
+  /* The outline is this card's version of his image reveal — same hover, so the
+     same clock. */
+  transition: stroke 0.75s var(--ease-grid);
+}
+.wk-card:hover .frame path,
+.wk-card:focus-visible .frame path {
+  /* His hover lays a second path in lime over the base one. One path whose
+     colour changes is the same result without inventing a draw-on animation he
+     does have and we have not measured. */
+  stroke: var(--signal);
+}
+.wk-card:hover,
+.wk-card:focus-visible {
+  transform: translateY(-4px);
+}
+.wk-in {
+  /* Was #1a1a1b inside a 1px margin, which together WERE the card: the margin
+     let the parent's colour through as a rule and the fill made it a panel.
+     Both are gone — the outline is a real stroke now and the ground shows
+     through. The bottom padding is what keeps the last line clear of the bite,
+     which cuts 31.67px up from the bottom edge. */
+  background: transparent;
+  padding: 1.5rem 1.5rem 2.4rem;
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+/* The card's background used to be the rule, so turning it lime here was how
+   the outline lit up on hover. With no fill left that same declaration floods
+   the whole card instead. The stroke is what lights up now — see .frame path
+   above, which is also how his does it. */
+.wk-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  /* His card caption is 0.8333vw — 8.53 at 1024, 12 at 1440, 16 at 1920, with
+     no nav scale in the way this time. Ours was a fixed 0.62rem, so 9.92px at
+     every width: 17% short of him at 1440 and 38% short at 1920.
+
+     Tracking to normal and leading to 1.25, both his, both measured. The 0.14em
+     was doing real work here even though the row is all digits — "2026" was
+     being spread by it where his year is set solid. */
+  font-size: clamp(0.5rem, 0.8333vw, 1.1rem);
+  line-height: 1.25;
+  letter-spacing: normal;
+  /* His caption is not uppercased. It cannot show on ours either way, since the
+     row is a number and a year, but leaving a transform that does nothing is
+     just a claim about the content that is not true. */
+  text-transform: none;
+  /* His label is full bone at weight 600, not the muted ink ours used for both
+     halves. */
+  font-weight: 600;
+  color: var(--bone);
+}
+/* The YEAR takes the accent, at weight 700 — his, and the single most
+   recognisable thing about his card caption. His reads "Season 2025" with the
+   year in lime and the name in bone; ours now reads "01 2026" the same way.
+
+   Worth saying plainly: this gives our card two accent elements, because
+   .wk-kind under the title is also lime and his cards have no equivalent line at
+   all. His caption is the only text on his card. If two limes is one too many,
+   the one to drop is .wk-kind, which is ours — not this, which is his. */
+.wk-top span:last-child {
+  font-weight: 700;
+  color: var(--signal);
+}
+.wk-title {
+  font-family: var(--f-serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.4vw, 2.05rem);
+  line-height: 1.05;
+}
+.wk-kind {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+/* NOT on --body, and this is the one place his single size does not transfer.
+   His cards carry no body copy at all — his gallery is images with a name and a
+   year — so there is nothing of his to match here. Ours sits in a 266px card
+   column and already sets 28 to 41 characters a line, which IS his measure;
+   pushing it to 16.67px would drop that to the mid twenties and start breaking
+   words. Left at its own size deliberately. */
+.wk-blurb {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ash-inv);
+}
+.wk-out {
+  margin-top: auto;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rule-inv);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--bone);
+}
+.wk-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.wk-stack li {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash-inv);
+  border: 1px solid var(--rule-inv);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+/* ── prose / about ─────────────────────────────────────────────────────── */
+.pr {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .pr {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+.pr p + p {
+  margin-top: 1.1rem;
+}
+.pr-body {
+  font-size: var(--body);
+  /* 1.6, not his 1.25. His ratio belongs to his measure: he sets 43
+     characters to a line and about four lines to a block, where this is 59
+     characters over thirteen. Leading has to rise with the measure or the eye
+     loses the line it is returning to, so copying his number here would be
+     copying it out of the setting that makes it work. The size is his; this
+     ratio is ours, moved from 1.68 to agree with the other three. */
+  line-height: 1.6;
+  color: var(--ash);
+  max-width: 56ch;
+}
+.quote {
+  font-family: var(--f-serif);
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+  line-height: 1.18;
+}
+.aside {
+  margin-top: 1.6rem;
+  padding-left: 1.1rem;
+  border-left: 2px solid var(--signal);
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--ash);
+}
+.aside p + p {
+  margin-top: 0.8rem;
+}
+
+/* ── record ────────────────────────────────────────────────────────────── */
+.rec-row {
+  display: grid;
+  gap: 0.5rem 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 780px) {
+  .rec-row {
+    grid-template-columns: 10rem 1fr 1.1fr;
+    align-items: baseline;
+  }
+}
+.rec-when {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.rec-what {
+  font-family: var(--f-serif);
+  font-weight: 500;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+.rec-org {
+  display: block;
+  font-family: var(--f-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-top: 0.3rem;
+}
+.rec-blurb {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--ash);
+}
+.skills {
+  margin-top: 3rem;
+  display: grid;
+  gap: 0.5rem 2rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 780px) {
+  .skills {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.skill {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--rule);
+  font-size: 0.8rem;
+}
+.skill dt {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  color: var(--ash);
+}
+.skill dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+/* ── stack row ─────────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3.4rem);
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+}
+.row li {
+  font-family: var(--f-sans);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.6vw, 1.35rem);
+  letter-spacing: -0.01em;
+  color: var(--ash);
+}
+
+/* ── contact ───────────────────────────────────────────────────────────── */
+/* `relative` is load-bearing, not tidiness. The contour field inside is
+   `position: absolute; inset: 0`, so with a static footer it resolved against
+   the initial containing block instead — measured at top: -5406px, i.e. drawn
+   over the hero at the top of the document and never visible here at all. The
+   footer was the one section on the page with no field on it, and a second,
+   uninvited one was stacked on the hero. */
+/* The sign-off. His inverts the page one last time: the accent becomes the
+   GROUND and the dark that carried most of the site is reduced to a single card
+   floating on it. Putting the dark inside as an object is what stops a whole
+   screen of accent reading as a slab.
+
+   The card's outline is in Contact.tsx — a tab raised out of the top edge and a
+   tray dropped out of the bottom, both his, both measured off the mask he
+   ships. The tray is why this section has no bottom padding to speak of: the
+   corners it leaves standing are the only place the accent reaches the bottom
+   of the window, and they exist to hold the two lines below. */
+/* --ct-tray must equal TRAY_DROP in Contact.tsx. The script cuts the tray and
+   this reserves the band it leaves; if they disagree the bottom line either
+   floats off the card's edge or lands on the dark. */
+.ct {
+  /* Fallbacks only — both are republished from Contact.tsx the moment the card
+     is measured, so the shape, the top padding and the bar can never disagree.
+     These just keep the first frame sane. */
+  --ct-tab: 36px;
+  --ct-tray: 25px;
+  position: relative;
+  /* His, exactly — radial rather than linear, and that is the whole character
+     of it. The circle is centred 190% of the box ABOVE the box, so by the time
+     its arc crosses the footer it is enormous and nearly flat: the accent
+     arrives a little earlier at the left and right edges than down the middle,
+     and the paper above it reads as bulging slightly downward rather than
+     ending on a ruled line. A linear-gradient gives a flat front and loses it.
+     Ours was a hard edge — no fade at all.
+
+     Transparent at the top rather than sage, so what shows through is the one
+     fixed .ground-light canvas the sections above already sit on. That is what
+     makes the join seamless for free: there is no second colour to keep in step
+     with the first, and no seam where two of them disagree. It is also why the
+     contour field carries on through the fade instead of stopping at it.
+
+     The stops are his 68% and 83%. On the centre line that puts the fade
+     between y=131 and y=566 of a 967-tall box, so it starts above the card and
+     finishes a third of the way down its flank. */
+  background: radial-gradient(circle at 50% -190%, var(--signal-0) 68%, var(--signal) 83%);
+  color: var(--ink);
+  /* His inset is a constant 1.25rem against a root derived from the viewport
+     and capped with it: 14.8 at 1280, 16.7 at 1440, 20 at 1728, 22.2 from 1920
+     up. That is min(100vw, 1920) / 86.4. */
+  /* The same inset on all four sides, which is his and is the whole reason his
+     card reads as an object sitting on the accent. At 1440 he is 17 left, 17
+     right and 17 below — ours was 17, 17 and ZERO, so the card was not floating
+     on the ground, it was resting on the bottom of the page. */
+  /* His lead-in above the card, and it is not decoration — it is the room the
+     fade needs. His is a 187px spacer plus the card block's own 16, so his card
+     starts 203 into a 1440-wide section: 14.1%. Ours was 45px, and a fade with
+     45px to happen in is an edge with a soft top on it.
+
+     Percentages here resolve against WIDTH, which is what makes this track his
+     at every size. Capped at 1920 like every other measure on this card,
+     because his root stops growing there too. */
+  padding: calc(min(100vw, 1920px) * 0.141) calc(min(100vw, 1920px) / 86.4)
+    calc(min(100vw, 1920px) / 86.4);
+  overflow: hidden;
+}
+/* His container stops at 1920, so his card stops at 1876 and stays there — the
+   same at 2000 and at 2560. Ours ran on and was 89px wider than his at 2000. */
+.ct-shell {
+  position: relative;
+  max-width: 1876px;
+  margin-inline: auto;
+  /* So the bottom bar can be sized against the card's width too — it sits
+     outside the card, so it cannot use the card's own container. */
+  container-type: inline-size;
+}
+
+.ct-card {
+  position: relative;
+  color: var(--bone);
+  /* Room for the tab at the top and the tray at the bottom, so neither eats
+     into the content. The clip-path is written from script; without a height
+     the ResizeObserver has nothing to measure and the card renders unclipped
+     for a frame. */
+  /* Everything inside is sized against the CARD, not the window — cqw is 1% of
+     this element's width. That matters because the card stops growing at 1876
+     while the window does not, and vw-based type would have carried on past it.
+
+     14.5% inline, which is his: at a 977-wide card his columns start 15.2% in
+     from the left and end 14.8% from the right. Ours was a 4vw clamp — 40px, a
+     twelfth of his — which is why our columns sat jammed against the card's
+     edges while his sit well inside it. That, and the type below, is what made
+     this still look nothing like his after the box already matched. */
+  container-type: inline-size;
+  /* His rhythm, as percentages of the card. Percentage padding and margins
+     resolve against WIDTH, and this card's height is locked to its width by the
+     aspect ratio, so a vertical position stated as a percentage of the width is
+     a fixed fraction of the height too — his headline top is 21.4% of the height,
+     which is 11.36% of the width, and stays there at any size.
+
+     Measured on his at a 977x519 card: headline 21.4%-38.2% of the height, the
+     column label at 51.6%, links ending at 69.2%, the pill 91.5%-96.9%. Ours
+     had the headline at 14.5% and the pill overflowing the bottom edge. */
+  padding: 11.36% 14.5% var(--ct-tray);
+  display: flex;
+  /* His card is 1407x747 at this width — measured, and ours was 1405x696, the
+     right width and 51px short. An aspect ratio rather than a height so it holds
+     at every width, and it yields to the content on narrow screens where the
+     ratio would make the card shorter than what is in it. */
+  aspect-ratio: 1407 / 747;
+  /* Definite width, or the ratio runs backwards. min-height pins the height on
+     narrow screens and aspect-ratio will happily derive the WIDTH from it —
+     measured at a 600px window: a 904x480 card inside a 578px column, clipped
+     by the section's overflow so it read as the card simply losing its right
+     edge. With the width fixed the ratio can only set the height, and
+     min-height can only add to it, which is the yielding this wanted. */
+  width: 100%;
+  min-height: 30rem;
+}
+.ct-in {
+  position: relative;
+  z-index: 2;
+  /* So the call to action can be pushed to the foot of the card rather than
+     placed by a margin that has to be re-guessed every time the copy changes. */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* In the tab, which is cut to hold exactly this. */
+.ct-badge {
+  position: absolute;
+  top: calc(var(--ct-tab) * 0.2);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  color: var(--signal);
+}
+
+/* Centred, as his is. The columns go to the two edges below it and his
+   photograph sits between them — so the middle of this card is a slot, and
+   centring the headline is what makes the slot read as composed rather than as
+   a gap. */
+/* His headline is 48.6px on a 977 card and takes up 41.8% of it. Ours cannot be
+   both: this copy is twice the length of his — "Something that runs." against
+   "The fight." — so at his size it would span the whole card and then some. It
+   is set to fill the text column instead, which lands at 35px here. That is the
+   one measurement on this card that does not match his and cannot, short of
+   rewriting the sign-off to his word count.
+
+   Everything else about it is his: line-height 0.856 (his 41.6 on 48.6), the
+   serif set 1.035x the sans rather than under it, both at weight 700, and the
+   colours the way round he has them. */
+/* His "see more" sign-off, closing the gallery.
+
+   Measured off his at 1440: a 433-wide stack, badge then two serif lines then
+   the pill, with 33px between each of the three. The 33 is the whole reason it
+   reads as one unit — his badge, copy and button are not three centred things
+   that happen to be near each other.
+
+   The copy is his Brier at 26.67px on a 27.73 leading, which is a leading
+   TIGHTER than the type: 1.04. Set as a proportion of the viewport rather than
+   frozen, since his scales — 26.67 at 1440 is 1.852vw, floored and capped so it
+   stays type at either end.
+
+   Both lines are wiped in on scroll like his, at the accent. The button is not,
+   which is also his: no pill on his site carries the line reveal. */
+.wk-more {
+  margin-top: clamp(4rem, 9vw, 9.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.wk-more-mark {
+  display: block;
+  color: var(--signal);
+  line-height: 0;
+}
+.wk-more-copy {
+  /* His 33px at 1440 — as a proportion so it holds at every width. */
+  margin: 2.29vw 0 0;
+  font-family: var(--f-serif);
+  font-weight: 400;
+  font-size: clamp(1.05rem, 1.852vw, 2rem);
+  line-height: 1.04;
+  letter-spacing: 0.025em;
+  color: var(--bone);
+}
+/* Each line is its own block so the two stack, and the .rv inside each shrinks
+   to the words so the block covering it is the width of the text rather than
+   the width of the column. */
+.wk-more-line {
+  display: block;
+}
+.wk-more .wk-cta {
+  margin-top: 2.29vw;
+}
+/* His pill: 14px Mona Sans on a 40px box, 7.2 radius, 13.33 of side padding,
+   olive on the accent. The same object as the footer's mail button, sized from
+   the viewport here because it does not sit inside a container the way that one
+   does. */
+.wk-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  height: 40px;
+  padding: 0 13.33px;
+  border-radius: 7.2px;
+  background: var(--signal);
+  color: var(--olive);
+  font-family: var(--f-sans);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.wk-cta .rl,
+.wk-cta .rl span {
+  height: 1em;
+  line-height: 1;
+}
+.wk-cta:hover .rl span,
+.wk-cta:focus-visible .rl span {
+  transform: translateY(-100%);
+}
+/* The footer's line reveal — his, and the same mechanism the statement uses:
+   the line is clipped from the right and a solid block sits over it, and what
+   you watch is the block leaving. See the note in Statement.tsx for why that
+   reads as one wipe rather than two animations.
+
+   Two differences from the statement, both his. The block is not one colour —
+   see the three rules below. And the cascade is NOT one staggered timeline: every row carries its own trigger at
+   the same threshold, so the rows arrive as you scroll past them rather than
+   all at once. Measured on his: every footer row starts its clip when its own
+   top is at 0.888-0.897 of the window, never at a fixed time offset from the
+   row above. A staggered timeline would have each row firing progressively
+   higher up the window as the page kept moving under it, and his do not.
+
+   The headline is the one exception and keeps the staggered pair, because his
+   two headline lines start 12px of scroll apart off a single trigger.
+
+   inline-block so the block is the width of the WORDS. On .roll that would
+   override its own inline-flex, so that one is restored below. */
+.rv {
+  display: inline-block;
+  position: relative;
+  /* Covered before anything runs, in CSS, so the first paint is already hidden
+     — writing the start state from the effect shows one frame of finished text,
+     which on a reveal is the whole surprise given away. */
+  clip-path: inset(0 100% 0 0);
+}
+.roll.rv {
+  display: inline-flex;
+}
+.rv-b {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  transform: scaleX(1);
+  transform-origin: right center;
+  will-change: transform;
+  /* It sits over the link until it has left. Without this the first row would
+     swallow the hover it is covering. */
+  pointer-events: none;
+  /* His common case by a distance — bone text wiped by the accent. Eleven of
+     his thirteen footer blocks are this, and so is every line of his HELMETS
+     heading and the body copy beside it. The two exceptions are below. */
+  background: var(--signal);
+}
+/* THREE colours, his, and the rule behind them is in the text they cover.
+
+   Everything set in bone gets wiped by the accent. The two accent links are
+   already the accent, so a lime block over lime text would be invisible — those
+   get the olive tint instead. The headline sits between: it is the largest type
+   on the card and takes the accent one step down, so the biggest block on the
+   page is also the quietest.
+
+   Mapped off his by walking from every one of his .high-line-reveal elements to
+   the line it actually covers:
+
+     Home..Calendar, Tiktok..Twitch   block #d2ff00   text #f4f4ed
+     Store, Sign Up                   block #3b3c38   text #d2ff00
+     Always bringing / the fight.     block #b2c73a   text #f4f4ed
+
+   This shipped as #3b3c38 for all three, which is the colour of his LEAST
+   common case. I read one block, got the one that is the exception, and applied
+   it to everything — so every row wiped in a grey that barely reads against the
+   card. One sample is not a rule; there were thirteen blocks to read and
+   reading them all is what produced the table above. */
+.ct-title .rv-b {
+  background: var(--signal-off);
+}
+/* The accent links are already the accent, so a lime block over lime text
+   would be invisible. */
+.ct-col a.ct-accent .rv-b {
+  background: var(--olive-tint);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv {
+    clip-path: inset(0 0 0 0);
+  }
+  .rv-b {
+    transform: scaleX(0);
+  }
+}
+.ct-title {
+  text-align: center;
+  /* 7.014cqw, not 4.98, and the 4.98 was never a wrong CHOICE — it was the right
+     number in the wrong unit.
+
+     His footer headline is 4.9762% of his card's width, and the serif line 5.154%
+     — measured at 1024, 1440 and 1920, constant at all three. 4.98 is that first
+     figure, and 1.035 on .a below is the second divided by it. Both were already
+     exactly his.
+
+     But cqw resolves against the container's CONTENT box, and this card carries
+     14.5% of side padding, so 1cqw here is 1% of 998.8 rather than 1% of 1406.7
+     — 71.0%. Ours came out at 49.74px against his 70.00, which is 71.1% of his:
+     the padding, and nothing else. The audit called this "29% smaller" and read
+     it as a chosen size; it is a unit trap, and 4.98 / 0.710 = 7.014 undoes it.
+
+     Same cqw trap already cost this file a card clip drawn 115px narrow. Worth
+     assuming, whenever a cqw number is out by a round-looking fraction, that the
+     fraction is the padding. */
+  font-size: clamp(1.9rem, 7.014cqw, 6rem);
+  line-height: 0.856;
+}
+/* His serif is the LIME and his sans is the bone — ours had it the other way
+   round, which is the single loudest thing in this card and was backwards.
+   His serif also runs slightly larger than his sans, 50.3 against 48.6, where
+   the shared lockup sets it smaller. */
+.ct-title .a {
+  font-weight: 700;
+  font-size: 1.035em;
+  /* -0.023em, his, measured constant at all three widths. This was inheriting
+     -0.012em from .lockup .a — half his, and never set for this headline at
+     all. His SANS line is a different matter: it computes -0.0625px, which is a
+     fixed sub-pixel that works out to -0.0009em at 1440 and drifts with the
+     width, so it is zero with rounding on it. Ours already sits at -0.0013em,
+     which is the same nothing, and is left alone. */
+  letter-spacing: -0.023em;
+  color: var(--signal-off);
+}
+.ct-title .b {
+  /* The axes, not the property, same as the section headings — but 660 here,
+     not their 750. His weights are per role: 750 on section headings, 660 on
+     this and on the statement. Our .st-line already carries 660; this did not
+     carry any axes at all. */
+  font-weight: 400;
+  font-variation-settings: 'wdth' 93, 'wght' 660;
+  font-size: 1em;
+  letter-spacing: -0.0013em;
+  color: var(--bone);
+}
+
+.ct-cols {
+  /* Puts the label at 27.4% of the card's width from its top, which is his
+     51.6% of the height. */
+  margin-top: 10%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: clamp(2.5rem, 8vw, 7rem);
+}
+/* His right-hand column is right-aligned against the card edge, which is what
+   makes the two of them read as brackets around the middle rather than as a
+   list that ran out of room. */
+/* His links are 1.78% of the card's width. cqw resolves against the container's
+   CONTENT box, not its border box, and this card's padding takes 29% of it — so
+   his 1.78% of the card is 2.51% of the box these units count in. Ours were
+   12.3px flat against his 17.4: smaller AND further out, the worst of both. */
+.ct-col {
+  /* Centred on the column's own axis, both columns, which is his. Ours had the
+     left column ranged left and the right column ranged right — the ordinary
+     answer, and not what he does.
+
+     His computes to text-align: start and is centred anyway, so the centring on
+     his comes from the column box rather than from the text property. The
+     result is identical here and the mechanism is one line instead of a flex
+     container, because every child of this column is already a full-width block
+     with shrink-to-fit content inside it.
+
+     Each column shrink-wraps to its own longest label, so the two axes are not
+     mirror images: ours land 312px from the card's left edge and 269px from its
+     right, because TRACK RECORD is a good deal longer than LINKEDIN. His are 229
+     and 235 apart for the same reason and the same structure — his two columns
+     simply happen to be closer in width. */
+  text-align: center;
+  font-size: clamp(0.75rem, 2.51cqw, 1.5rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+/* His column headings: 0.59% of the card, weight 400, and sage — an actual
+   colour from the palette rather than bone at half opacity, which is what ours
+   was faking it with. */
+/* 0.95% of the card below it, his — every gap in this column is stated the same
+   way, as a share of the card, so the whole column scales as one. */
+.ct-lab {
+  margin: 0 0 1.34cqw;
+  line-height: 1;
+  /* 5.8px at a 977 card, which is his and is genuinely tiny. The floor is set
+     below it so his ratio governs at desktop widths rather than being quietly
+     overridden — it only takes over on narrow screens where 0.83% of a small
+     card would stop being text at all. Worth being explicit that this is small
+     enough to be hard to read, and that it is his number, not a slip. */
+  font-size: clamp(0.34rem, 0.83cqw, 0.8rem);
+  font-weight: 400;
+  /* normal, his, and PROVEN rather than read off a computed string: forcing his
+     letter-spacing to 0 changes the width of "pages" and "Follow On" by exactly
+     0.00px, at 1024, 1440 and 1920. He sets 8.33px uppercase at weight 400 with
+     no tracking at all.
+
+     Ours had 0.16em, which is the ordinary answer for small caps and is not his.
+     It made "FIND ME ON" 13.3px wider than the same string set his way.
+
+     This turns out to be a house rule rather than a one-off: across his whole
+     page, uppercase runs are either `normal` or NEGATIVE — 8.33px labels normal,
+     13.33px legal links normal, his store button at -0.133px, headings at -1.667. He
+     never adds positive tracking to caps anywhere. We do, in twenty-four rules;
+     the two in this footer are the two with a directly measured counterpart of
+     his, so they are the two that move here. */
+  letter-spacing: normal;
+  color: var(--sage);
+}
+/* His step from one link to the next is 2.01% of the card, and his link box is
+   17.4px on a 17.4px font — exactly one em. Ours was a 0.18rem padding on a
+   1.15em roll column, so the box was 2.05% before any gap at all and the rhythm
+   could not match his however the margin was set. */
+.ct-col a {
+  display: block;
+  padding: 0;
+  margin-bottom: 0.32cqw;
+  line-height: 1;
+  /* 800, his. */
+  font-weight: 800;
+  transition: color 0.3s var(--ease);
+}
+/* One em, not 1.15. This is his link height AND his roll distance — his
+   characters travel exactly one font-size, which is what I measured at -22.2 on
+   a 22.25px link and then did not carry over.
+
+   The line-height has to come with it. translateY(-100%) is 100% of the SPAN,
+   not of the column that clips it, so setting only the column's height left the
+   travel at 1.15em against a 1em window and the second copy arrived 3px low. */
+.ct-col .rl,
+.ct-col .rl span {
+  height: 1em;
+  line-height: 1;
+}
+/* No colour change. His footer links roll and do NOT go lime — traced through a
+   full hover on his and the colour sits at rgb(244,244,237) from rest to
+   settled to release. Ours turned accent, which made the roll the second thing
+   you noticed. The one link already in the accent stays in it. */
+.ct-col a:hover .rl span,
+.ct-col a:focus-visible .rl span,
+.ct-cta:hover .rl span,
+.ct-cta:focus-visible .rl span {
+  transform: translateY(-100%);
+}
+/* Sized to his 14px icon, and shared — the footer's mail pill and the work
+   section's GitHub button both carry it. Nothing leaves this box any more — the arrow is drawn
+   and undrawn in place — but the overflow guard stays, because a round stroke
+   cap sits half a stroke width proud of the path at both ends. */
+.ico-arrow {
+  display: block;
+  width: 14px;
+  height: 14px;
+  overflow: hidden;
+  line-height: 0;
+}
+/* His arrow does not move — it DRAWS, and it never runs backwards.
+
+   Measured off his own canvas rather than off frames. His arrow is a 10px Rive
+   canvas with a 2D context, so its pixels can be read in-page on a timer, which
+   costs nothing and timestamps honestly — a screenshot at DPR 4 costs 50-100ms
+   and would smear a 240ms phase. One cycle, and all four phases are his:
+
+     holds full     415ms   27.7%
+     undraws        240ms   16.0%   bottom end first, head last
+     holds empty     97ms    6.5%
+     redraws        748ms   49.9%   bottom end first again, head last
+
+   1500ms, so the earlier 750ms was exactly half his. The empty hold is real and
+   short, and the long hold at full is most of what is left.
+
+   The direction is the part that was wrong rather than merely fast. A dash
+   offset that runs out and back rewinds: whatever vanished last returns first,
+   so the arrow unwrote itself and then rewound. His marches — the erase boundary
+   and the draw boundary both travel the same way along the path, bottom to head,
+   the way a pen would. That needs the offset to keep moving in ONE direction and
+   the dash pattern to carry a gap long enough that the path is briefly empty
+   between one dash leaving and the next arriving. Hence a 100-unit dash on a
+   100-unit arrow with a 120-unit gap: the offset sweeps one full 220 period and
+   the loop is seamless because 220 and 0 are the same picture.
+
+   The gap is what buys the empty hold. With a gap of exactly 100 the arrow would
+   be empty for one instant; 120 leaves 20 units of nothing, which is the 97ms.
+
+   Head values are tail values plus 71 throughout — the tail's share of the
+   shared ruler. That single constant is what welds two subpaths into one sweep.
+
+   Eased per phase, his: the erase leans in, the redraw decelerates. The redraw
+   curve is fitted to WHERE THE STROKE HAS REACHED, not to how much ink is on the
+   canvas. Fitting it to ink first put his redraw at 78% after 35% of its time,
+   which made ours arrive far too eagerly — the head was in by cycle 600 where
+   his still shows a bare hook at 800. Ink is not proportional to progress unless
+   both arrows divide their length between tail and head the same way, and there
+   is no reason his does. Reading the shape instead — first ink, hook closed,
+   head starts, full — gives a much gentler curve and the head lands with his. */
+@keyframes ct-arrow-tail {
+  0% {
+    stroke-dashoffset: 220;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.7, 0.5);
+  }
+  16% {
+    stroke-dashoffset: 120;
+    animation-timing-function: linear;
+  }
+  22.5% {
+    stroke-dashoffset: 100;
+    animation-timing-function: cubic-bezier(0.25, 0.5, 0.5, 1);
+  }
+  66.7%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ct-arrow-head {
+  0% {
+    stroke-dashoffset: 291;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.7, 0.5);
+  }
+  16% {
+    stroke-dashoffset: 191;
+    animation-timing-function: linear;
+  }
+  22.5% {
+    stroke-dashoffset: 171;
+    animation-timing-function: cubic-bezier(0.25, 0.5, 0.5, 1);
+  }
+  66.7%,
+  100% {
+    stroke-dashoffset: 71;
+  }
+}
+.ct-arrow-tail,
+.ct-arrow-head {
+  stroke-dasharray: 100 120;
+}
+.arrowed:hover .ct-arrow-tail,
+.arrowed:focus-visible .ct-arrow-tail {
+  animation: ct-arrow-tail 1500ms infinite;
+}
+.arrowed:hover .ct-arrow-head,
+.arrowed:focus-visible .ct-arrow-head {
+  animation: ct-arrow-head 1500ms infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrowed:hover .ct-arrow-tail,
+  .arrowed:focus-visible .ct-arrow-tail,
+  .arrowed:hover .ct-arrow-head,
+  .arrowed:focus-visible .ct-arrow-head {
+    animation: none;
+  }
+}
+/* His STORE: the one link in the column set in the accent, held apart from the
+   list above it — and set SMALLER than the links, 1.18% of the card against
+   their 1.78%, which is what stops the brightest thing in the column also being
+   the biggest. */
+.ct-accent {
+  /* 1.90% of the card below the last link, his. */
+  margin-top: 2.67cqw;
+  /* The link's own line box has to be as tall as the roll column inside it, or
+     the column overhangs it and adds space above — which is what turned this
+     gap into 3.64% when the box was grown to fix the accent. */
+  line-height: 1.15;
+  font-size: clamp(0.62rem, 1.66cqw, 1.05rem);
+  color: var(--signal);
+}
+/* This one link needs a taller window than the rest, and the reason is only
+   visible in our copy: uppercase É is taller than 1em, so at his link height the
+   accent did not fit — and what showed under each E was not a broken glyph but
+   the accent of the SECOND copy in the roll, poking up through the bottom of the
+   clip. Every link of his is unaccented, so 1em never had to hold one.
+
+   1.15em holds the accent, and the profile said why that alone was not enough:
+   the accent sits FLUSH with the top of its own line box — ink at y 0.00 — so
+   the copy stacked below it starts its accent exactly on the clip edge and a
+   sliver always shows. Growing the window does not help, because the copy grows
+   with it. Growing it to 1.45 also broke the spacing above, since a column
+   taller than its link's line box overhangs and pushes everything apart.
+
+   So the gap goes BETWEEN the copies instead. The second one starts 0.3em
+   lower, which is clear of the boundary, and the roll travels that much further
+   so it still lands exactly at rest. The plain links keep his 1em and his
+   rhythm; this is the only box that changes and the only one with a diacritic
+   in it. */
+.ct-accent .rl,
+.ct-accent .rl span {
+  height: 1.15em;
+  line-height: 1.15;
+}
+.ct-accent .rl span + span {
+  margin-top: 0.3em;
+}
+/* Written to out-specify `.ct-col a:hover .rl span` above, which is one class
+   heavier — at a plain `.ct-accent:hover` the base rule won, copy 1 travelled
+   only -100% and copy 2 landed 0.3em low, which is the offset it was given to
+   keep it clear of the clip. */
+.ct-col a.ct-accent:hover .rl span,
+.ct-col a.ct-accent:focus-visible .rl span {
+  transform: translateY(calc(-100% - 0.3em));
+}
+
+/* auto, so this and the pill under it sit on the card's bottom padding — which
+   is the tray, and puts the pill's lower edge where his is. */
+.ct-avail {
+  margin: auto 0 0.9rem;
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 237, 0.5);
+}
+/* His BUSINESS ENQUIRIES pill: 119x28 on a 977 card, radius 5, label 0.95% of
+   the card at weight 800 in the OLIVE — not our near-black ink, which is a
+   different colour on a lime ground and reads heavier. */
+.ct-cta {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.35cqw 1.33cqw;
+  border-radius: 5px;
+  background: var(--signal);
+  color: var(--olive);
+  font-size: clamp(0.56rem, 1.34cqw, 0.9rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.3s var(--ease);
+}
+.ct-cta:hover,
+.ct-cta:focus-visible {
+  transform: translateY(-2px);
+}
+
+/* In the two corners the tray leaves standing, not under them. His sits INSIDE
+   the card's box — the tray clips the dark away at both ends, and the accent
+   showing through there is the only ground this line ever has. Ours was a bar
+   below the card, which is the same information and a different idea: it made
+   the card a panel with a caption instead of a shape cut to hold its own
+   footnotes. Absolute, in the band the tray opens up. */
+.ct-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--ct-tray);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(1.4rem, 2.4vw, 2.2rem);
+  /* His: 0.71% of the card, weight 800, olive, and NOT uppercase — the only
+     text on this whole footer he leaves in sentence case. Ours was uppercase at
+     72% ink, which is a different colour and a different voice. */
+  /* 6.9px at a 977 card — his. Same note as the column label: the floor sits
+     under his value so it does not silently win. */
+  font-size: clamp(0.38rem, 0.71cqw, 0.8rem);
+  font-weight: 800;
+  /* normal, his: his footer legal line sets Privacy Policy and Terms at 13.33px
+     weight 800 uppercase with zero tracking, measured the same way. Ours had
+     0.06em. */
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--olive);
+}
+
+/* Below the breakpoint the tray's raised corners are too small to hold two
+   lines side by side, so they stack and the card gives the shape up. */
+@media (max-width: 700px) {
+  /* One column of links, both left-aligned — the brackets only work when there
+     is something between them to bracket. And the inset comes back down: 14.5%
+     of a narrow card is most of the card. */
+  .ct-card {
+    padding-inline: clamp(1.4rem, 6%, 3rem);
+  }
+  .ct-cols {
+    justify-content: flex-start;
+  }
+  /* The corners are far too small to hold two lines side by side down here, so
+     the bar comes back out from under the card and sits below it. */
+  .ct-foot {
+    position: static;
+    height: auto;
+    padding: 0.9rem clamp(0.6rem, 1.4vw, 1.4rem);
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+}
+
+/* The skip link, and it is not decoration: the hero is a full screen with a
+   canvas in it, so without this a keyboard user tabs through the whole nav
+   before reaching anything they came for. */
+.skip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 400;
+  margin: 0.75rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--ink);
+  color: var(--signal);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateY(-200%);
+  transition: transform 0.25s var(--ease);
+}
+.skip:focus {
+  transform: translateY(0);
+}
+
+/* ── loader ────────────────────────────────────────────────────────────── */
+/* The monogram as aperture. See components/Loader.tsx for the mechanic. */
+.ld {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+}
+.ld-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ld-label {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.6rem, 4vh, 2.8rem);
+  transform: translateX(-50%);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* The page is held still underneath while the aperture opens — a scrollbar
+   appearing mid-transition drags the whole composition sideways. */
+body.is-loading {
+  overflow: hidden;
+}
+
+/* ── the drawn logotype ────────────────────────────────────────────────── */
+/* Height only. Width comes from the viewBox, so the non-proportional stretch
+   the handoff forbids cannot be expressed. */
+.wm {
+  display: block;
+  width: auto;
+  height: 100%;
+}
+
