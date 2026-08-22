@@ -401,6 +401,17 @@ ul {
 }
 
 body.is-ready {
+  /* This is the canvas, not just this element's box. html deliberately declares
+     no background, so under CSS background propagation body's is what paints
+     the canvas — which is the whole reason this one line can change the colour
+     of the browser's own chrome on iOS.
+
+     html used to carry the accent too, from the inline style in index.html. A
+     root with a background OWNS the canvas and body's stops propagating, so
+     that accent outlived the loader and sat under the entire site: the page
+     went paper, the canvas stayed lime, and Safari sampled lime for the bottom
+     toolbar while sampling paper for the status bar. Hence a paper page with a
+     lime toolbar under it. The inline style now sets body only. */
   background: var(--paper);
 }
 
