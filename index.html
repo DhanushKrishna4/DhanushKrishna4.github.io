@@ -9,7 +9,13 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover is what lets the page paint into the status bar and
+         home indicator at all. Without it the browser insets the viewport to the
+         safe area and fills the rest with the page's BACKGROUND COLOUR — one
+         static value, which is why the bar stayed paper no matter what section
+         was under it. It also makes every env(safe-area-inset-*) below report a
+         real number; they are all 0 until this is here. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Dhanush Krishna — Machine Learning &amp; Cybersecurity</title>
     <!-- Before the stylesheet lands. Same reason as body.is-ready in
          index.css: the first paint has to already be the loader colour. -->

@@ -994,6 +994,11 @@ body.is-ready {
      that width. A fixed bar hugging the corners while the content stays inset
      is most of why his chrome reads as chrome. */
   padding: clamp(12px, 1.2vw, 17px);
+  /* The grounds go under the status bar; the controls do not. Without this the
+     bar rides up with everything else and the clock lands on the wordmark while
+     the battery lands on the toggle. env() is 0 wherever there is no notch, so
+     this is inert on desktop. */
+  padding-top: calc(clamp(12px, 1.2vw, 17px) + env(safe-area-inset-top));
   pointer-events: none;
 }
 .nav > * {
@@ -1305,6 +1310,9 @@ body.menu-open .nav .btn-ghost::after {
   overflow: hidden;
   visibility: hidden;
   clip-path: ellipse(120% 0% at 50% 0%);
+  /* Same reason as the bar: the olive ground should reach the top of the screen,
+     the links should not go under the clock. */
+  padding-top: env(safe-area-inset-top);
 }
 .menu[data-open='true'] {
   visibility: visible;
@@ -1771,7 +1779,7 @@ body.menu-open .nav .btn-ghost::after {
      on every browser without a retracting toolbar, so this costs nothing on
      desktop and needs no query to gate it. The ground still fills 100vh; only
      the content is held above the chrome. */
-  padding: 0 var(--shell) calc(100vh - 100svh);
+  padding: env(safe-area-inset-top) var(--shell) calc(100vh - 100svh);
   display: grid;
   align-items: center;
   overflow: hidden;
@@ -3478,7 +3486,7 @@ body.menu-open .nav .btn-ghost::after {
 .ld-label {
   position: absolute;
   left: 50%;
-  bottom: clamp(1.6rem, 4vh, 2.8rem);
+  bottom: calc(clamp(1.6rem, 4vh, 2.8rem) + (100vh - 100svh));
   transform: translateX(-50%);
   color: var(--ink);
   font-size: 0.72rem;
