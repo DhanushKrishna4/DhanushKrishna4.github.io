@@ -3417,6 +3417,12 @@ body.menu-open .nav .btn-ghost::after {
   position: fixed;
   inset: 0;
   z-index: 900;
+  /* Its OWN accent, not the body's. This was transparent and borrowed whatever
+     body happened to be painting — which works only until body.is-ready flips
+     body to paper, and that can land while the loader is still on screen. A
+     full-screen cover that does not paint is a cover that can turn white under
+     you. */
+  background: var(--signal);
 }
 .ld-svg {
   display: block;

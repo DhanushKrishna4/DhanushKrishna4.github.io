@@ -16,7 +16,25 @@ export function initNavTone(): () => void {
   if (!nav) return () => {};
 
   const sections = [...document.querySelectorAll<HTMLElement>('[data-tone]')];
-  const set = (tone: string) => nav.setAttribute('data-tone', tone);
+  /* The mobile browser's own chrome, kept on the same clock as the bar.
+
+     iOS tints its status bar and toolbar from this, and with no meta at all it
+     guesses — it guessed white, so the accent stopped dead at the safe areas.
+     index.html ships it on the accent for the loader; from here it tracks
+     whatever the bar is sitting on, so the chrome belongs to the ground the way
+     the bar does.
+
+     Held at the accent until is-ready, or the very first call would repaint the
+     chrome paper while the loader is still filling the screen with lime. */
+  const chrome = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const paint = (tone: string) => {
+    if (!chrome || !document.body.classList.contains('is-ready')) return;
+    chrome.content = tone === 'dark' ? '#282c20' : '#f4f4ed';
+  };
+  const set = (tone: string) => {
+    nav.setAttribute('data-tone', tone);
+    paint(tone);
+  };
   set(sections[0]?.dataset.tone ?? 'light');
 
   /* His bar has two states, and the boundary is not a section — it is the top of

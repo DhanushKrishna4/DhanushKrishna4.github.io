@@ -10,6 +10,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- iOS tints the status bar and the toolbar with this. Without it Safari
+         guesses from the page and guessed white, so the accent stopped at the
+         safe areas and the loader read as a lime band with white above and
+         below it instead of a full screen. Starts on the accent because that is
+         what the loader paints; lib/tone.ts moves it with the page after that. -->
+    <meta name="theme-color" content="#d2ff00" />
     <title>Dhanush Krishna — Machine Learning &amp; Cybersecurity</title>
     <!-- Before the stylesheet lands. Same reason as body.is-ready in
          index.css: the first paint has to already be the loader colour. -->

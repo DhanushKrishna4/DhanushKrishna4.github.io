@@ -71,6 +71,11 @@ export default function Loader({ onDone }: { onDone: () => void }) {
     const finish = () => {
       document.body.classList.remove('is-loading');
       document.body.classList.add('is-ready');
+      /* Hand the browser chrome over at the same moment the accent does. Without
+         this the meta stays on the accent until the first tone change, so a
+         reader who never scrolls keeps a lime status bar over a paper page. */
+      const chrome = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+      if (chrome) chrome.content = '#f4f4ed';
       onDone();
     };
 
