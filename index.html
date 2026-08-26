@@ -23,7 +23,13 @@
     />
     <link rel="canonical" href="https://dhanushkrishna4.github.io/" />
 
-    <!-- The link preview card. Absolute URLs throughout, which is not optional:
+    <!-- The card is a TRUECOLOUR png (colour type 2), and must stay one. It was
+         written with a palette to save 66 KB and LinkedIn rendered it as a blank
+         white box: indexed PNGs are a long-standing failure in its scraper, and
+         the Post Inspector reports a clean scrape while showing nothing, so
+         there is no error to go on. 129 KB is the price of it working.
+
+         The link preview card. Absolute URLs throughout, which is not optional:
          LinkedIn, Slack and iMessage all fetch og:image from their own servers
          with no page context, so a root-relative path resolves against their
          host and the card comes back blank — which is what it was doing, along
@@ -41,7 +47,8 @@
       property="og:description"
       content="Final-year Computer Science student at BITS Pilani Dubai, based in Abu Dhabi. Machine learning and cybersecurity — private LLM infrastructure, voice interfaces and data tooling."
     />
-    <meta property="og:image" content="https://dhanushkrishna4.github.io/og.png" />
+    <meta property="og:image" content="https://dhanushkrishna4.github.io/card.png" />
+    <meta property="og:image:secure_url" content="https://dhanushkrishna4.github.io/card.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -54,7 +61,7 @@
       name="twitter:description"
       content="Final-year Computer Science student at BITS Pilani Dubai, based in Abu Dhabi. Machine learning and cybersecurity — private LLM infrastructure, voice interfaces and data tooling."
     />
-    <meta name="twitter:image" content="https://dhanushkrishna4.github.io/og.png" />
+    <meta name="twitter:image" content="https://dhanushkrishna4.github.io/card.png" />
     <meta name="twitter:image:alt" content="DHANUSH KRISHNA, signed" />
     <!-- Before the stylesheet lands. Same reason as body.is-ready in
          index.css: the first paint has to already be the loader colour. -->
