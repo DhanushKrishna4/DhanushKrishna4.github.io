@@ -13,6 +13,7 @@ import Work from './components/Work';
 import About from './components/About';
 import Record from './components/Record';
 import Contact from './components/Contact';
+import Probe from './components/Probe';
 import ScrollIndicator from './components/ScrollIndicator';
 
 /**
@@ -127,6 +128,11 @@ export default function App() {
         <Record />
       </main>
       <Contact />
+      {/* Temporary, and only ever on ?probe=1 — a normal visit never renders it.
+          It is here because this bug cannot be reproduced on the machine that is
+          fixing it: no notch, no retracting toolbar, every env() zero and all
+          four viewport units identical. */}
+      {typeof window !== 'undefined' && window.location.search.includes('probe') && <Probe />}
     </>
   );
 }
