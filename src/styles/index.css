@@ -1277,6 +1277,14 @@ body.menu-open .nav .btn-ghost::after {
     padding-inline: 10.8px;
     border-radius: 6px;
   }
+  /* .btn-icon already declares padding: 0, and it declares it EARLIER in this
+     file than the rule above — so the toggle took 10.8px a side, its content box
+     fell to 29.4px, and the mark inside is width:100% of that. Measured: 29x29
+     of ink in a 51px button, against 53x53 in a 53px button on desktop. The
+     button looked right and the mark in it did not scale with it. */
+  .btn-icon {
+    padding-inline: 0;
+  }
 
   /* The card goes, as his next-race card does, and one line of what it held
      comes back up under the name. */
