@@ -1259,10 +1259,23 @@ body.menu-open .nav .btn-ghost::after {
   }
 
   /* Measured off his at 390 wide: store 84x51 at 14,14 and toggle 51x51 at
-     326,14, against our 77x40 and 40x40. The clamp bottoms out at 2.5rem here,
-     so this raises a floor rather than replacing a curve. */
+     326,14, against our 77x40 and 40x40. Every clamp on this button bottoms out
+     at this width, so all three of these raise a floor rather than replacing a
+     curve.
+
+     The height alone was not enough and made it worse: the box grew to 51 while
+     the padding stayed at its 9px minimum and the type at its 12px one, so the
+     button came out tall and squeezed. His carries 14px type and 10.83px of
+     padding in the same 51px box.
+
+     The result is WIDER than his and should be — Résumé is a longer word than
+     Store, and the point of matching his padding and type rather than his width
+     is that the box then follows the word. */
   .btn {
     --btn-h: 51px;
+    font-size: 0.875rem;
+    padding-inline: 10.8px;
+    border-radius: 6px;
   }
 
   /* The card goes, as his next-race card does, and one line of what it held
