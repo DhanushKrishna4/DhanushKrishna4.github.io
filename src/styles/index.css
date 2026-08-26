@@ -3677,6 +3677,25 @@ body.menu-open .nav .btn-ghost::after {
   .ct {
     padding-inline: 14px;
     padding-bottom: calc(min(100vw, 1920px) / 86.4 + (100vh - 100svh) - 7px);
+    /* The section grew a taller card but not a taller ground, so the accent ran
+       out partway up it and the card sat on sage from about a third of the way
+       down. Measured beside the card at 393: his reads rgb(234,248,160) at y100
+       where ours read rgb(180,186,160) — his card is on accent from its top edge,
+       ours was on sage.
+
+       Two parts. The section gets 150px more above the card, which is the ground
+       we did not add when the card got taller. And the fade is stated in PIXELS
+       from the top rather than as a share of the section, so it finishes at a
+       fixed distance instead of moving every time the card's height changes —
+       which is what let this drift in the first place. */
+    padding-top: calc(min(100vw, 1920px) * 0.141 + 150px);
+    /* Finishing at 150px put full accent behind the bar, and the accent button
+       up there is the same colour — it disappeared into the ground. His does not,
+       because his fade is still running at that height: rgb(234,248,160) behind a
+       rgb(210,255,0) button. Ending at 260px keeps the top of the section pale
+       enough to hold the button and still has the card, which starts at 114,
+       sitting on solid accent. */
+    background: linear-gradient(to bottom, var(--signal-0) 0, var(--signal) 260px);
   }
 
   /* His two columns sit together in the middle of the card. Ours were pushed to
