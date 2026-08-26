@@ -125,12 +125,6 @@ export default function App() {
         <Work />
         <About />
         <Record />
-        {/* The record's runway. Same as the statement's above: a sticky box may
-            only travel inside its containing block, so without a real element in
-            the flow after it there is nothing to stick ACROSS and it holds for
-            exactly zero pixels. Never seen — the footer is pulled back up by
-            this much and covers it the whole way down. */}
-        <div className="stick-run" aria-hidden="true" />
       </main>
       <Contact />
     </>

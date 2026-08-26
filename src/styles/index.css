@@ -1691,18 +1691,6 @@ body.menu-open .nav .btn-ghost::after {
   position: sticky;
   top: 0;
 }
-/* The record does the same thing at the other end of the page, against the
-   footer. Its own selector because the rule above is scoped to the olive run and
-   this one lives in main.
-
-   This is the reference's mechanic, read off his live DOM rather than guessed:
-   his outgoing sections are position:sticky at top 0 and the next panel scrolls
-   up over them, which is why his ground does not fade or blend between sections
-   — it is COVERED, and covering is motion rather than paint. */
-main > .sec.stick-item {
-  position: sticky;
-  top: 0;
-}
 /* One screen of olive under the statement, which is what the statement sticks
    across. It is never seen: .slides-over is pulled back up by exactly this much
    and covers it the whole way. */
@@ -2788,21 +2776,7 @@ main > .sec.stick-item {
      The stops are his 68% and 83%. On the centre line that puts the fade
      between y=131 and y=566 of a 967-tall box, so it starts above the card and
      finishes a third of the way down its flank. */
-  /* Opaque, now that the cover above supplies the transition.
-
-     It was radial-gradient(circle at 50% -190%, --signal-0 68%, --signal 83%),
-     and --signal-0 is the accent at ZERO alpha, so the top of this footer was
-     see-through. What showed through it was the record — stuck at top 0 — and
-     the sage therefore never went away, even at maximum scroll where the
-     footer's own top edge is already 59px above the window.
-
-     Tried on its own once and it was wrong: with nothing else changed, an opaque
-     ground turns the join into a hard line and a flat screen of accent, because
-     the gradient WAS the transition. It is only correct alongside .slides-over,
-     which makes the transition motion instead of paint — the footer travels over
-     a stationary record, the way the reference's panels do. Neither half works
-     without the other. */
-  background: var(--signal);
+  background: radial-gradient(circle at 50% -190%, var(--signal-0) 68%, var(--signal) 83%);
   color: var(--ink);
   /* His inset is a constant 1.25rem against a root derived from the viewport
      and capped with it: 14.8 at 1280, 16.7 at 1440, 20 at 1728, 22.2 from 1920
