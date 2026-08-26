@@ -127,7 +127,6 @@ export default function App() {
         <Record />
       </main>
       <Contact />
-      {typeof window !== 'undefined' && window.location.search.includes('card') && <OgCard />}
     </>
   );
 }
