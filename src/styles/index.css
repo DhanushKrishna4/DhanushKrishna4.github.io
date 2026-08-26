@@ -3675,16 +3675,49 @@ body.menu-open .nav .btn-ghost::after {
      they read as two things at opposite ends rather than one block. */
   .ct-cols {
     justify-content: center;
-    gap: 2.6rem;
+    /* Down to where his sit. His labels are 98px below the card's top edge and
+       ours were 42px, because his carries a sponsor row in that band and we have
+       nothing there. The band stays empty on purpose — the columns are what has
+       to line up, not the thing above them. */
+    margin-top: 56px;
+    /* Symmetry. Ours were centred as a PAIR while the two columns had different
+       natural widths — 137px against 82px — so each column's own axis landed off
+       centre: -92 and +59 against his -70 and +69. Fixing the pair's width and
+       splitting it equally makes each column's centre symmetric by construction
+       rather than by luck. 280 with a hairline gap puts them at -71.5 and +69.5,
+       which is his within a pixel and a half. */
+    width: 280px;
+    margin-inline: auto;
+    gap: 2px;
   }
 
   /* And his links are bigger. The cqw term bottoms out at 0.75rem on a card this
      narrow, so this raises the floor rather than changing the curve. */
   .ct-col {
+    flex: 1 1 0;
+    min-width: 0;
     font-size: 0.95rem;
   }
   .ct-lab {
     font-size: 0.5rem;
+  }
+
+  /* The mail pill, to his BUSINESS ENQUIRIES button. Read off his at 393:
+     box 143x33, padding 0 10.92px, radius 5.895, Mona Sans 14px/400, letter
+     spacing normal. Ours was 176x23 at 8.96px/800 with 0.04em tracking — half
+     the type size and twice the weight, which is why it read as a small dense
+     chip beside his.
+
+     Width is deliberately NOT matched: his label is two short words and ours is
+     an email address, so ours runs longer at the same type size. Everything that
+     is not width comes from his. */
+  .ct-cta {
+    height: 33px;
+    padding: 0 10.92px;
+    border-radius: 5.895px;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: normal;
   }
 }
 
