@@ -373,21 +373,26 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  /* hidden, NOT clip, and this one line is why the page would not run under the
-     iPhone status bar or the bottom bar.
+  /* No overflow-x here, and that absence is load-bearing.
 
-     overflow-x: hidden on body PROPAGATES to the viewport: body computes back to
-     visible, the viewport takes the overflow, and the document stays the plain
-     root scroller that iOS Safari's full-bleed behaviour depends on. clip does
-     not propagate — body keeps the clip itself and stops being that root
-     scroller, so Safari never extends the page under its own chrome and you get
-     a flat band top and bottom that no amount of viewport-fit, env() or lvh can
-     reach, because none of them are what is holding it.
+     Setting overflow-x to ANYTHING other than visible on body forces overflow-y
+     from visible to auto — that is a CSS rule, not a choice — and the pair then
+     propagates to the viewport. iOS Safari treats a viewport with a non-visible
+     overflow as a clipped root rather than the plain document scroller, and
+     stops extending the page under its own chrome. The page then ends in a flat
+     band at the status bar and again at the toolbar, and no amount of
+     viewport-fit, env(safe-area-inset-*) or lvh can reach it, because none of
+     those is what is holding it.
 
-     Confirmed by diffing the 4.8 build in portfolio-max, which does cover both
-     bars and whose body rule is otherwise identical to this one. It was the only
-     structural difference between the two. */
-  overflow-x: hidden;
+     It was overflow-x: clip and then briefly hidden. Both fail the same way for
+     the same reason; hidden is what the 4.8 build uses, which is why that
+     comparison pointed here but did not finish the job.
+
+     Removing it costs nothing measurable. Swept in WebKit and Chromium at 360,
+     390, 768, 1024, 1280 and 1920, at five scroll positions each: horizontal
+     overflow is 0px everywhere. Nothing on this page overflows the DOCUMENT
+     horizontally. The marquee track and the menu ghost do overflow, by design,
+     and both are clipped by their own containers rather than by the root. */
 }
 
 img,
