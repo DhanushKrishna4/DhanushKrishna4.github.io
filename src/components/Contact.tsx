@@ -159,7 +159,7 @@ export default function Contact() {
   }, []);
 
   return (
-    <footer className="ct" id="contact" data-tone="light" data-ground="signal" ref={root}>
+    <footer className="ct slides-over" id="contact" data-tone="light" data-ground="signal" ref={root}>
       {/* Capped, as his is. His card is the viewport x 0.9769 until the
           container hits 1920, and then it simply stops — 1876x996 at 2000 wide
           and still 1876x996 at 2560. Ours grew without limit, which at a 2000px
