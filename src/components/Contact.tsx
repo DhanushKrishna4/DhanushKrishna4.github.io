@@ -85,58 +85,120 @@ const SHAPE: (string | number)[] = [
   'Z',
 ];
 
-/* The same card with a phone-sized tab. His does have one — it is simply much
-   smaller than the desktop tab, which is why a first look read the edge as flat.
-   Measured off a 393-wide capture by walking the card's top edge across x:
-
-     his    9px deep, 67px wide, centred at x=197 of 393 — dead centre
-     ours  28px deep, 40px wide flat, at the desktop proportions
-
-   So his is SHALLOWER and WIDER than the one we were drawing, not absent.
-
-   Derived from the desktop shape rather than redrawn: every y inside the tab is
-   scaled by 13.2/43.5 and every x by 310/415.6 about the tab's own centre at
-   844, which lands 9px and 67px at this card's size. Everything below the tab
-   moves up by the 30.3 units the tab lost, and the viewBox loses the same, so
-   the tab's apex is the top of the box and no strip of nothing sits above it.
-   The tray is untouched. */
-const SHAPE_FLAT: (string | number)[] = [
-  'M', 0, 43.2,
-  'C', 0, 26.63, 13.4315, 13.2, 30, 13.2,
-  'H', 641.409,
-  'C', 665.549, 13.2, 688.773, 10.394, 706.312, 5.362,
-  'C', 718.313, 1.919, 734.203, 0, 750.72, 0,
-  'H', 936.302,
-  'C', 954.204, 0, 971.543, 1.896, 985.328, 5.362,
-  'C', 1005.47, 10.427, 1030.82, 13.2, 1056.98, 13.2,
-  'H', 1658,
-  'C', 1674.57, 13.2, 1688, 26.63, 1688, 43.2,
-  'V', 805.2,
-  'C', 1688, 821.77, 1674.57, 835.2, 1658, 835.2,
-  'H', 1499.48,
-  'C', 1492.09, 835.2, 1484.96, 837.93, 1479.45, 842.87,
-  'L', 1462.55, 858.03,
-  'C', 1457.04, 862.97, 1449.91, 865.7, 1442.52, 865.7,
-  'H', 302.72,
-  'C', 294.59, 865.7, 286.809, 862.4, 281.157, 856.56,
-  'L', 269.343, 844.34,
-  'C', 263.691, 838.5, 255.91, 835.2, 247.78, 835.2,
-  'H', 30,
-  'C', 13.4315, 835.2, 0, 821.77, 0, 805.2,
-  'V', 43.2,
-  'Z',
-];
-const VB_H_FLAT = 865.7;
-const VB_TAB_FLAT = 13.2;
 const FLAT = () => window.innerWidth <= 620;
+
+/* The phone card is built in PIXELS, not by scaling the mask.
+ *
+ * card() scales x by w/1688 and y by h/865.7, and on a phone those disagree by
+ * more than three to one — 0.216 against 0.672 at 365x582. Every curve in the
+ * path is stretched by that ratio, so a 30-unit corner comes out 6.5px wide and
+ * 20px tall: an ellipse where his is a circle. Measured against his at 393:
+ *
+ *   corner   his settles in 12px across and drops 10 — ours 6 across, 15 down
+ *   tray     his 14px deep — ours 21
+ *   tab      his 77 x 9 — ours 78 x 9, the one feature that matched
+ *
+ * The tab matched only because it was hand-fitted to his earlier. Everything
+ * that was not hand-fitted is stretched, which is what reads as the wrong angle
+ * and the wrong rounding.
+ *
+ * So the features are stated at his size and scaled by ONE factor, w/365, which
+ * keeps a circle a circle at any phone width. The straight edges take up the
+ * slack in height, exactly as his do. Desktop still uses the mask — there the
+ * two scales agree, and it is right already. */
+const FLAT_REF_W = 365;
+const FLAT_R = 12;
+const FLAT_TAB_W = 87;
+const FLAT_TAB_D = 9;
+const FLAT_TRAY_W = 264;
+const FLAT_TRAY_D = 14;
+
+/* His shoulders, normalised off the mask's own control points so the curvature
+   is his and not an approximation of it. u runs along the shoulder, v is the
+   height gained (tab) or the depth lost (tray), both 0 at the straight edge and
+   1 at the apex or floor. A first pass fitted a single cubic by eye and it came
+   out visibly steeper than his — 8px of rise where he has 6 — which narrowed the
+   tab to 69px against his 77. These are read, not fitted.
+
+   Tab: two cubics. Tray: cubic, line, cubic — the flat in the middle is his. */
+const TAB_SH: [number, number][] = [
+  [0.2208, 0], [0.4333, 0.2125], [0.5937, 0.5937],
+  [0.7035, 0.8546], [0.8489, 1], [1, 1],
+];
+const TRAY_SH: [number, number][] = [
+  [0.1297, 0], [0.2549, 0.0895], [0.3517, 0.2514],
+  [0.6483, 0.7486],
+  [0.7451, 0.9105], [0.8703, 1], [1, 1],
+];
+/* Both shoulders keep his share of the whole feature, so they grow with it. */
+const TAB_SH_FRAC = 0.263;
+const TRAY_SH_FRAC = 0.0455;
+/* Circular-arc approximation for a cubic — the corner would otherwise need an
+   A command, and the whole path is cubics already. */
+const KAPPA = 0.5523;
+
+const flatCard = (w: number, h: number) => {
+  const k = w / FLAT_REF_W;
+  const r = FLAT_R * k;
+  const c = r * KAPPA;
+  const tabW = FLAT_TAB_W * k;
+  const tabD = FLAT_TAB_D * k;
+  const tabSh = tabW * TAB_SH_FRAC;
+  const trayW = FLAT_TRAY_W * k;
+  const trayD = FLAT_TRAY_D * k;
+  const traySh = trayW * TRAY_SH_FRAC;
+  const top = tabD;
+  const bot = h - trayD;
+  const tabA = (w - tabW) / 2;
+  const tabB = tabA + tabW;
+  const trayA = (w - trayW) / 2;
+  const trayB = trayA + trayW;
+  const n = (v: number) => Math.round(v * 100) / 100;
+
+  /* Left shoulder reads u forwards from the outer edge; the right one reads the
+     same list backwards, which mirrors it exactly rather than re-deriving it. */
+  const tx = (u: number) => tabA + u * tabSh;
+  const txm = (u: number) => tabB - u * tabSh;
+  const ty = (v: number) => top - v * tabD;
+  const yx = (u: number) => trayB - u * traySh;
+  const yxm = (u: number) => trayA + u * traySh;
+  const yy = (v: number) => bot + v * trayD;
+  const C = (p: string[]) => `C ${p.join(' ')}`;
+  const pt = (x: number, y: number) => `${n(x)} ${n(y)}`;
+
+  return [
+    `M 0 ${n(top + r)}`,
+    C([pt(0, top + r - c), pt(r - c, top), pt(r, top)]),
+    `L ${pt(tabA, top)}`,
+    C([0, 1, 2].map((i) => pt(tx(TAB_SH[i][0]), ty(TAB_SH[i][1])))),
+    C([3, 4, 5].map((i) => pt(tx(TAB_SH[i][0]), ty(TAB_SH[i][1])))),
+    `L ${pt(tabB - tabSh, 0)}`,
+    C([4, 3, 2].map((i) => pt(txm(TAB_SH[i][0]), ty(TAB_SH[i][1])))),
+    C([1, 0].map((i) => pt(txm(TAB_SH[i][0]), ty(TAB_SH[i][1]))).concat(pt(tabB, top))),
+    `L ${pt(w - r, top)}`,
+    C([pt(w - r + c, top), pt(w, top + r - c), pt(w, top + r)]),
+    `L ${pt(w, bot - r)}`,
+    C([pt(w, bot - r + c), pt(w - r + c, bot), pt(w - r, bot)]),
+    `L ${pt(trayB, bot)}`,
+    C([0, 1, 2].map((i) => pt(yx(TRAY_SH[i][0]), yy(TRAY_SH[i][1])))),
+    `L ${pt(yx(TRAY_SH[3][0]), yy(TRAY_SH[3][1]))}`,
+    C([4, 5, 6].map((i) => pt(yx(TRAY_SH[i][0]), yy(TRAY_SH[i][1])))),
+    `L ${pt(trayA + traySh, h)}`,
+    C([5, 4, 3].map((i) => pt(yxm(TRAY_SH[i][0]), yy(TRAY_SH[i][1])))),
+    `L ${pt(yxm(TRAY_SH[2][0]), yy(TRAY_SH[2][1]))}`,
+    C([1, 0].map((i) => pt(yxm(TRAY_SH[i][0]), yy(TRAY_SH[i][1]))).concat(pt(trayA, bot))),
+    `L ${pt(r, bot)}`,
+    C([pt(r - c, bot), pt(0, bot - r + c), pt(0, bot - r)]),
+    'Z',
+  ].join(' ');
+};
 
 /* H takes one x, V takes one y, everything else takes pairs — so the walk has
    to know which command it is under to scale the right axis. */
 const card = (w: number, h: number) => {
-  const flat = FLAT();
-  const shape = flat ? SHAPE_FLAT : SHAPE;
+  const shape = SHAPE;
   const sx = w / VB_W;
-  const sy = h / (flat ? VB_H_FLAT : VB_H);
+  const sy = h / VB_H;
   const out: string[] = [];
   let cmd = '';
   let axis = 0;
@@ -175,19 +237,25 @@ export default function Contact() {
       const width = el.offsetWidth;
       const height = el.offsetHeight;
       if (width < 1 || height < 1) return;
-      el.style.clipPath = `path('${card(width, height)}')`;
+      const flatNow = FLAT();
+      el.style.clipPath = `path('${flatNow ? flatCard(width, height) : card(width, height)}')`;
       /* Published so the card's top padding and the bottom bar's height come
          from the same two numbers the shape does. They were a CSS constant and
          a script constant that had to be kept equal by hand, which is a note in
          two files and a bug waiting for the day one of them moves. */
       const host = el.parentElement ?? el;
-      const flat = FLAT();
-      const vbh = flat ? VB_H_FLAT : VB_H;
+      /* On a phone these come from the pixel builder's own numbers rather than
+         from the mask's units, so the padding and the bottom bar still cannot
+         drift away from the shape they are cut to. */
+      const k = width / FLAT_REF_W;
       host.style.setProperty(
         '--ct-tab',
-        `${flat ? (height * VB_TAB_FLAT) / VB_H_FLAT : (height * VB_TAB) / VB_H}px`,
+        `${flatNow ? FLAT_TAB_D * k : (height * VB_TAB) / VB_H}px`,
       );
-      host.style.setProperty('--ct-tray', `${(height * VB_TRAY) / vbh}px`);
+      host.style.setProperty(
+        '--ct-tray',
+        `${flatNow ? FLAT_TRAY_D * k : (height * VB_TRAY) / VB_H}px`,
+      );
     });
     ro.observe(el);
     return () => ro.disconnect();
