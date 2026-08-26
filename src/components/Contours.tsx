@@ -128,10 +128,16 @@ function noise3(x: number, y: number, z: number): number {
    processing — greyscale, normalise, then a 2.2x linear stretch, because these
    are 0.11 to 0.285 alpha hairlines and neither field is legible at true
    exposure. 1.65/0.85, 1.10/0.50, 0.85/0.35, 0.70/0.22 and 0.55/0.12 rendered
-   side by side with his: below 0.70 the field empties out, 1.65 is visibly
-   denser and more sinuous than his, and the pair below sits between his density
-   and his curvature. */
-const SCALE = 0.95;
+   side by side with his: below 0.70 the field empties out, and 1.65 paired with
+   the old warp is visibly more sinuous than his.
+
+   Frequency and character turned out to be separable, which is the useful part.
+   The first pass took SCALE down to 0.95 along with the warp and the field came
+   out too sparse — but the cellular look was never the frequency, it was the
+   warp. So the warp stays down and the frequency goes back up: a second sweep at
+   0.95 / 1.15 / 1.30 / 1.45 with the warp held at 0.4 puts the line count back
+   near his without any of the curl coming with it. */
+const SCALE = 1.45;
 const SPEED = 0.055;
 const DISTORT_SCALE = 0.42;
 /* Domain warp, and this is the one that was doing the damage. Warping the
