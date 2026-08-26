@@ -1291,7 +1291,6 @@ body.menu-open .nav .btn-ghost::after {
   .status {
     display: none;
   }
-
   .hero-id {
     display: grid;
     justify-items: center;
@@ -1919,6 +1918,25 @@ body.menu-open .nav .btn-ghost::after {
   padding: 0;
   display: grid;
   align-content: center;
+}
+
+/* The marquee clears the panel on a phone instead of running through it.
+   Measured before: the panel settled at y 279-565 and the first word crossed at
+   381-422, straight across the middle of it. His text sits below his portrait.
+
+   Here rather than up with the rest of the mobile rules, and that placement is
+   the whole fix: this and the rule above are both two classes, so the one later
+   in the file wins — .open .mq is at this line and the mobile block is six
+   hundred lines earlier, which is why the first two attempts changed nothing
+   while looking correct.
+
+   Padding rather than a different alignment, so the words stay CENTRED in what
+   is left: with align-content: center, padding-top P moves the block down by
+   P/2, so 52vh shifts it about 220px and lands the first word near 600. */
+@media (max-width: 620px) {
+  .open .mq {
+    padding-top: 52vh;
+  }
 }
 
 /* The focal object sits behind the type and is allowed to bleed off the bottom,

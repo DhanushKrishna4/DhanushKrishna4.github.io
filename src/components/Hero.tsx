@@ -49,6 +49,22 @@ import Mark from './Mark';
    The frame reading had it at 30.5 / 34.1, which put our centre at 48.2% where
    his is dead centre at 50.0%. Not much, and enough to see side by side. */
 const END = { t: 33.1, x: 33.6, b: 33.0, r: 0 };
+/* The same panel on a phone, where his is a much larger share of the screen.
+   Measured off his at 390 wide: his portrait sits 269 across and 314 down, which
+   is 69% of the width and 37% of the height, against the 32.8% and 33.9% the
+   desktop numbers give — a panel a third of the screen wide reads as a
+   thumbnail there rather than as the thing being looked at.
+
+     x  (100 - 69) / 2 = 15.5
+     t, b  (100 - 37) / 2 = 31.5
+
+   Not a scaled version of the desktop pair: the desktop panel is landscape
+   inside a landscape screen and this one is portrait inside a portrait screen,
+   so the two insets move in opposite directions. */
+const END_NARROW = { t: 31.5, x: 15.5, b: 31.5, r: 0 };
+/* Read per frame rather than captured once, so an orientation change or a
+   resize lands on the right pair without a refresh. */
+const endNow = () => (window.innerWidth <= 620 ? END_NARROW : END);
 
 /* What the panel becomes. His plate is not the photograph at full strength in a
    smaller box — it is desaturated, darkened and flattened until it sits down
@@ -114,10 +130,11 @@ export default function Hero() {
         },
         onUpdate: () => {
           const k = p.v;
-          el.style.setProperty('--ct', `${END.t * k}%`);
-          el.style.setProperty('--cx', `${END.x * k}%`);
-          el.style.setProperty('--cb', `${END.b * k}%`);
-          el.style.setProperty('--cr', `${END.r * k}px`);
+          const E = endNow();
+          el.style.setProperty('--ct', `${E.t * k}%`);
+          el.style.setProperty('--cx', `${E.x * k}%`);
+          el.style.setProperty('--cb', `${E.b * k}%`);
+          el.style.setProperty('--cr', `${E.r * k}px`);
           /* The bar is over olive long before the hero stops being under it, and
              lib/tone.ts cannot see that: its trigger for this section fired once
              at the top and stays active for the whole pin. Written directly
