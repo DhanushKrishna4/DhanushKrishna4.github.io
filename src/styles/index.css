@@ -1934,8 +1934,30 @@ body.menu-open .nav .btn-ghost::after {
    is left: with align-content: center, padding-top P moves the block down by
    P/2, so 52vh shifts it about 220px and lands the first word near 600. */
 @media (max-width: 620px) {
+  /* 69.3vh, solved rather than nudged. With align-content: center the block
+     sits at (100vh + P) / 2 minus half its own height, so for a first line at
+     682 with two 32.4px rows: (844 + P) / 2 - 32.4 = 682 -> P = 585px on this
+     viewport. Checked against the old value first — 52vh predicted a word top
+     of 600.4 and it measured 600.
+
+     That puts 91px between the panel's bottom edge and the first line, which
+     is his. Ours was 25, and the words read as stuck to the panel. */
   .open .mq {
-    padding-top: 52vh;
+    padding-top: 69.3vh;
+  }
+
+  /* His caps measure 26 and 27 px against our 34 and 33 — ours were a third
+     too big. 2.24rem is 45.28 x 26.5 / 33.5.
+
+     No line-height rule with it: the step between the two lines is set by
+     line-height 0.905, so it follows the type down on its own — his step is 35
+     against a 27px cap, ours was 43 against 33, and both are the same 1.30
+     ratio. Shrinking the type takes 43 to 34 without touching it.
+
+     Three classes because .mq-word's own clamp lives further down this file and
+     would otherwise win on source order. */
+  .open .mq .mq-word {
+    font-size: 2.24rem;
   }
 }
 

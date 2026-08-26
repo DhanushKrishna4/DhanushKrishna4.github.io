@@ -55,13 +55,18 @@ const END = { t: 33.1, x: 33.6, b: 33.0, r: 0 };
    desktop numbers give — a panel a third of the screen wide reads as a
    thumbnail there rather than as the thing being looked at.
 
-     x  (100 - 69) / 2 = 15.5
-     t, b  (100 - 37) / 2 = 31.5
+     x  (100 - 71.0) / 2 = 14.5     -> 277 across
+     t, b  (100 - 40.8) / 2 = 29.6   ->  344 down, y 250-594
+
+   Measured off a 390x844 capture of his rather than off a screenshot: his
+   panel is 277 x 344 sitting at y 250-594, dead centre vertically. The first
+   pass at this read 269 x 312 from a phone photo and came out a third of a
+   screen short in height.
 
    Not a scaled version of the desktop pair: the desktop panel is landscape
    inside a landscape screen and this one is portrait inside a portrait screen,
    so the two insets move in opposite directions. */
-const END_NARROW = { t: 31.5, x: 15.5, b: 31.5, r: 0 };
+const END_NARROW = { t: 29.6, x: 14.5, b: 29.6, r: 0 };
 /* Read per frame rather than captured once, so an orientation change or a
    resize lands on the right pair without a refresh. */
 const endNow = () => (window.innerWidth <= 620 ? END_NARROW : END);
