@@ -126,10 +126,16 @@ export default function Record() {
          Two scrubs rather than one, because they are two events with different
          jobs. The colour is spent on the JOIN — a full window, finishing exactly
          as this section fills the screen, so you arrive already on sage. The
-         lines are spent on the SECTION — top-top to bottom-bottom, the whole
-         length of it — so they thin out while you are reading rather than while
-         you are arriving. Running both over the join would make the ground do
-         everything at once and then sit still for the rest of the section.
+         lines are spent on the EXIT, as the end of the section comes into view.
+
+         bottom-bottom to bottom-center, NOT top-top to bottom-bottom, which is
+         what this was first and which reads as instant. The reason is that the
+         section is barely taller than the window — 988 against 800 — so those
+         two points are only 188px apart and the entire fade is spent in the
+         first fifth of a screen of scrolling, before you have read any of it.
+         Anchoring both ends to the section's BOTTOM edge instead gives half a
+         window of travel and puts it where the section is ending, which is what
+         it is describing.
 
          Opacity on the field, not colour on --field-line: the lines are drawn
          into an SVG that also carries the olive run's own field elsewhere, and
@@ -144,8 +150,8 @@ export default function Record() {
             ease: 'none',
             scrollTrigger: {
               trigger: root.current,
-              start: 'top top',
-              end: 'bottom bottom',
+              start: 'bottom bottom',
+              end: 'bottom center',
               scrub: true,
             },
           },
