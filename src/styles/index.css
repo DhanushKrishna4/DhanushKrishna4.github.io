@@ -356,7 +356,21 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
+  /* hidden, NOT clip, and this one line is why the page would not run under the
+     iPhone status bar or the bottom bar.
+
+     overflow-x: hidden on body PROPAGATES to the viewport: body computes back to
+     visible, the viewport takes the overflow, and the document stays the plain
+     root scroller that iOS Safari's full-bleed behaviour depends on. clip does
+     not propagate — body keeps the clip itself and stops being that root
+     scroller, so Safari never extends the page under its own chrome and you get
+     a flat band top and bottom that no amount of viewport-fit, env() or lvh can
+     reach, because none of them are what is holding it.
+
+     Confirmed by diffing the 4.8 build in portfolio-max, which does cover both
+     bars and whose body rule is otherwise identical to this one. It was the only
+     structural difference between the two. */
+  overflow-x: hidden;
 }
 
 img,
