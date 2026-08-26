@@ -2322,7 +2322,11 @@ body.menu-open .nav .btn-ghost::after {
 }
 .mq-b .mq-word {
   font-family: var(--f-sans);
-  font-weight: 800;
+  /* 800 rendered a fifth heavier than his at the same cap height. Measured at 3x
+     on the rendered glyphs, median stem over cap: his 0.2055, ours 0.2429 at 800,
+     0.2286 at 700, 0.2000 at 660. His own display type declares "wght" 660, which
+     is where the interpolation lands too. The serif line above already matched. */
+  font-weight: 660;
   letter-spacing: -0.03em;
   color: var(--tint);
 }
