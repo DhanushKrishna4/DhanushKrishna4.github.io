@@ -3584,10 +3584,6 @@ body.menu-open .nav .btn-ghost::after {
 .ct-head {
   display: contents;
 }
-.ct-sig {
-  display: none;
-}
-
 /* The reference's footer card on a phone. Three differences, read off a capture
    at 393 wide rather than described:
 
@@ -3626,33 +3622,6 @@ body.menu-open .nav .btn-ghost::after {
   }
   .ct-cta {
     order: 4;
-  }
-  .ct-sig {
-    display: block;
-    position: absolute;
-    /* Over the first line, weighted right, the way his crosses ALWAYS BRINGING.
-       Its own ink is top-heavy — see the note on .sig — so it is hung from the
-       headline's top rather than centred on it. */
-    /* Re-hung after the headline came down to 1.5rem to fit two lines. At the
-       old size it crossed the type; against a headline two thirds as tall it
-       covered it. Not a reposition to match his — the same crossing, kept
-       crossing. */
-    top: -86%;
-    left: 46%;
-    /* 30% of the card, which is his: measured on a 393-wide capture his signature
-       runs 250px across an 857px card, 29%. At 62% it covered the headline
-       instead of crossing it. */
-    width: 30%;
-    color: var(--signal);
-    pointer-events: none;
-    z-index: 1;
-  }
-  .ct-sig .sig {
-    position: static;
-    width: 100%;
-    min-width: 0;
-    transform: none;
-    overflow: visible;
   }
 
   /* No monogram: his phone card has no tab to put one in. The outline itself is

@@ -6,7 +6,6 @@ import Contours from './Contours';
 import Mark from './Mark';
 import Roll from './Roll';
 import Arrow from './Arrow';
-import Signature from './Signature';
 
 /**
  * The sign-off, built on his footer rather than beside it.
@@ -243,15 +242,10 @@ export default function Contact() {
               under it for most of its travel — the statement hit exactly this
               and fixed it the same way. Wrapping the words instead leaves .a
               and .b untouched, so none of the spacing on this lockup moves. */}
-          {/* The headline and the signature travel together. A wrapper set to
-              display: contents on desktop, so the layout there is exactly what it
-              was — the h2 stays a direct flex child of .ct-in — and a positioned
-              block on a phone, where the signature is laid over the first line the
-              way the reference's is. */}
+          {/* display: contents on desktop, so the layout there is exactly what it
+              was — the h2 stays a direct flex child of .ct-in — and a block on a
+              phone, where it carries the headline's own order and spacing. */}
           <div className="ct-head">
-            <span className="ct-sig" aria-hidden="true">
-              <Signature />
-            </span>
             <h2 className="ct-title lockup">
               <span className="a">
                 <span className="rv">
