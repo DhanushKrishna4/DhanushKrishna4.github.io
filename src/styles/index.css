@@ -2093,12 +2093,6 @@ body.menu-open .nav .btn-ghost::after {
   z-index: 0;
   background: var(--paper);
   pointer-events: none;
-  /* The masses are a LIGHT-ground layer and this is the only place they are
-     asked for. Measured on his: the light ground carries three posterised tones
-     across 26/38/36 of its area, and his dark card carries none — flat at 73.8%
-     of it. Every other call site of Contours leaves this unset and gets lines
-     only, which is what those grounds should have. */
-  --field-mass: 1;
 }
 
 /* ── section shell ─────────────────────────────────────────────────────── */

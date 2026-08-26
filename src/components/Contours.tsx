@@ -130,69 +130,6 @@ const CURSOR_INTENSITY = 0.28;
    fps at the work section. The fill was the wrong shape, not the wrong size. */
 const CELL = 14;
 
-/* ── the mass field ────────────────────────────────────────────────────────
-   A second, much lower-frequency field, posterised into three flat tones and
-   filled underneath the lines. This is the layer the reference has and we did
-   not, and it is the reason his ground reads as shapes where ours read as a
-   sheet with lines on it.
-
-   It was here once, twice, in two different wrong forms, and both were removed:
-   first as even-odd polygon fills that cost the page 38fps, then as a smooth
-   `smoothstep` alpha rasterised small and scaled up, which was deleted under the
-   heading "he has no blobs". That conclusion was drawn by blurring the composited
-   page, and it was wrong. His field is on its own canvas — canvas.gl, WebGL2,
-   opacity 1, normal blend — so it can be screenshotted in isolation, and it is
-   unambiguous:
-
-     tones      233 / 244 / 252   at 26% / 38% / 36% of the area
-     edges      median 3px wide, p90 3px -> posterised, NOT a gradient
-     feature    ~170px across a 1280px canvas
-     dark card  flat 41 at 73.8% -> no masses at all on his dark grounds
-
-   So: three flat tones, hard boundaries, large shapes, light grounds only.
-
-   Drawn as two nested fills of pure black rather than as absolute colours,
-   because .ground-light is not one colour — the record section scrubs it from
-   paper to sage — and any absolute tone would be right on one and wrong on the
-   other. Black at a low alpha darkens proportionally and keeps its hue, so the
-   two steps stay in proportion on both. */
-/* Every number below was fitted to his, not chosen. The method, because it is
-   the only reason these are trustworthy: his field is on its own canvas, so it
-   can be screenshotted in isolation; ours is put behind the same isolation by
-   hiding everything except .ground-light; both are then passed through a 5px
-   median filter, which removes the hairlines — they are 1px and would otherwise
-   register as thousands of spurious one-pixel runs — and quantised to their own
-   three tones. Run lengths along scanlines then measure feature size directly.
-
-     measured        HIS        OURS
-     horizontal     120px      124px
-     vertical        74px       76px
-     H/V ratio       1.62       1.63
-     areas       36/38/26   36/37/27
-
-   The first fit missed by 2.5x and looked plausible, because the hairlines were
-   still in the measurement and were dragging the median down to 27px against a
-   real 217px. */
-const MASS_SCALE = 3.2;
-/* Reuses the contour field's own domain distortion — free, and it is what keeps
-   the shapes irregular with pinched necks rather than round islands. */
-const MASS_DISTORT = 0.35;
-/* His shapes are not round. Measured, his run 1.62x wider than tall while an
-   unmodified noise field is 1.12 — near isotropic — and that difference is most
-   of why a statistically matched field still looked wrong: same sizes, same area
-   split, but ours came out as islands where his are ribbons. Raising the y
-   frequency alone compresses the features vertically and they flow. */
-const MASS_ASPECT = 1.45;
-/* His area split, used as PERCENTILES of the field rather than as fixed
-   thresholds. Fixed values do not survive a change to MASS_SCALE; percentiles
-   hold the 26/38/36 split whatever the frequency is. */
-const MASS_LO = 0.26;
-const MASS_HI = 0.64;
-/* Chosen so paper lands on his steps: 243 -> 235 -> 224, which is -8 then -11,
-   the same two steps his 252 / 244 / 233 makes. */
-const MASS_A1 = 0.034;
-const MASS_A2 = 0.047;
-
 export default function Contours({ seed = 1, count = 9, still: frozen = false }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -208,7 +145,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     let cols = 0;
     let rows = 0;
     let field = new Float32Array(0);
-    let mass = new Float32Array(0);
     /* Segment buffers, one per weight band, allocated once and refilled each
        frame. Four numbers a segment; a full field runs to a couple of thousand
        across every level, so this is generous. */
@@ -224,10 +160,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     let grad = new Float32Array(0);
     const HIST = 96;
     const hist = new Int32Array(HIST);
-    /* The mass field's own histogram, hoisted for the same reason the one
-       above is: this runs every frame and must not allocate. */
-    const MH = 128;
-    const mhist = new Int32Array(MH);
     /* Two device pixels. Dropping to one was tried for the even-odd fill's
        sake and gives the cost back in the wrong currency: the hairlines lose
        half their depth, measured, because a 1px stroke on a 1x buffer is
@@ -252,7 +184,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
        is the one place that wants them lighter, because his panel field is a
        different thing from his page field and is measurably shallower. */
     let weight = 1;
-    let massOn = 0;
 
     /* Declared up here rather than beside the loop because `size` needs them:
        see the ResizeObserver below. */
@@ -270,11 +201,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
       if (m && m.length >= 3) line = [+m[0], +m[1], +m[2]];
       const wv = parseFloat(cs.getPropertyValue('--field-weight'));
       weight = Number.isFinite(wv) && wv > 0 ? wv : 1;
-      /* Off unless a ground asks for it. His dark card carries no masses at all
-         — flat 41 across 73.8% of it — so this is a light-ground layer and every
-         other call site of this component leaves it alone. */
-      const mv = parseFloat(cs.getPropertyValue('--field-mass'));
-      massOn = Number.isFinite(mv) && mv > 0 ? mv : 0;
 
       canvas.width = Math.round(w * dpr());
       canvas.height = Math.round(h * dpr());
@@ -283,7 +209,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
       cols = Math.max(2, Math.ceil(w / CELL)) + 1;
       rows = Math.max(2, Math.ceil(h / CELL)) + 1;
       field = new Float32Array(cols * rows);
-      mass = new Float32Array(cols * rows);
       grad = new Float32Array(cols * rows);
     };
     size();
@@ -351,10 +276,8 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
 
       for (let j = 0; j < rows; j++) {
         for (let i = 0; i < cols; i++) {
-          const ux = (i * CELL) / unit;
-          const uy = (j * CELL) / unit;
-          const x = ux * SCALE + off;
-          const y = uy * SCALE + off;
+          const x = ((i * CELL) / unit) * SCALE + off;
+          const y = ((j * CELL) / unit) * SCALE + off;
           const d = noise3(x * DISTORT_SCALE, y * DISTORT_SCALE, t * 0.6);
           const n = noise3(
             x + d * DISTORT_INTENSITY + have.x * CURSOR_INTENSITY,
@@ -362,24 +285,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
             t,
           );
           field[j * cols + i] = n * 0.5 + 0.5;
-
-          /* The mass field, on the same distortion `d` the lines already paid
-             for. Its own offset so its shapes are unrelated to theirs — on his,
-             the hairlines cross the mass boundaries freely rather than tracing
-             them, and sharing an offset here would lock the two together and
-             give the tell away. Drifts slower than the lines, because a large
-             shape moving at a small shape's speed reads as a different, faster
-             animation. */
-          if (massOn) {
-            mass[j * cols + i] =
-              noise3(
-                ux * MASS_SCALE + d * MASS_DISTORT + off * 0.5 + 41.7,
-                uy * MASS_SCALE * MASS_ASPECT + d * MASS_DISTORT + off * 0.5 + 41.7,
-                t * 0.45,
-              ) *
-                0.5 +
-              0.5;
-          }
         }
       }
 
@@ -412,110 +317,6 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
       }
 
       ctx.clearRect(0, 0, w, h);
-
-      /* ── the masses, under everything ──────────────────────────────────────
-         Two nested fills. The outer covers everything below the 64th percentile
-         of the field, the inner everything below the 26th, so the tone
-         accumulates and the field posterises into his three steps: untouched,
-         one alpha, two alphas.
-
-         Percentiles rather than fixed values, read off the field's own
-         histogram each frame. Fixed thresholds do not survive a change to
-         MASS_SCALE — the lesson the gradient thresholds above already learned —
-         and his 26/38/36 area split is the thing worth holding, not two numbers
-         that happen to produce it at one frequency.
-
-         Each partial cell is filled by walking its boundary and taking every
-         corner that is inside plus every edge that changes sign. Exact and
-         sub-pixel, which is what makes the boundary hard: his edges measure a
-         median of 3px, so a soft-edged version is visibly the wrong thing — and
-         the version of this layer deleted from this file was soft-edged, which
-         is part of why it never matched. Runs of fully covered cells merge into
-         one rect per row so the path stays short.
-
-         Saddle cells come out as a bow tie rather than two triangles. At 14px
-         and these alphas that is invisible and not worth the branch. */
-      if (massOn) {
-        const N = cols * rows;
-        mhist.fill(0);
-        for (let k = 0; k < N; k++) {
-          const v = mass[k];
-          mhist[v <= 0 ? 0 : v >= 1 ? MH - 1 : (v * MH) | 0]++;
-        }
-        let acc = 0;
-        let T1 = 0;
-        let T2 = 1;
-        let got1 = false;
-        for (let bn = 0; bn < MH; bn++) {
-          acc += mhist[bn];
-          if (!got1 && acc >= N * MASS_LO) {
-            T1 = (bn + 1) / MH;
-            got1 = true;
-          }
-          if (acc >= N * MASS_HI) {
-            T2 = (bn + 1) / MH;
-            break;
-          }
-        }
-
-        const fillBelow = (T: number, alpha: number) => {
-          ctx.beginPath();
-          const right = (cols - 1) * CELL - CELL / 2;
-          for (let j = 0; j < rows - 1; j++) {
-            const y0 = j * CELL - CELL / 2;
-            const y1 = y0 + CELL;
-            let run = -1;
-            for (let i = 0; i < cols - 1; i++) {
-              const va = mass[j * cols + i];
-              const vb = mass[j * cols + i + 1];
-              const vc = mass[(j + 1) * cols + i + 1];
-              const vd = mass[(j + 1) * cols + i];
-              const ia = va < T;
-              const ib = vb < T;
-              const ic = vc < T;
-              const id = vd < T;
-              const x0 = i * CELL - CELL / 2;
-              const x1 = x0 + CELL;
-              if (ia && ib && ic && id) {
-                if (run < 0) run = x0;
-                continue;
-              }
-              if (run >= 0) {
-                ctx.rect(run, y0, x0 - run, CELL);
-                run = -1;
-              }
-              if (!ia && !ib && !ic && !id) continue;
-              const tx = x0 + ((T - va) / (vb - va || 1e-6)) * CELL;
-              const ry = y0 + ((T - vb) / (vc - vb || 1e-6)) * CELL;
-              const bx = x0 + ((T - vd) / (vc - vd || 1e-6)) * CELL;
-              const ly = y0 + ((T - va) / (vd - va || 1e-6)) * CELL;
-              let open = false;
-              const P = (px: number, py: number) => {
-                if (open) ctx.lineTo(px, py);
-                else {
-                  ctx.moveTo(px, py);
-                  open = true;
-                }
-              };
-              if (ia) P(x0, y0);
-              if (ia !== ib) P(tx, y0);
-              if (ib) P(x1, y0);
-              if (ib !== ic) P(x1, ry);
-              if (ic) P(x1, y1);
-              if (ic !== id) P(bx, y1);
-              if (id) P(x0, y1);
-              if (id !== ia) P(x0, ly);
-              ctx.closePath();
-            }
-            if (run >= 0) ctx.rect(run, y0, right - run, CELL);
-          }
-          ctx.fillStyle = `rgba(0,0,0,${alpha * massOn})`;
-          ctx.fill();
-        };
-
-        fillBelow(T2, MASS_A1);
-        fillBelow(T1, MASS_A2);
-      }
 
       /* ── masses and contours, cut from the same crossings ───────────────── */
       /* His masses have edges: side by side, his are flat regions with a
