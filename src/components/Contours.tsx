@@ -117,10 +117,29 @@ function noise3(x: number, y: number, z: number): number {
 }
 
 /* His uniform names, kept so the two can be compared. */
-const SCALE = 1.65;
+/* The two numbers that decide whether this reads as a contour map or as tissue.
+
+   SCALE is the field's frequency — how many features fit across a screen. It was
+   1.65, which put enough closed loops in view that the lines stopped looking like
+   terrain and started looking like cells. His are long: four to six arcs across a
+   560px crop, most of them running edge to edge rather than closing.
+
+   Chosen by sweeping both against his own footer card put through identical
+   processing — greyscale, normalise, then a 2.2x linear stretch, because these
+   are 0.11 to 0.285 alpha hairlines and neither field is legible at true
+   exposure. 1.65/0.85, 1.10/0.50, 0.85/0.35, 0.70/0.22 and 0.55/0.12 rendered
+   side by side with his: below 0.70 the field empties out, 1.65 is visibly
+   denser and more sinuous than his, and the pair below sits between his density
+   and his curvature. */
+const SCALE = 0.95;
 const SPEED = 0.055;
 const DISTORT_SCALE = 0.42;
-const DISTORT_INTENSITY = 0.85;
+/* Domain warp, and this is the one that was doing the damage. Warping the
+   sample coordinates by a second noise field is what bends a contour away from
+   terrain and toward something organic — at 0.85 it curled the lines into closed
+   cellular shapes. Lowering it straightens them back into the long open arcs his
+   ground has, without going to 0, which reads as machine-made. */
+const DISTORT_INTENSITY = 0.4;
 const CURSOR_INTENSITY = 0.28;
 /* Grid spacing. Contours land sub-pixel whatever this is, because marching
    squares interpolates each crossing along its cell edge — and since the band
