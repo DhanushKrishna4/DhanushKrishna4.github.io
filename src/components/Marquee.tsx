@@ -35,6 +35,25 @@ import Signature from './Signature';
  * says the method is right this time. Dhanush could see it; ours was running at
  * very nearly twice his. */
 const SPEED = 127;
+/* His is much slower on a phone, and it is not the same number as his desktop:
+   measured at 393x735 he runs 38 px/s, and at 1280x800 he runs 108. Ours is one
+   constant at either width by design — see the note on duration below — so his
+   holds a roughly fixed TIME to cross and lets the rate follow the viewport,
+   where we hold a fixed rate and let the time follow.
+
+   Only the narrow figure is taken here. Desktop is left at 127 against his 108,
+   because that is a 15% difference nobody has asked about and changing it was
+   not the request.
+
+   Measured by cross-correlating a horizontal strip of the rendered text between
+   frames, bounded to +/-70px so a repeating line cannot alias onto the wrong
+   copy — an earlier unbounded search reported 300 px/s for a track the DOM said
+   was doing 129. His marquee has no DOM to read: it is drawn inside the
+   full-screen gl-canvas, which is also why elementFromPoint returns the canvas
+   and no selector finds the words. The method was checked against ours first,
+   where it read 126 against a known 129. */
+const SPEED_NARROW = 38;
+const speedNow = () => (window.innerWidth <= 620 ? SPEED_NARROW : SPEED);
 
 export default function Marquee() {
   const root = useRef<HTMLElement>(null);
@@ -71,7 +90,7 @@ export default function Marquee() {
           gsap.fromTo(
             t,
             { xPercent: back ? -50 : 0 },
-            { xPercent: back ? 0 : -50, ease: 'none', duration: half / SPEED, repeat: -1 },
+            { xPercent: back ? 0 : -50, ease: 'none', duration: half / speedNow(), repeat: -1 },
           );
         };
         spin('.mq-a', false);
