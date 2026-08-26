@@ -86,15 +86,48 @@ const SHAPE: (string | number)[] = [
   'Z',
 ];
 
+/* The same card without the tab, for phones. His mobile footer has no tab and no
+   monogram in it — the top edge reads flat, corner to corner — where his desktop
+   card carries both.
+
+   Every y is the original less 43.5, the tab's depth, and the viewBox loses the
+   same: with the tab gone the top edge IS the top of the box, and leaving the
+   original height would have reserved a strip of nothing above the card and
+   pushed it down the screen. The tray at the bottom is untouched. */
+const SHAPE_FLAT: (string | number)[] = [
+  'M', 0, 30,
+  'C', 0, 13.4315, 13.4315, 0, 30, 0,
+  'H', 1658,
+  'C', 1674.57, 0, 1688, 13.4315, 1688, 30,
+  'V', 792,
+  'C', 1688, 808.569, 1674.57, 822, 1658, 822,
+  'H', 1499.48,
+  'C', 1492.09, 822, 1484.96, 824.731, 1479.45, 829.669,
+  'L', 1462.55, 844.831,
+  'C', 1457.04, 849.769, 1449.91, 852.5, 1442.52, 852.5,
+  'H', 302.72,
+  'C', 294.59, 852.5, 286.809, 849.2, 281.157, 843.357,
+  'L', 269.343, 831.143,
+  'C', 263.691, 825.3, 255.91, 822, 247.78, 822,
+  'H', 30,
+  'C', 13.4315, 822, 0, 808.569, 0, 792,
+  'V', 30,
+  'Z',
+];
+const VB_H_FLAT = 852.5;
+const FLAT = () => window.innerWidth <= 620;
+
 /* H takes one x, V takes one y, everything else takes pairs — so the walk has
    to know which command it is under to scale the right axis. */
 const card = (w: number, h: number) => {
+  const flat = FLAT();
+  const shape = flat ? SHAPE_FLAT : SHAPE;
   const sx = w / VB_W;
-  const sy = h / VB_H;
+  const sy = h / (flat ? VB_H_FLAT : VB_H);
   const out: string[] = [];
   let cmd = '';
   let axis = 0;
-  for (const t of SHAPE) {
+  for (const t of shape) {
     if (typeof t === 'string') {
       cmd = t;
       axis = cmd === 'V' ? 1 : 0;
@@ -135,8 +168,10 @@ export default function Contact() {
          a script constant that had to be kept equal by hand, which is a note in
          two files and a bug waiting for the day one of them moves. */
       const host = el.parentElement ?? el;
-      host.style.setProperty('--ct-tab', `${(height * VB_TAB) / VB_H}px`);
-      host.style.setProperty('--ct-tray', `${(height * VB_TRAY) / VB_H}px`);
+      const flat = FLAT();
+      const vbh = flat ? VB_H_FLAT : VB_H;
+      host.style.setProperty('--ct-tab', `${flat ? 0 : (height * VB_TAB) / VB_H}px`);
+      host.style.setProperty('--ct-tray', `${(height * VB_TRAY) / vbh}px`);
     });
     ro.observe(el);
     return () => ro.disconnect();

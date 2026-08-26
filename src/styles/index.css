@@ -3605,6 +3605,14 @@ body.menu-open .nav .btn-ghost::after {
     order: 2;
     margin-top: 2.2rem;
   }
+  /* Two lines, as his is. The clamp bottoms out at 1.9rem here and at that size
+     "Something that runs." is wider than the 320px of content the card leaves,
+     so it broke and the headline ran to three lines against his two. Widening
+     the card was tried first and is in the rules above — it went from 272px of
+     content to 320 and was still not enough. */
+  .ct-title {
+    font-size: 1.5rem;
+  }
   .ct-cols {
     order: 1;
     margin-top: 0;
@@ -3621,8 +3629,12 @@ body.menu-open .nav .btn-ghost::after {
     /* Over the first line, weighted right, the way his crosses ALWAYS BRINGING.
        Its own ink is top-heavy — see the note on .sig — so it is hung from the
        headline's top rather than centred on it. */
-    top: -52%;
-    left: 40%;
+    /* Re-hung after the headline came down to 1.5rem to fit two lines. At the
+       old size it crossed the type; against a headline two thirds as tall it
+       covered it. Not a reposition to match his — the same crossing, kept
+       crossing. */
+    top: -86%;
+    left: 46%;
     /* 30% of the card, which is his: measured on a 393-wide capture his signature
        runs 250px across an 857px card, 29%. At 62% it covered the headline
        instead of crossing it. */
@@ -3637,6 +3649,51 @@ body.menu-open .nav .btn-ghost::after {
     min-width: 0;
     transform: none;
     overflow: visible;
+  }
+
+  /* No monogram: his phone card has no tab to put one in. The outline itself is
+     switched to SHAPE_FLAT in Contact.tsx. */
+  .ct-badge {
+    display: none;
+  }
+
+  /* Less side padding, more card. 14.5% each side is his DESKTOP inset and on a
+     382px card it leaves 272px of content — narrow enough that "Something that
+     runs." breaks onto its own line and the headline runs to three. His is two.
+     7% gives 328px and it sets on one.
+
+     Taller, too. Measured at 393 wide his card is 581px against our 455, and
+     that difference is the photograph he carries in the lower third. We have no
+     photograph, but the card should still be his height — 38rem against 30. */
+  .ct-card {
+    padding-inline: 4%;
+    min-height: 36.4rem;
+  }
+
+  /* The card itself sits further in. His keeps 14px of accent either side at 393
+     wide; ours kept 4.5 and ran almost edge to edge, which is what made it read
+     as a slab rather than a card on a ground. The bottom shrinks by the same
+     token: his accent band under the card measures 36px against our 43. */
+  .ct {
+    padding-inline: 14px;
+    padding-bottom: calc(min(100vw, 1920px) / 86.4 + (100vh - 100svh) - 7px);
+  }
+
+  /* His two columns sit together in the middle of the card. Ours were pushed to
+     the outer edges by space-between and a gap that grows with the viewport, so
+     they read as two things at opposite ends rather than one block. */
+  .ct-cols {
+    justify-content: center;
+    gap: 2.6rem;
+  }
+
+  /* And his links are bigger. The cqw term bottoms out at 0.75rem on a card this
+     narrow, so this raises the floor rather than changing the curve. */
+  .ct-col {
+    font-size: 0.95rem;
+  }
+  .ct-lab {
+    font-size: 0.5rem;
   }
 }
 
