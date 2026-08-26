@@ -342,23 +342,6 @@ body::-webkit-scrollbar {
   will-change: transform;
 }
 
-/* The root chain, explicitly sized. #root had NO rule of its own at all — the
-   app mounted into a bare div — so nothing between html and the first section
-   was guaranteed to fill the screen. dvh rather than vh on these three because
-   this is the one place the CURRENT viewport is the right question: they are
-   floors for an already-tall document, not boxes anything is pinned against, so
-   tracking the toolbar here costs nothing and guarantees the ground reaches the
-   bottom in either toolbar state. */
-html,
-body,
-#root {
-  width: 100%;
-}
-body,
-#root {
-  min-height: 100dvh;
-}
-
 body {
   margin: 0;
   /* The entry colour, not the page colour.
@@ -373,26 +356,7 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  /* No overflow-x here, and that absence is load-bearing.
-
-     Setting overflow-x to ANYTHING other than visible on body forces overflow-y
-     from visible to auto — that is a CSS rule, not a choice — and the pair then
-     propagates to the viewport. iOS Safari treats a viewport with a non-visible
-     overflow as a clipped root rather than the plain document scroller, and
-     stops extending the page under its own chrome. The page then ends in a flat
-     band at the status bar and again at the toolbar, and no amount of
-     viewport-fit, env(safe-area-inset-*) or lvh can reach it, because none of
-     those is what is holding it.
-
-     It was overflow-x: clip and then briefly hidden. Both fail the same way for
-     the same reason; hidden is what the 4.8 build uses, which is why that
-     comparison pointed here but did not finish the job.
-
-     Removing it costs nothing measurable. Swept in WebKit and Chromium at 360,
-     390, 768, 1024, 1280 and 1920, at five scroll positions each: horizontal
-     overflow is 0px everywhere. Nothing on this page overflows the DOCUMENT
-     horizontally. The marquee track and the menu ghost do overflow, by design,
-     and both are clipped by their own containers rather than by the root. */
+  overflow-x: clip;
 }
 
 img,
