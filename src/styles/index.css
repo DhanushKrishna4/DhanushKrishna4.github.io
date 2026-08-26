@@ -3603,7 +3603,11 @@ body.menu-open .nav .btn-ghost::after {
     display: block;
     position: relative;
     order: 2;
-    margin-top: 2.2rem;
+    /* His headline sits 313px below the card's top edge and ours sat 256, so it
+       rode high with a large dead area beneath it. The extra comes out of that
+       dead area rather than out of the card's height — the space below the
+       headline was slack, so the card does not grow. */
+    margin-top: 92px;
   }
   /* Two lines, as his is. The clamp bottoms out at 1.9rem here and at that size
      "Something that runs." is wider than the 320px of content the card leaves,
@@ -3696,7 +3700,26 @@ body.menu-open .nav .btn-ghost::after {
   .ct-col {
     flex: 1 1 0;
     min-width: 0;
-    font-size: 0.95rem;
+    /* His footer links are 17.47px, not our 15.2 — read off his .btn-text
+       is-footer, and the reason his letters look taller than ours at what should
+       be the same size.
+
+       They also run CONDENSED. Every piece of type in his footer card carries
+       "wdth" 86 and none of ours did. That is what lets his fit ON TRACK and
+       CALENDAR into a column narrow enough to sit at his +/-70, and taking the
+       size without the width axis would have pushed our columns wider instead of
+       matching him — 14% narrower letters almost exactly cancels the 15% larger
+       size, so the column keeps its width. */
+    font-size: 1.092rem;
+    font-variation-settings: 'wdth' 86;
+  }
+  /* Set smaller than the links on his too — 13.65px against their 17.47 — and
+     given his gap, which is much larger than the gap between the links: 27px
+     against their 8. Ours ran 11px against 6, so the accent link read as one more
+     item in the list rather than as something set apart below it. */
+  .ct-accent {
+    margin-top: 21px;
+    font-size: 0.853rem;
   }
   .ct-lab {
     font-size: 0.5rem;
@@ -3715,8 +3738,14 @@ body.menu-open .nav .btn-ghost::after {
     height: 33px;
     padding: 0 10.92px;
     border-radius: 5.895px;
-    font-size: 14px;
-    font-weight: 400;
+    /* 10.92px/800 condensed, not 14px/400. The 14/400 came from reading his
+       computed style off a zero-size clip span rather than off the element that
+       actually paints the label, and it was wrong in both directions at once:
+       our text came out larger than his and thinner. On the pixels his label is
+       cap 8 with a 3px stem at 73% ink; ours was cap 12, 2px stem, 37% ink. */
+    font-size: 0.6825rem;
+    font-weight: 800;
+    font-variation-settings: 'wdth' 86;
     letter-spacing: normal;
   }
 }
