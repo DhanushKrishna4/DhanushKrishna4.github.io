@@ -342,6 +342,23 @@ body::-webkit-scrollbar {
   will-change: transform;
 }
 
+/* The root chain, explicitly sized. #root had NO rule of its own at all — the
+   app mounted into a bare div — so nothing between html and the first section
+   was guaranteed to fill the screen. dvh rather than vh on these three because
+   this is the one place the CURRENT viewport is the right question: they are
+   floors for an already-tall document, not boxes anything is pinned against, so
+   tracking the toolbar here costs nothing and guarantees the ground reaches the
+   bottom in either toolbar state. */
+html,
+body,
+#root {
+  width: 100%;
+}
+body,
+#root {
+  min-height: 100dvh;
+}
+
 body {
   margin: 0;
   /* The entry colour, not the page colour.
