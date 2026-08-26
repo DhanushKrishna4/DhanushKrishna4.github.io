@@ -1228,9 +1228,85 @@ body.menu-open .nav .btn-ghost::after {
   padding: 6px;
   box-sizing: content-box;
 }
+/* Off unless the query below turns it on. */
+.hero-id {
+  display: none;
+}
+
 @media (max-width: 620px) {
+  /* The centre monogram stays off HERE — it moves into .hero-id below, under
+     the buttons, which is where the reference puts it at this width. */
   .nav-badge {
     display: none;
+  }
+
+  /* The wordmark leaves the bar and reappears in the hero, centred and on one
+     line. Safe to drop from the DOM: the accessible name is carried by the
+     visually-hidden <h1> in Hero, not by this link. */
+  .nav-mark {
+    display: none;
+  }
+
+  /* Which leaves the bar as its two buttons, pushed to the corners — the accent
+     one to the LEFT, where the wordmark used to be. transform:none drops the
+     scroll shrink: his do not shrink at this width, and a full-width row
+     scaling from its right corner would drag the left button across the screen
+     as you scroll. */
+  .nav-right {
+    flex: 1;
+    justify-content: space-between;
+    transform: none;
+  }
+
+  /* Measured off his at 390 wide: store 84x51 at 14,14 and toggle 51x51 at
+     326,14, against our 77x40 and 40x40. The clamp bottoms out at 2.5rem here,
+     so this raises a floor rather than replacing a curve. */
+  .btn {
+    --btn-h: 51px;
+  }
+
+  /* The card goes, as his next-race card does, and one line of what it held
+     comes back up under the name. */
+  .status {
+    display: none;
+  }
+
+  .hero-id {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+    position: absolute;
+    /* Clear of the button row: its 14px inset plus a 51px button plus his gap. */
+    top: calc(env(safe-area-inset-top) + 96px);
+    left: 0;
+    right: 0;
+    z-index: 3;
+    /* Decoration over the object; nothing in here is a target. */
+    pointer-events: none;
+    color: var(--ink);
+  }
+  /* One line, not two. .lockup stacks .a over .b by default, which is the whole
+     point of it on desktop; here the two words sit side by side on a shared
+     baseline, the way his LANDO NORRIS does. */
+  .hero-id-mark {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.28em;
+    font-size: 2.05rem;
+    line-height: 1;
+  }
+  .hero-id-mark .a,
+  .hero-id-mark .b {
+    display: inline;
+  }
+  .hero-id-sub {
+    margin: 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ash);
   }
 }
 /* ── the menu panel ────────────────────────────────────────────────────── */

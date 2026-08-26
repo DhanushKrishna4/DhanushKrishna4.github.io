@@ -171,6 +171,28 @@ export default function Hero() {
     <section className="hero" id="top" data-tone="light" data-ground="paper" ref={root}>
       <Contours seed={3} count={9} />
 
+      {/* The mobile identity block: monogram, one-line wordmark, one line of
+          fact. Off on desktop, where the wordmark lives in the bar.
+
+          In the hero rather than in the nav because the reference's SCROLLS —
+          checked at 390 wide, his wordmark is gone by 700px of scroll while his
+          store button and toggle stay put, so only those two are fixed. Putting
+          it in the bar would have pinned a large centred wordmark over
+          everything below it.
+
+          aria-hidden: the hero already carries a visually-hidden <h1> with the
+          same name and role, and this is a second copy of it. */}
+      <div className="hero-id" aria-hidden="true">
+        <Mark height={30} />
+        <span className="lockup hero-id-mark">
+          <span className="a">{SITE.first}</span>
+          <span className="b">{SITE.last}</span>
+        </span>
+        <p className="hero-id-sub">
+          {SITE.school} · Class of {SITE.year}
+        </p>
+      </div>
+
       <div className="hero-figure">
         <Core />
       </div>
