@@ -1957,7 +1957,20 @@ body.menu-open .nav .btn-ghost::after {
      Three classes because .mq-word's own clamp lives further down this file and
      would otherwise win on source order. */
   .open .mq .mq-word {
-    font-size: 2.24rem;
+    font-size: 1.98rem;
+  }
+
+  /* The word gap, which is the thing that actually made this read wrong.
+     .mq-track carries gap: 3rem — 48px — and measured at 393x735 his largest
+     word gap is 18px while ours came out at 52 and 58. That is why his line
+     fits about 22 characters across the screen and ours fits 13: not only the
+     type size, the air between the words.
+
+     Measured by ink runs along a scanline through the caps rather than from the
+     DOM, because his marquee sits under a full-screen gl-canvas and neither
+     hit-testing nor a selector can reach it. */
+  .open .mq .mq-track {
+    gap: 0.55rem;
   }
 }
 
