@@ -172,8 +172,17 @@ export default function Hero() {
              exactly what Dhanush described as cropping in.
 
              At 0.328 the object fills the shrunken panel the way it filled the
-             screen, which is what his portrait does. */
-          el.style.setProperty('--fs', String(1 - 0.672 * k));
+             screen, which is what his portrait does.
+
+             Taken FROM the panel rather than written next to it. 0.672 was
+             1 - 0.328, the desktop panel's own width fraction, and once the
+             narrow screens got a panel of their own at 0.71 the object still
+             collapsed to a third inside a frame that only came to seven tenths.
+             Measured: 13% of our panel carried any detail against 33% of his —
+             the box matched his to the pixel and the thing inside it did not
+             fill it. Derived here, the two can no longer disagree. */
+          const fill = (100 - 2 * E.x) / 100;
+          el.style.setProperty('--fs', String(1 - (1 - fill) * k));
           el.style.setProperty('--sat', String(1 - (1 - FX.sat) * k));
           el.style.setProperty('--sep', String(FX.sep * k));
           el.style.setProperty('--con', String(1 - (1 - FX.con) * k));
