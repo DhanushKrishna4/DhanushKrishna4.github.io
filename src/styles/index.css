@@ -3649,7 +3649,16 @@ body.menu-open .nav .btn-ghost::after {
      token: his accent band under the card measures 36px against our 43. */
   .ct {
     padding-inline: 14px;
-    padding-bottom: calc(min(100vw, 1920px) / 86.4 + (100vh - 100svh) - 7px);
+    /* No toolbar term on a phone. The base rule adds calc(100vh - 100svh) so the
+       email button clears the chrome at rest, but that is the toolbar's WHOLE
+       height — about 90px — and it lands as accent under the card, on top of the
+       36px legal row. It measures 0 in any headless capture, which is why this
+       read as correct here for so long while the phone showed a large gap.
+
+       His footer carries no such compensation: his card sits 36px off the page
+       bottom and his own call to action takes the same chance with the toolbar.
+       Matching him means matching that too. */
+    padding-bottom: calc(min(100vw, 1920px) / 86.4 - 7px);
     /* The card got taller to match his, so the section needs to be taller too --
        but to HIS height, not an invented one. Measured at 393: his footer
        gradient box is 393x801, ours was 393x686. This makes up the difference.
