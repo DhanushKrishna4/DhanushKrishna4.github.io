@@ -40,11 +40,18 @@ export default function Record() {
            Caught by sampling the rendered pixels; the computed value looked
            fine either way. */
         if (ground) {
+          const field = ground.querySelector<HTMLElement>('.contours');
           ScrollTrigger.create({
             trigger: root.current,
             start: 'top top',
-            onEnter: () => gsap.set(ground, { backgroundColor: sage }),
-            onLeaveBack: () => gsap.set(ground, { backgroundColor: paper }),
+            onEnter: () => {
+              gsap.set(ground, { backgroundColor: sage });
+              if (field) gsap.set(field, { opacity: 0 });
+            },
+            onLeaveBack: () => {
+              gsap.set(ground, { backgroundColor: paper });
+              if (field) gsap.set(field, { opacity: 1 });
+            },
           });
         }
         return;
@@ -112,6 +119,38 @@ export default function Record() {
           },
         },
       );
+
+      /* The contour field goes as the section is read, on the same canvas the
+         colour above rides on.
+
+         Two scrubs rather than one, because they are two events with different
+         jobs. The colour is spent on the JOIN — a full window, finishing exactly
+         as this section fills the screen, so you arrive already on sage. The
+         lines are spent on the SECTION — top-top to bottom-bottom, the whole
+         length of it — so they thin out while you are reading rather than while
+         you are arriving. Running both over the join would make the ground do
+         everything at once and then sit still for the rest of the section.
+
+         Opacity on the field, not colour on --field-line: the lines are drawn
+         into an SVG that also carries the olive run's own field elsewhere, and
+         tinting the token would take those with it. */
+      const field = ground.querySelector<HTMLElement>('.contours');
+      if (field) {
+        gsap.fromTo(
+          field,
+          { opacity: 1 },
+          {
+            opacity: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: root.current,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: true,
+            },
+          },
+        );
+      }
     }, root);
     return () => ctx.revert();
   }, []);
