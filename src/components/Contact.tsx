@@ -6,6 +6,7 @@ import Contours from './Contours';
 import Mark from './Mark';
 import Roll from './Roll';
 import Arrow from './Arrow';
+import Signature from './Signature';
 
 /**
  * The sign-off, built on his footer rather than beside it.
@@ -190,20 +191,30 @@ export default function Contact() {
               under it for most of its travel — the statement hit exactly this
               and fixed it the same way. Wrapping the words instead leaves .a
               and .b untouched, so none of the spacing on this lockup moves. */}
-          <h2 className="ct-title lockup">
-            <span className="a">
-              <span className="rv">
-                Let’s build
-                <span className="rv-b" />
-              </span>
+          {/* The headline and the signature travel together. A wrapper set to
+              display: contents on desktop, so the layout there is exactly what it
+              was — the h2 stays a direct flex child of .ct-in — and a positioned
+              block on a phone, where the signature is laid over the first line the
+              way the reference's is. */}
+          <div className="ct-head">
+            <span className="ct-sig" aria-hidden="true">
+              <Signature />
             </span>
-            <span className="b">
-              <span className="rv">
-                Something that runs.
-                <span className="rv-b" />
+            <h2 className="ct-title lockup">
+              <span className="a">
+                <span className="rv">
+                  Let’s build
+                  <span className="rv-b" />
+                </span>
               </span>
-            </span>
-          </h2>
+              <span className="b">
+                <span className="rv">
+                  Something that runs.
+                  <span className="rv-b" />
+                </span>
+              </span>
+            </h2>
+          </div>
 
           <div className="ct-cols">
             <nav className="ct-col" aria-label="Sections">
