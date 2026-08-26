@@ -1308,7 +1308,28 @@ body.menu-open .nav .btn-ghost::after {
    noted where they are set. */
 .menu {
   position: fixed;
-  inset: 0;
+  /* NOT inset: 0. That pins bottom to the viewport as the browser reports it,
+     and on iOS the visual viewport GROWS when the toolbar retracts while a box
+     anchored that way does not — so an unpainted strip opens along the bottom
+     and the page stops short of the screen.
+
+     100vh here and 100lvh in the @supports block at the end of this file, NOT
+     the two stacked as consecutive height declarations. That is the obvious way
+     to write a fallback and it does not survive the build: Lightning CSS sees
+     two `height` values on one rule, keeps the last, and ships lvh alone — so
+     the fallback silently disappears for exactly the older iOS versions it was
+     there for. Verified by grepping dist. The same minifier ate a standalone
+     `translate` on the nav toggle earlier in this project.
+
+     lvh is the toolbar-HIDDEN height, so this ends up at least screen-tall
+     whatever the toolbar is doing. Deliberately not dvh, which tracks the
+     toolbar live: that resizes this mid-scroll, and for a ground the whole page
+     is measured against it would have ScrollTrigger reading a viewport that
+     moves while it is being scrolled through. */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: 80;
   background: var(--olive);
   color: var(--bone);
@@ -2089,7 +2110,28 @@ body.menu-open .nav .btn-ghost::after {
    scrub has run and when reduced motion means it never does. */
 .ground-light {
   position: fixed;
-  inset: 0;
+  /* NOT inset: 0. That pins bottom to the viewport as the browser reports it,
+     and on iOS the visual viewport GROWS when the toolbar retracts while a box
+     anchored that way does not — so an unpainted strip opens along the bottom
+     and the page stops short of the screen.
+
+     100vh here and 100lvh in the @supports block at the end of this file, NOT
+     the two stacked as consecutive height declarations. That is the obvious way
+     to write a fallback and it does not survive the build: Lightning CSS sees
+     two `height` values on one rule, keeps the last, and ships lvh alone — so
+     the fallback silently disappears for exactly the older iOS versions it was
+     there for. Verified by grepping dist. The same minifier ate a standalone
+     `translate` on the nav toggle earlier in this project.
+
+     lvh is the toolbar-HIDDEN height, so this ends up at least screen-tall
+     whatever the toolbar is doing. Deliberately not dvh, which tracks the
+     toolbar live: that resizes this mid-scroll, and for a ground the whole page
+     is measured against it would have ScrollTrigger reading a viewport that
+     moves while it is being scrolled through. */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: 0;
   background: var(--paper);
   pointer-events: none;
@@ -3474,7 +3516,28 @@ body.menu-open .nav .btn-ghost::after {
 /* The monogram as aperture. See components/Loader.tsx for the mechanic. */
 .ld {
   position: fixed;
-  inset: 0;
+  /* NOT inset: 0. That pins bottom to the viewport as the browser reports it,
+     and on iOS the visual viewport GROWS when the toolbar retracts while a box
+     anchored that way does not — so an unpainted strip opens along the bottom
+     and the page stops short of the screen.
+
+     100vh here and 100lvh in the @supports block at the end of this file, NOT
+     the two stacked as consecutive height declarations. That is the obvious way
+     to write a fallback and it does not survive the build: Lightning CSS sees
+     two `height` values on one rule, keeps the last, and ships lvh alone — so
+     the fallback silently disappears for exactly the older iOS versions it was
+     there for. Verified by grepping dist. The same minifier ate a standalone
+     `translate` on the nav toggle earlier in this project.
+
+     lvh is the toolbar-HIDDEN height, so this ends up at least screen-tall
+     whatever the toolbar is doing. Deliberately not dvh, which tracks the
+     toolbar live: that resizes this mid-scroll, and for a ground the whole page
+     is measured against it would have ScrollTrigger reading a viewport that
+     moves while it is being scrolled through. */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: 900;
   /* Its OWN accent, not the body's. This was transparent and borrowed whatever
      body happened to be painting — which works only until body.is-ready flips
@@ -3515,3 +3578,15 @@ body.is-loading {
   height: 100%;
 }
 
+
+
+/* The large-viewport upgrade for the three full-screen fixed layers, in its own
+   @supports so the minifier cannot collapse it into the 100vh above. See the
+   note on any of those rules for why the consecutive-declaration form fails. */
+@supports (height: 100lvh) {
+  .menu,
+  .ground-light,
+  .ld {
+    height: 100lvh;
+  }
+}
