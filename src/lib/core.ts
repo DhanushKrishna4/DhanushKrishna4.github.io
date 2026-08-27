@@ -327,14 +327,14 @@ function studio(): THREE.Scene {
      changes material halfway up. The tint is small on purpose — enough that the
      light side belongs to the same palette as the dark side, not so much that
      the stone reads as lit by a green bulb. */
-  panel(14, 14, 0xf7f8ec, 4.6, [0, 7, 0]);
-  panel(14, 14, 0xd5d9c6, 1.55, [-7, 0.5, 0]);
-  panel(14, 14, 0xd5d9c6, 1.25, [7, 0.5, 0]);
-  panel(14, 14, 0xe0e3d2, 1.4, [0, 0, -7]);
-  panel(14, 14, 0xb4b9a7, 1.05, [0, 0.5, 8]);
+  panel(14, 14, 0xf3f5fa, 4.6, [0, 7, 0]);
+  panel(14, 14, 0xced2db, 1.55, [-7, 0.5, 0]);
+  panel(14, 14, 0xced2db, 1.25, [7, 0.5, 0]);
+  panel(14, 14, 0xdadde5, 1.4, [0, 0, -7]);
+  panel(14, 14, 0xadb1bb, 1.05, [0, 0.5, 8]);
   /* A dark floor. Without it the underside matches the top and the solid loses
      its up. */
-  panel(14, 14, 0x2a2d24, 0.7, [0, -7, 0]);
+  panel(14, 14, 0x26282f, 0.7, [0, -7, 0]);
 
   /* Thin bright strips for the glints. They are what still reads as glass; they
      are no longer the only thing in frame, and with the ramp on them each one
@@ -350,9 +350,14 @@ function studio(): THREE.Scene {
 
      Half the width it was. At 0.4 across it subtended more than a facet, so the
      facet that caught it filled solid and the accent arrived as a hard-edged
-     lime wedge across a sixth of the silhouette — a sticker, not a glint. Thin
-     enough that no facet can contain it, and it crosses one instead. */
-  panel(0.2, 3.4, 0xd2ff00, 8, [2.4, 2.2, 3.0]);
+     wedge across a sixth of the silhouette — a sticker, not a glint. Thin
+     enough that no facet can contain it, and it crosses one instead.
+
+     This was still 0xd2ff00 after the re-theme: the object went on throwing lime
+     glints into a red and black page, which is what Dhanush saw. It is the HOT
+     red rather than the ground red, matching SIGNAL above — this is a specular
+     source at intensity 8, and the deep red has no brightness to give a glint. */
+  panel(0.2, 3.4, 0xff3b30, 8, [2.4, 2.2, 3.0]);
 
   return env;
 }
