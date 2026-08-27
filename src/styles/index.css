@@ -91,11 +91,19 @@
      It is not bone. Bone lifts all three channels together; his lifts red and
      green about three times as hard as blue, so his lines read as olive-green
      on olive where a neutral ink reads as grey haze on it. */
-  /* Same failure, same arithmetic. The panel runs --field-weight 0.66, so the
-     strongest band is alpha 0.188. His olive field was #a7b54d on #282c20 --
-     0.188 x 127 = 24. #5e2932 gave 15. This gives 26, warm, so the panel's lines
-     read as faintly lit rather than as grey haze. */
-  --field-line-panel: #96686e;
+  /* The panel, the menu and the footer card. Raised twice: #5e2932 measured 15,
+     #96686e measured 26, and both were still barely visible on a real screen.
+
+     The mistake was targeting his number. His panel field ran a deviation of 24
+     -- but on #282c20 olive, a mid-dark ground. Ours sits on #0a0a0e, and a
+     field that was a quiet texture on olive is nearly nothing on near-black.
+     What it has to match is the 50 the hero's field runs, which is the one
+     nobody complained about.
+
+     That needs the weight as well as the colour: at --field-weight 0.66 the
+     strongest band is alpha 0.188, so even a pure white line caps out at 46.
+     The weight goes to 1 and this lands 0.285 x 175 = 50, warm, matching. */
+  --field-line-panel: #b99aa0;
 
   /* One accent, and now his exactly. Fifth value in this slot — lime, red,
      amber, back to lime, now his lime. #D8F23F to #D2FF00 is a real change:
@@ -1020,11 +1028,11 @@ body.is-ready {
      Its own number rather than the menu panel's 0.644: near it, and arrived at
      separately, because his band measures very slightly deeper than his panel
      does (p50 9.9 against 7.4). */
-  --field-weight: 0.66;
+  --field-weight: 1;
 }
 .menu .contours {
   color: var(--field-line-panel);
-  --field-weight: 0.644;
+  --field-weight: 1;
 }
 
 /* ── nav ───────────────────────────────────────────────────────────────── */
