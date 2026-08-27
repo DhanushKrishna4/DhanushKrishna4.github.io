@@ -3615,7 +3615,17 @@ body.menu-open .nav .btn-ghost::after {
      the card was tried first and is in the rules above — it went from 272px of
      content to 320 and was still not enough. */
   .ct-title {
-    font-size: 1.5rem;
+    /* As large as two lines allow. His motto is 39.3px and shorter; ours cannot
+       reach that and stay on two lines, but 1.5rem was leaving 50px of the card's
+       320px unused. Measured at 393: 28px puts "Something that runs." at 315 of
+       320 and 28.5px wraps it to three.
+
+       Stated in cqw rather than px because px only holds at this one width — the
+       line is proportional to the type size while the room for it is 100cqw, so
+       a fixed size overflows as soon as the phone is narrower. At 320px wide the
+       OLD 1.5rem already wrapped. 8.5cqw is 27.2px here, a little under the 28px
+       ceiling so font loading and rounding cannot tip it over. */
+    font-size: 8.5cqw;
   }
   .ct-cols {
     order: 1;
