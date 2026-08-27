@@ -68,7 +68,17 @@
      field is strokes and nothing else; for the two commits when the field also
      painted soft masses this had to be held separately, because replacing
      `color` turned every large tonal area on the page olive. */
-  --field-line: #34242b;
+  /* Was #34242b, which is only 30 units off the ground it sits on: the field
+     painted a peak deviation of 9 where the original ran 49, so every contour
+     line on the site disappeared.
+
+     The field strokes this colour at alpha 0.11 / 0.17 / 0.285 over the ground,
+     so what matters is not the colour but alpha x (colour - ground). The old ink
+     was #474700 on #f4f4ed paper -- 0.285 x 173 = 49 units DARKER. On a dark
+     ground the same deviation has to run the other way, which needs a value up
+     near 194, not a dark red-brown. Warm rather than neutral so the lines carry
+     the palette. 0.285 x 176 = 50. */
+  --field-line: #c6b4ba;
   /* The same field on the menu's olive, which is a different measurement and
      not the paper one inverted.
 
@@ -81,7 +91,11 @@
      It is not bone. Bone lifts all three channels together; his lifts red and
      green about three times as hard as blue, so his lines read as olive-green
      on olive where a neutral ink reads as grey haze on it. */
-  --field-line-panel: #5e2932;
+  /* Same failure, same arithmetic. The panel runs --field-weight 0.66, so the
+     strongest band is alpha 0.188. His olive field was #a7b54d on #282c20 --
+     0.188 x 127 = 24. #5e2932 gave 15. This gives 26, warm, so the panel's lines
+     read as faintly lit rather than as grey haze. */
+  --field-line-panel: #96686e;
 
   /* One accent, and now his exactly. Fifth value in this slot — lime, red,
      amber, back to lime, now his lime. #D8F23F to #D2FF00 is a real change:
@@ -231,15 +245,13 @@
      --f-display is deliberately the same stack as --f-sans. It is a separate
      token because it is a separate ROLE, and because whatever replaces it later
      should only have to change in one place. */
-  --f-display: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --f-display: 'Bodoni Moda Variable', 'Bodoni MT', Didot, Georgia, serif;
   --f-sans: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
   /* The technical voice, for labels that are functionally metadata: the
      eyebrows and the telemetry line. A monospace is the most efficient way type
      has of saying "instrument", and here it is content-appropriate rather than
      decorative. */
   --f-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
-  /* Near the top of Mona Sans' 125 ceiling. Wide caps read as machined. */
-  --wdth-display: 'wdth' 118;
 
   --shell: clamp(1.25rem, 4vw, 4rem);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -485,7 +497,6 @@ body.is-ready {
 .lockup .a {
   display: block;
   font-family: var(--f-display);
-  font-variation-settings: var(--wdth-display);
   font-weight: 500;
   font-size: 0.93em;
   letter-spacing: -0.012em;
@@ -2351,7 +2362,6 @@ body.menu-open .nav .btn-ghost::after {
    accent above a heavy sans line in bone, travelling against each other. */
 .mq-a .mq-word {
   font-family: var(--f-display);
-  font-variation-settings: var(--wdth-display);
   font-weight: 500;
   color: var(--signal-off);
 }
@@ -2573,7 +2583,6 @@ body.menu-open .nav .btn-ghost::after {
 
 .st-line.em {
   font-family: var(--f-display);
-  font-variation-settings: var(--wdth-display);
   /* His serif runs 1.039x the sans; kept, at the new size. */
   font-size: clamp(1.56rem, 5.53vw, 4.99rem);
   /* Its own, because it is set larger: his serif leads 91.3 on 110px, which is
