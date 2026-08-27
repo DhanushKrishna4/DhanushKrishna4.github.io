@@ -839,7 +839,7 @@ body.is-ready {
 }
 .btn-signal {
   background: var(--signal);
-  color: var(--bone);
+  color: var(--ink);
 }
 /* Paper on every ground, including the dark ones. His close button is white on
    olive for the same reason: the toggle is chrome rather than content, and
@@ -3160,7 +3160,7 @@ body.menu-open .nav .btn-ghost::after {
   padding: 0 13.33px;
   border-radius: 7.2px;
   background: var(--signal);
-  color: var(--bone);
+  color: var(--ink);
   font-family: var(--f-sans);
   font-size: 14px;
   font-weight: 800;
@@ -3589,7 +3589,7 @@ body.menu-open .nav .btn-ghost::after {
   padding: 1.35cqw 1.33cqw;
   border-radius: 5px;
   background: var(--signal);
-  color: var(--bone);
+  color: var(--ink);
   font-size: clamp(0.56rem, 1.34cqw, 0.9rem);
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -3629,7 +3629,7 @@ body.menu-open .nav .btn-ghost::after {
      0.06em. */
   letter-spacing: normal;
   text-transform: none;
-  color: var(--bone);
+  color: var(--ink);
 }
 
 /* Below the breakpoint the tray's raised corners are too small to hold two
