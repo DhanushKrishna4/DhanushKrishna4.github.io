@@ -221,8 +221,25 @@
      is not on npm or any free foundry and cannot be shipped without a bought
      licence. Bodoni Moda holds the slot — same register, high-contrast Didone,
      used in the same sparing way — until that licence exists. */
-  --f-serif: 'Bodoni Moda Variable', 'Bodoni MT', Didot, Georgia, serif;
+  /* One family, two widths, plus a monospace — where there used to be a grotesk
+     and a Didone. The Didone was a fashion-editorial register and fought the red
+     and black; it was also only ever a stand-in for a commercial face. Mona Sans
+     carries both roles now, told apart by WIDTH rather than by serif: narrow for
+     reading, expanded caps for display. The axis is real — the standard build
+     declares font-stretch: 75% 125% — so this costs no extra download.
+
+     --f-display is deliberately the same stack as --f-sans. It is a separate
+     token because it is a separate ROLE, and because whatever replaces it later
+     should only have to change in one place. */
+  --f-display: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --f-sans: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* The technical voice, for labels that are functionally metadata: the
+     eyebrows and the telemetry line. A monospace is the most efficient way type
+     has of saying "instrument", and here it is content-appropriate rather than
+     decorative. */
+  --f-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Near the top of Mona Sans' 125 ceiling. Wide caps read as machined. */
+  --wdth-display: 'wdth' 118;
 
   --shell: clamp(1.25rem, 4vw, 4rem);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -467,7 +484,8 @@ body.is-ready {
    measured at the hero, the serif ran 1285px against the grotesk's 1170px. */
 .lockup .a {
   display: block;
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
+  font-variation-settings: var(--wdth-display);
   font-weight: 500;
   font-size: 0.93em;
   letter-spacing: -0.012em;
@@ -2154,7 +2172,7 @@ body.menu-open .nav .btn-ghost::after {
 .status-v {
   margin-top: 0.85rem;
   text-align: center;
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
   font-size: 1.05rem;
   line-height: 1.2;
 }
@@ -2332,7 +2350,8 @@ body.menu-open .nav .btn-ghost::after {
    which reads as one restless line; his is two settled ones, a serif line in the
    accent above a heavy sans line in bone, travelling against each other. */
 .mq-a .mq-word {
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
+  font-variation-settings: var(--wdth-display);
   font-weight: 500;
   color: var(--signal-off);
 }
@@ -2553,7 +2572,8 @@ body.menu-open .nav .btn-ghost::after {
 }
 
 .st-line.em {
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
+  font-variation-settings: var(--wdth-display);
   /* His serif runs 1.039x the sans; kept, at the new size. */
   font-size: clamp(1.56rem, 5.53vw, 4.99rem);
   /* Its own, because it is set larger: his serif leads 91.3 on 110px, which is
@@ -2727,7 +2747,7 @@ body.menu-open .nav .btn-ghost::after {
   color: var(--signal-hot);
 }
 .wk-title {
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
   font-weight: 500;
   font-size: clamp(1.5rem, 2.4vw, 2.05rem);
   line-height: 1.05;
@@ -2799,7 +2819,7 @@ body.menu-open .nav .btn-ghost::after {
   max-width: 56ch;
 }
 .quote {
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
   font-weight: 500;
   font-style: italic;
   font-size: clamp(1.5rem, 2.8vw, 2.4rem);
@@ -2838,7 +2858,7 @@ body.menu-open .nav .btn-ghost::after {
   color: var(--ash);
 }
 .rec-what {
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
   font-weight: 500;
   font-size: 1.3rem;
   line-height: 1.15;
@@ -3095,7 +3115,7 @@ body.menu-open .nav .btn-ghost::after {
 .wk-more-copy {
   /* His 33px at 1440 — as a proportion so it holds at every width. */
   margin: 2.29vw 0 0;
-  font-family: var(--f-serif);
+  font-family: var(--f-display);
   font-weight: 400;
   font-size: clamp(1.05rem, 1.852vw, 2rem);
   line-height: 1.04;
@@ -3870,3 +3890,32 @@ body.is-loading {
   height: 100%;
 }
 
+
+/* ── the technical voice ──────────────────────────────────────────────────
+   A monospace on the labels that are functionally METADATA rather than prose:
+   section eyebrows, the status card's keys, work kinds and stacks, dates,
+   skill terms, the footer's column labels and availability line.
+
+   Deliberately not the buttons (.pill, .wk-cta, .ct-cta, .skip), not the nav
+   or footer links — those are actions and navigation, not readouts, and the
+   footer links in particular are sized and width-matched to the reference and
+   should stay that way. Also not the marquee: it reads as a label in the
+   proposal but renders at 107px, which is display type by any measure.
+
+   This is the one type change here that is content-appropriate rather than
+   decorative — the work is ML and software for hardware that cannot reach the
+   cloud, and a monospace says that on its own. */
+.eyebrow,
+.ct-lab,
+.ct-avail,
+.status-k,
+.status-sub,
+.wk-kind,
+.wk-stack li,
+.rec-when,
+.skill dt,
+.menu-badge,
+.menu-foot-k,
+.ld-label {
+  font-family: var(--f-mono);
+}
