@@ -56,7 +56,7 @@ export interface CoreHandle {
 
 export type Tier = 'high' | 'medium' | 'low';
 
-const SIGNAL = new THREE.Color('#d2ff00');
+const SIGNAL = new THREE.Color('#ff3b30');
 
 /** The five, sized by parameter count on a log scale. */
 const MODELS: { label: string; params: number }[] = [
@@ -160,7 +160,7 @@ function plateTexture(): THREE.CanvasTexture {
   c.height = S;
   const ctx = c.getContext('2d')!;
 
-  ctx.fillStyle = '#f4f4ed';
+  ctx.fillStyle = '#16161c';
   ctx.fillRect(0, 0, S, S);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -175,7 +175,7 @@ function plateTexture(): THREE.CanvasTexture {
        glass and then mip-blurred by the refraction. It is set to sit under the
        moving glyphs rather than compete with them — the traffic is the content
        and this is the ground it moves over. */
-    ctx.fillStyle = `rgba(17,17,18,${(0.05 + rand() * 0.09).toFixed(3)})`;
+    ctx.fillStyle = `rgba(236,236,242,${(0.05 + rand() * 0.09).toFixed(3)})`;
     const byte = Math.floor(rand() * 256).toString(16).padStart(2, '0');
     ctx.fillText(byte, rand() * S, rand() * S);
   }
@@ -183,8 +183,8 @@ function plateTexture(): THREE.CanvasTexture {
   /* Fade the border back to paper so the quad has no visible edge. Done as a
      paint over the finished plate rather than as alpha, for the reason above. */
   const g = ctx.createRadialGradient(S / 2, S / 2, S * 0.26, S / 2, S / 2, S * 0.46);
-  g.addColorStop(0, 'rgba(244,244,237,0)');
-  g.addColorStop(1, 'rgba(244,244,237,1)');
+  g.addColorStop(0, 'rgba(22,22,28,0)');
+  g.addColorStop(1, 'rgba(22,22,28,1)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, S, S);
 
@@ -461,7 +461,7 @@ export function createCore(
     iridescence: 0.06,
     iridescenceIOR: 1.3,
     iridescenceThicknessRange: [200, 620],
-    attenuationColor: new THREE.Color('#7f8a6b'),
+    attenuationColor: new THREE.Color('#8a6b70'),
     attenuationDistance: 2.4,
     envMapIntensity: 1.15,
     /* Smoked to near-ink. Transmission multiplies whatever is seen through the
@@ -472,7 +472,7 @@ export function createCore(
        the stone was a black silhouette with one specular on it and none of the
        refraction it exists to show reached the eye. This is the value where it
        still reads as the darkest thing in the frame and you can see into it. */
-    color: new THREE.Color('#2b3122'),
+    color: new THREE.Color('#2b2124'),
     flatShading: true,
     /* Load-bearing. Without it the transmission sampler stops resolving and the
        material collapses to a flat diffuse solid. */
@@ -488,7 +488,7 @@ export function createCore(
   const cage = new THREE.Mesh(
     new THREE.IcosahedronGeometry(1.62, 1),
     new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#111112'),
+      color: new THREE.Color('#050508'),
       wireframe: true,
       transparent: true,
       opacity: 0.07,
@@ -605,7 +605,7 @@ export function createCore(
          14:1 after it. That ratio is the only reason the slogans this replaces
          were ever legible, and it is what the plate has to stay clean to
          protect. */
-      color: new THREE.Color('#111112'),
+      color: new THREE.Color('#ececf2'),
       side: THREE.DoubleSide,
       /* As the plate is, so the ink is the page's ink rather than a tone-mapped
          approximation of it. */
@@ -699,7 +699,7 @@ export function createCore(
              channel of a colour whose blue is 0. */
           new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false })
         : new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#39402f'),
+            color: new THREE.Color('#403033'),
             roughness: 0.3,
             /* Barely metallic. Fully polished metal was the first cut and it
                came out as four flat black quads: a mirror in a dark room

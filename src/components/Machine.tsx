@@ -381,7 +381,7 @@ export default function Machine() {
           k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
         });
         ctx.closePath();
-        ctx.fillStyle = `rgba(210, 255, 0, ${a})`;
+        ctx.fillStyle = `rgba(255, 59, 48, ${a})`;
         ctx.fill();
       }
 
@@ -392,7 +392,7 @@ export default function Machine() {
         const dy = lift(e.bay);
         const [ax, ay] = project(e.a, dy);
         const [bx, by] = project(e.b, dy);
-        ctx.strokeStyle = e.shell ? 'rgba(17,17,18,0.46)' : 'rgba(17,17,18,0.2)';
+        ctx.strokeStyle = e.shell ? 'rgba(236,236,242,0.46)' : 'rgba(236,236,242,0.2)';
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
@@ -412,24 +412,24 @@ export default function Machine() {
       for (const c of w < 700 ? [] : CALLOUTS) {
         const [ax, ay] = project(c.at);
         const ex = ax + c.side * c.out * scale;
-        ctx.strokeStyle = 'rgba(17,17,18,0.34)';
+        ctx.strokeStyle = 'rgba(236,236,242,0.34)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(ex, ay);
         ctx.stroke();
-        ctx.fillStyle = 'rgba(17,17,18,0.9)';
+        ctx.fillStyle = 'rgba(236,236,242,0.9)';
         ctx.beginPath();
         ctx.arc(ax, ay, 2.2, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.textAlign = c.side === 1 ? 'left' : 'right';
         const tx = ex + c.side * 8;
-        ctx.fillStyle = 'rgba(17,17,18,0.5)';
+        ctx.fillStyle = 'rgba(236,236,242,0.5)';
         ctx.fillText(c.k.toUpperCase(), tx, ay - 7);
         ctx.font = '800 21px Mona Sans Variable, system-ui, sans-serif';
         ctx.letterSpacing = '-0.02em';
-        ctx.fillStyle = 'rgba(17,17,18,0.92)';
+        ctx.fillStyle = 'rgba(236,236,242,0.92)';
         ctx.fillText(c.v, tx, ay + 15);
         ctx.font = '600 10px Mona Sans Variable, system-ui, sans-serif';
         ctx.letterSpacing = '0.14em';
@@ -449,15 +449,15 @@ export default function Machine() {
           const [hx, hy] = project(head, dy);
           const [tx, ty] = project(tail, dy);
           const g = ctx.createLinearGradient(tx, ty, hx, hy);
-          g.addColorStop(0, 'rgba(210,255,0,0)');
-          g.addColorStop(1, 'rgba(210,255,0,0.95)');
+          g.addColorStop(0, 'rgba(255,59,48,0)');
+          g.addColorStop(1, 'rgba(255,59,48,0.95)');
           ctx.strokeStyle = g;
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(tx, ty);
           ctx.lineTo(hx, hy);
           ctx.stroke();
-          ctx.fillStyle = 'rgba(210,255,0,1)';
+          ctx.fillStyle = 'rgba(255,59,48,1)';
           ctx.beginPath();
           ctx.arc(hx, hy, 2.6, 0, Math.PI * 2);
           ctx.fill();

@@ -42,10 +42,10 @@
      So the eight units went the other way. Ours was eight units LIGHTER and
      cooler than his, which is most of why our light run read as white against
      his cream. */
-  --paper: #f4f4ed;
-  --sage: #b4b8a5;
-  --olive: #282c20;
-  --ink: #111112;
+  --paper: #16161c;
+  --sage: #101015;
+  --olive: #0a0a0e;
+  --ink: #050508;
   /* The contour field's STROKE colour, and only the strokes.
 
      Measured off the reference site at 1280x720 and dpr 2, against a capture whose
@@ -68,7 +68,7 @@
      field is strokes and nothing else; for the two commits when the field also
      painted soft masses this had to be held separately, because replacing
      `color` turned every large tonal area on the page olive. */
-  --field-line: #474700;
+  --field-line: #34242b;
   /* The same field on the menu's olive, which is a different measurement and
      not the paper one inverted.
 
@@ -81,7 +81,7 @@
      It is not bone. Bone lifts all three channels together; his lifts red and
      green about three times as hard as blue, so his lines read as olive-green
      on olive where a neutral ink reads as grey haze on it. */
-  --field-line-panel: #a7b54d;
+  --field-line-panel: #5e2932;
 
   /* One accent, and now his exactly. Fifth value in this slot — lime, red,
      amber, back to lime, now his lime. #D8F23F to #D2FF00 is a real change:
@@ -98,13 +98,13 @@
      the authority on these five values. See the note at the top of that file.
 
      It is a ground the ink mark sits on, never a colour the mark takes. */
-  --signal: #d2ff00;
+  --signal: #c1121f;
   /* The same accent at zero alpha, for the footer's fade. Written out rather
      than `transparent`, which is transparent BLACK — engines that interpolate
      un-premultiplied drag the midtones through grey and the fade goes dirty.
      It has to track --signal by hand; there is no way to spell "that colour,
      alpha 0" that is safe everywhere. */
-  --signal-0: rgb(210 255 0 / 0);
+  --signal-0: rgb(193 18 31 / 0);
   /* The accent one step down, and the light one step down, both his and both
      used in one place: the band's two lines.
 
@@ -118,15 +118,29 @@
      #b2c73a is his own `lime-off` — it appears by that name in his bundle
      beside the lime. #dde1d2 is the light tint already noted in the palette
      comment at the top of this file, finally used for something. */
-  --signal-off: #b2c73a;
-  --tint: #dde1d2;
+  /* The accent's SECOND value, and the reason there has to be one.
+     #d2ff00 sat at ~90% luminance, so it behaved like a light ground: the footer
+     was a near-black card on it at 14:1, and every small accent element read
+     loud because the colour itself was bright. A deep red is ~3%. It still works
+     as a ground, but at small sizes on near-black it has almost no separation to
+     give — a 20px accent label in #c1121f is nearly invisible.
+     So --signal keeps the ground role and this carries the small loud ones. */
+  --signal-hot: #ff3b30;
+  /* Raised from #7e2430, which measured 2.05:1 against the near-black panel --
+     unreadable. This token is the display-serif accent: the marquee's upper
+     line, the emphasised words in the statement, "THE" in THE WORK, and the
+     footer headline's serif line. All of them are large type on a dark ground,
+     so it has to hold its own rather than recede the way a muted lime could
+     against olive. 4.11:1, and still clearly a step down from --signal-hot. */
+  --signal-off: #cf4038;
+  --tint: #e4e2e7;
   /* The olive one step UP, and the only thing it is for is the footer's reveal
      block. His statement wipes its lines with the accent; his footer wipes them
      with this instead — a lighter tint of the card the lines sit on, not the
      lime. Read off his footer's .high-line-reveal as rgb(59,60,56). The accent
      would be right for a wipe on the olive ground and is far too loud for one
      happening inside the dark card. */
-  --olive-tint: #3b3c38;
+  --olive-tint: #1c1c24;
 
   /* Light ink on the dark grounds, and NOT the same value as the paper it is
      the reverse of. This was an alias, on the reasoning that reverse and paper
@@ -142,7 +156,7 @@
      only one of them is safe to move. Every one of the eleven places this is
      used is a `color` on a dark ground, never a ground itself, so bone and paper
      sharing a value cannot put light type on light paper. */
-  --bone: #f4f4ed;
+  --bone: #ececf2;
   /* His two muted inks, taken as SOLID values rather than derived as an alpha
      off the ink and the reverse. He runs #535450 on light and #b9bbad on dark,
      and the pair below now says exactly that.
@@ -180,10 +194,10 @@
      that is not the same reading job. The cap sits above his 1920 value so it
      never binds on a desktop. */
   --body: clamp(0.875rem, 1.1574vw, 1.45rem);
-  --ash: #535450;
-  --ash-inv: #b9bbad;
-  --rule: rgba(17, 17, 18, 0.14);
-  --rule-inv: rgba(244, 244, 237, 0.16);
+  --ash: #8b8b98;
+  --ash-inv: #9a9aa6;
+  --rule: rgba(236, 236, 242, 0.12);
+  --rule-inv: rgba(236, 236, 242, 0.16);
   /* How far the ink hangs into the paper at the join. His 8rem, expressed the
      way his renders rather than the way he writes it — see the .visor note.
      Named because the section it lands on has to keep its heading clear of it,
@@ -194,7 +208,7 @@
      same value in both palettes — so the colour lands identically. Our
      --rule-inv would have been about half his contrast, which an opaque card
      could carry and an outline-only one cannot. */
-  --frame: #535450;
+  --frame: rgba(255, 59, 48, 0.3);
 
   /* ── type ─────────────────────────────────────────────────────────────── */
   /* Two families, not three. The serif is the editorial voice and carries the
@@ -351,7 +365,7 @@ body {
      paint and only becomes paper once the aperture has finished opening, by
      which point every section is painting its own ground anyway. */
   background: var(--signal);
-  color: var(--ink);
+  color: var(--bone);
   font-family: var(--f-sans);
   font-size: 16px;
   line-height: 1.55;
@@ -397,7 +411,7 @@ ul {
 
 ::selection {
   background: var(--signal);
-  color: var(--ink);
+  color: var(--bone);
 }
 
 body.is-ready {
@@ -421,11 +435,11 @@ body.is-ready {
    set of static rules. */
 
 :focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--signal-hot);
   outline-offset: 3px;
 }
 .on-dark :focus-visible {
-  outline-color: var(--signal);
+  outline-color: var(--signal-hot);
 }
 
 .visually-hidden {
@@ -784,11 +798,11 @@ body.is-ready {
 /* On the dark grounds the icon has to flip to ink once the accent is under it,
    and the rule follows the ground rather than the fill. */
 .nav[data-tone='dark'] .btn-ghost:hover {
-  color: var(--ink);
+  color: var(--bone);
 }
 .btn-signal {
   background: var(--signal);
-  color: var(--ink);
+  color: var(--bone);
 }
 /* Paper on every ground, including the dark ones. His close button is white on
    olive for the same reason: the toggle is chrome rather than content, and
@@ -806,7 +820,7 @@ body.is-ready {
      one place only, which is also his: while the menu is open, where the close
      button sits on olive and has to read as a control rather than as a hole. */
   background: transparent;
-  color: var(--ink);
+  color: var(--bone);
 }
 /* The rule is its own layer, above the fill.
    It was an inset box-shadow on the button and the accent covered it, because
@@ -872,7 +886,7 @@ body.is-ready {
   padding: 0.72rem 1.15rem;
   border-radius: 999px;
   background: var(--signal);
-  color: var(--ink);
+  color: var(--bone);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1022,7 +1036,7 @@ body.is-ready {
    Blending cannot reach the page from inside a fixed bar, so the tone is
    tracked explicitly instead — which is also what the reference site's site does. */
 .nav-mark {
-  color: var(--ink);
+  color: var(--bone);
   transition: color 0.35s var(--ease);
 }
 .nav[data-tone='dark'] .nav-mark {
@@ -1091,7 +1105,7 @@ body.menu-closing .nav-badge {
 .nav[data-tone='dark'] .btn-ghost {
   /* No background here. It used to fill instantly and there was nothing left
      for the plate to do — the wipe would have been over before it started. */
-  color: var(--ink);
+  color: var(--bone);
 }
 /* The outline is not animated at all, and that was the mistake — twice. It does
    not snap off and it does not fade: it is COVERED. Magnified with the scroll
@@ -1133,7 +1147,7 @@ body.menu-closing .nav-badge {
    opened from a dark section. */
 body.menu-open .nav .btn-ghost {
   background: var(--paper);
-  color: var(--ink);
+  color: var(--bone);
 }
 /* Bars into the close mark — traced off his, not modelled.
 
@@ -1215,7 +1229,7 @@ body.menu-open .nav .btn-ghost::after {
      wordmark whatever the inset resolves to. */
   top: clamp(12px, 1.2vw, 17px);
   transform: translateX(-50%);
-  color: var(--ink);
+  color: var(--bone);
   transition: color 0.35s var(--ease);
 }
 .nav[data-tone='dark'] .nav-badge {
@@ -1303,7 +1317,7 @@ body.menu-open .nav .btn-ghost::after {
     z-index: 3;
     /* Decoration over the object; nothing in here is a target. */
     pointer-events: none;
-    color: var(--ink);
+    color: var(--bone);
   }
   /* One line, not two. .lockup stacks .a over .b by default, which is the whole
      point of it on desktop; here the two words sit side by side on a shared
@@ -1604,7 +1618,7 @@ body.menu-open .nav .btn-ghost::after {
   letter-spacing: 0.14em;
   line-height: 1.5;
   text-transform: uppercase;
-  color: var(--sage);
+  color: var(--ash-inv);
 }
 /* The emblem beside the eyebrow arrives with it and NOT under the block — his
    frame 10 has the wreath fully drawn while the line beside it is still lime.
@@ -2114,7 +2128,9 @@ body.menu-open .nav .btn-ghost::after {
 }
 .status-frame path {
   fill: none;
-  stroke: #535450;
+  /* Was a hardcoded #535450, the old --frame value, which would have stayed a
+     light-mode grey while everything around it went dark. */
+  stroke: var(--ash);
   stroke-width: 1;
 }
 .status-in {
@@ -2344,7 +2360,7 @@ body.menu-open .nav .btn-ghost::after {
   gap: 17px;
   padding-top: 16.7svh;
   pointer-events: none;
-  color: var(--signal);
+  color: var(--signal-hot);
 }
 .open-eyebrow svg {
   display: block;
@@ -2425,7 +2441,7 @@ body.menu-open .nav .btn-ghost::after {
    SVG asset specifies for itself should be set in exactly one place, and the
    asset is that place. */
 .sig path {
-  stroke: var(--signal);
+  stroke: var(--signal-hot);
 }
 
 /* ── statement ─────────────────────────────────────────────────────────── */
@@ -2580,7 +2596,10 @@ body.menu-open .nav .btn-ghost::after {
    muted at all. */
 #about,
 #record {
-  --ash: #434440;
+  /* Was #434440 — a DARKER ash, because these two sections sat on paper and the
+     global muted ink was not quite dark enough on it. Both grounds are dark now,
+     so the correction has to run the other way: lighter, not darker. */
+  --ash: #a6a6b2;
 }
 
 /* ── work ──────────────────────────────────────────────────────────────── */
@@ -2648,7 +2667,7 @@ body.menu-open .nav .btn-ghost::after {
   /* His hover lays a second path in lime over the base one. One path whose
      colour changes is the same result without inventing a draw-on animation he
      does have and we have not measured. */
-  stroke: var(--signal);
+  stroke: var(--signal-hot);
 }
 .wk-card:hover,
 .wk-card:focus-visible {
@@ -2705,7 +2724,7 @@ body.menu-open .nav .btn-ghost::after {
    the one to drop is .wk-kind, which is ours — not this, which is his. */
 .wk-top span:last-child {
   font-weight: 700;
-  color: var(--signal);
+  color: var(--signal-hot);
 }
 .wk-title {
   font-family: var(--f-serif);
@@ -2717,7 +2736,7 @@ body.menu-open .nav .btn-ghost::after {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--signal);
+  color: var(--signal-hot);
 }
 /* NOT on --body, and this is the one place his single size does not transfer.
    His cards carry no body copy at all — his gallery is images with a name and a
@@ -2789,7 +2808,7 @@ body.menu-open .nav .btn-ghost::after {
 .aside {
   margin-top: 1.6rem;
   padding-left: 1.1rem;
-  border-left: 2px solid var(--signal);
+  border-left: 2px solid var(--signal-hot);
   font-size: var(--body);
   line-height: 1.6;
   color: var(--ash);
@@ -2866,7 +2885,7 @@ body.menu-open .nav .btn-ghost::after {
 }
 .skill dd {
   margin: 0;
-  color: var(--ink);
+  color: var(--bone);
 }
 
 /* ── stack row ─────────────────────────────────────────────────────────── */
@@ -2931,7 +2950,7 @@ body.menu-open .nav .btn-ghost::after {
      between y=131 and y=566 of a 967-tall box, so it starts above the card and
      finishes a third of the way down its flank. */
   background: radial-gradient(circle at 50% -190%, var(--signal-0) 68%, var(--signal) 83%);
-  color: var(--ink);
+  color: var(--bone);
   /* His inset is a constant 1.25rem against a root derived from the viewport
      and capped with it: 14.8 at 1280, 16.7 at 1440, 20 at 1728, 22.2 from 1920
      up. That is min(100vw, 1920) / 86.4. */
@@ -3030,7 +3049,7 @@ body.menu-open .nav .btn-ghost::after {
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  color: var(--signal);
+  color: var(--signal-hot);
 }
 
 /* Centred, as his is. The columns go to the two edges below it and his
@@ -3070,7 +3089,7 @@ body.menu-open .nav .btn-ghost::after {
 }
 .wk-more-mark {
   display: block;
-  color: var(--signal);
+  color: var(--signal-hot);
   line-height: 0;
 }
 .wk-more-copy {
@@ -3104,7 +3123,7 @@ body.menu-open .nav .btn-ghost::after {
   padding: 0 13.33px;
   border-radius: 7.2px;
   background: var(--signal);
-  color: var(--olive);
+  color: var(--bone);
   font-family: var(--f-sans);
   font-size: 14px;
   font-weight: 800;
@@ -3319,7 +3338,7 @@ body.menu-open .nav .btn-ghost::after {
      the two in this footer are the two with a directly measured counterpart of
      his, so they are the two that move here. */
   letter-spacing: normal;
-  color: var(--sage);
+  color: var(--ash-inv);
 }
 /* His step from one link to the next is 2.01% of the card, and his link box is
    17.4px on a 17.4px font — exactly one em. Ours was a 0.18rem padding on a
@@ -3474,7 +3493,7 @@ body.menu-open .nav .btn-ghost::after {
      gap into 3.64% when the box was grown to fix the accent. */
   line-height: 1.15;
   font-size: clamp(0.62rem, 1.66cqw, 1.05rem);
-  color: var(--signal);
+  color: var(--signal-hot);
 }
 /* This one link needs a taller window than the rest, and the reason is only
    visible in our copy: uppercase É is taller than 1em, so at his link height the
@@ -3533,7 +3552,7 @@ body.menu-open .nav .btn-ghost::after {
   padding: 1.35cqw 1.33cqw;
   border-radius: 5px;
   background: var(--signal);
-  color: var(--olive);
+  color: var(--bone);
   font-size: clamp(0.56rem, 1.34cqw, 0.9rem);
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -3573,7 +3592,7 @@ body.menu-open .nav .btn-ghost::after {
      0.06em. */
   letter-spacing: normal;
   text-transform: none;
-  color: var(--olive);
+  color: var(--bone);
 }
 
 /* Below the breakpoint the tray's raised corners are too small to hold two
@@ -3794,7 +3813,7 @@ body.menu-open .nav .btn-ghost::after {
   margin: 0.75rem;
   padding: 0.7rem 1.1rem;
   background: var(--ink);
-  color: var(--signal);
+  color: var(--signal-hot);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -3829,7 +3848,7 @@ body.menu-open .nav .btn-ghost::after {
   left: 50%;
   bottom: calc(clamp(1.6rem, 4vh, 2.8rem) + (100vh - 100svh));
   transform: translateX(-50%);
-  color: var(--ink);
+  color: var(--bone);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
