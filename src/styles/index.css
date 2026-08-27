@@ -3860,12 +3860,22 @@ body.menu-open .nav .btn-ghost::after {
   position: fixed;
   inset: 0;
   z-index: 900;
-  /* Its OWN accent, not the body's. This was transparent and borrowed whatever
-     body happened to be painting — which works only until body.is-ready flips
-     body to paper, and that can land while the loader is still on screen. A
-     full-screen cover that does not paint is a cover that can turn white under
-     you. */
-  background: var(--signal);
+  /* The PAGE's ground, not the accent — and the distinction is the whole second
+     beat of the loader.
+
+     The accent is painted by the svg rect on top of this, and that rect is
+     masked: the mark's own counter is punched out of it and grown until it
+     covers the screen. What shows through that hole is whatever this element
+     paints. So this cannot be the accent, or the hole reveals the same colour it
+     was cut from and the aperture is invisible — which is exactly what happened.
+
+     It was transparent originally and the hole revealed the body beneath, which
+     is the effect. That broke when a full-screen cover that does not paint was
+     found to turn white under you the moment body.is-ready flips, so it was
+     given `var(--signal)` — fixing the flash and silently killing the reveal.
+     Painting the page's ground satisfies both: nothing can turn white, and the
+     aperture opens onto the colour the page is about to be. */
+  background: var(--paper);
 }
 .ld-svg {
   display: block;
