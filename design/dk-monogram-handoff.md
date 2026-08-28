@@ -9,8 +9,7 @@
 >
 > Typeface likewise: the grotesk is Mona Sans, matching the reference. The serif
 > slot still holds Bodoni Moda — the reference sets Brier, a commercial face that
-> cannot ship without a purchased licence. JetBrains Mono was added for the small
-> technical labels.
+> cannot ship without a purchased licence.
 
 # Handoff: DK 11 brand system — amber
 

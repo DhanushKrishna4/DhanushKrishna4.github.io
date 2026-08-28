@@ -1,13 +1,15 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-/* Three voices. Bodoni carries the editorial one, Mona Sans everything that has
-   to be read quickly, JetBrains Mono the small technical labels.
+/* Two families. Bodoni carries the editorial voice, Mona Sans everything that
+   has to be read quickly. Both are what they were before the re-theme.
 
-   The Didone was dropped for one commit on the argument that a fashion-editorial
-   register fights red and black. It does, in theory. In practice a page that is
-   entirely grotesk lost the one soft, human thing on it and read as anonymous —
-   which was the counter-argument at the time, and it was the right one. */
+   The type was reworked alongside the palette and both halves are now reverted.
+   The Didone was dropped on the argument that a fashion-editorial register
+   fights red and black — true in theory, and in practice an all-grotesk page
+   lost the one soft thing on it and read as anonymous. A monospace was added
+   for the small labels on the argument that it was content-appropriate rather
+   than decorative — also true, and Mona Sans simply reads better there. */
 /* The standard cut, not the default one.
    The package ships three builds and the bare import gives the weight-only
    file: font-weight 200..900, no width axis at all. His statement sets
@@ -16,7 +18,6 @@ import { createRoot } from 'react-dom/client';
    declares font-stretch: 75% 125% and actually carries it. */
 import '@fontsource-variable/bodoni-moda';
 import '@fontsource-variable/mona-sans/standard.css';
-import '@fontsource-variable/jetbrains-mono';
 import './styles/index.css';
 
 import App from './App';

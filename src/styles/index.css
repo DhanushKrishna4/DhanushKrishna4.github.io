@@ -243,23 +243,16 @@
      is not on npm or any free foundry and cannot be shipped without a bought
      licence. Bodoni Moda holds the slot — same register, high-contrast Didone,
      used in the same sparing way — until that licence exists. */
-  /* One family, two widths, plus a monospace — where there used to be a grotesk
-     and a Didone. The Didone was a fashion-editorial register and fought the red
-     and black; it was also only ever a stand-in for a commercial face. Mona Sans
-     carries both roles now, told apart by WIDTH rather than by serif: narrow for
-     reading, expanded caps for display. The axis is real — the standard build
-     declares font-stretch: 75% 125% — so this costs no extra download.
+  /* Two families, as before the re-theme. The type was briefly reworked with it
+     — the Didone dropped for expanded Mona Sans caps, and a monospace added for
+     the small labels — and both are reverted: an all-grotesk page lost the one
+     soft thing on it, and Mona Sans reads better on the labels than the mono did.
 
-     --f-display is deliberately the same stack as --f-sans. It is a separate
-     token because it is a separate ROLE, and because whatever replaces it later
-     should only have to change in one place. */
+     The token is --f-display rather than --f-serif because it names the ROLE, so
+     whatever fills the slot later only changes in one place. It holds a serif
+     today. */
   --f-display: 'Bodoni Moda Variable', 'Bodoni MT', Didot, Georgia, serif;
   --f-sans: 'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  /* The technical voice, for labels that are functionally metadata: the
-     eyebrows and the telemetry line. A monospace is the most efficient way type
-     has of saying "instrument", and here it is content-appropriate rather than
-     decorative. */
-  --f-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --shell: clamp(1.25rem, 4vw, 4rem);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -3950,32 +3943,3 @@ body.is-loading {
   height: 100%;
 }
 
-
-/* ── the technical voice ──────────────────────────────────────────────────
-   A monospace on the labels that are functionally METADATA rather than prose:
-   section eyebrows, the status card's keys, work kinds and stacks, dates,
-   skill terms, the footer's column labels and availability line.
-
-   Deliberately not the buttons (.pill, .wk-cta, .ct-cta, .skip), not the nav
-   or footer links — those are actions and navigation, not readouts, and the
-   footer links in particular are sized and width-matched to the reference and
-   should stay that way. Also not the marquee: it reads as a label in the
-   proposal but renders at 107px, which is display type by any measure.
-
-   This is the one type change here that is content-appropriate rather than
-   decorative — the work is ML and software for hardware that cannot reach the
-   cloud, and a monospace says that on its own. */
-.eyebrow,
-.ct-lab,
-.ct-avail,
-.status-k,
-.status-sub,
-.wk-kind,
-.wk-stack li,
-.rec-when,
-.skill dt,
-.menu-badge,
-.menu-foot-k,
-.ld-label {
-  font-family: var(--f-mono);
-}
