@@ -655,7 +655,8 @@ body.is-ready {
      length argument is still true and was not the main thing. */
   /* 0.6vw = his 8.64 rendered. Ours was 8.6 fixed — right at 1440 by luck and
      wrong at every other width, because his scales and ours did not. */
-  border-radius: clamp(5px, 0.6vw, 12px);
+  --btn-r: clamp(5px, 0.6vw, 12px);
+  border-radius: var(--btn-r);
   /* 1.3889vw = his 20px rendered at 1440. Ours was 16.64, which is 17% short.
      The audit claimed the opposite — that ours was 19% too BIG against a 14px
      label — because it read his hidden source copy instead of the .char spans
@@ -773,7 +774,19 @@ body.is-ready {
    corners rather than at them. */
 .btn-ghost {
   position: relative;
+  /* clip-path, not overflow: hidden alone.
+
+     WebKit does not clip a descendant to `overflow: hidden` + border-radius
+     precisely: the accent circle in ::before came out one pixel proud of the
+     corner curve, a red hairline tracing the outside of the top edge. Measured
+     at 4x over a hover, 164 leaked pixels every frame in WebKit and 0 in
+     Chromium, which is why this only ever showed in Safari.
+
+     clip-path rasterises against the same path the border-radius paints, so the
+     two agree. overflow stays as a fallback for anything that ignores it, and
+     the radius is now one token so the clip and the paint cannot drift. */
   overflow: hidden;
+  clip-path: inset(0 round var(--btn-r));
   isolation: isolate;
 }
 .btn-ghost::before {
@@ -913,7 +926,8 @@ body.is-ready {
      1.2 = 11.84, which is the 11.7 that trace found.
   0.8222vw is that 11.84 written so it tracks --btn-h, which now reaches 80px at
      1920 — a fixed 10.15px radius on an 80px box reads as a different shape. */
-  border-radius: clamp(6.5px, 0.8222vw, 15.8px);
+  --btn-r: clamp(6.5px, 0.8222vw, 15.8px);
+  border-radius: var(--btn-r);
 }
 
 .pill {
@@ -1326,7 +1340,8 @@ body.menu-open .nav .btn-ghost::after {
     --btn-h: 51px;
     font-size: 0.875rem;
     padding-inline: 10.8px;
-    border-radius: 6px;
+    --btn-r: 6px;
+    border-radius: var(--btn-r);
   }
   /* .btn-icon already declares padding: 0, and it declares it EARLIER in this
      file than the rule above — so the toggle took 10.8px a side, its content box
