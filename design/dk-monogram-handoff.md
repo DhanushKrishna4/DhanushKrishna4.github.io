@@ -2,14 +2,15 @@
 > Every drawn asset here is current: the mark with the 11, the wordmark, the
 > lockups and the signature all ship exactly as specified below. The palette
 > does not. This document describes the amber system. The site runs
-> the reference site's own palette, read off the running site at Dhanush's
-> request — `paper #F4F4ED`, `sage #B4B8A5`, `olive #282C20`, `ink #111112`,
-> `signal #D2FF00`. Nothing in the colour column below is in use.
-> `src/styles/index.css` is the authority on colour.
+> a deep red and black dark palette. Nothing in the colour column below is in
+> use. No hex values are repeated here on purpose: this note has now been wrong
+> twice by naming the palette of the day, so `src/styles/index.css` is the only
+> authority on colour and the place to read it from.
 >
-> Typeface likewise: the grotesk is now Mona Sans, matching the reference. The
-> serif slot still holds Bodoni Moda — the reference sets Brier, a commercial
-> face that cannot ship without a purchased licence.
+> Typeface likewise: the grotesk is Mona Sans, matching the reference. The serif
+> slot still holds Bodoni Moda — the reference sets Brier, a commercial face that
+> cannot ship without a purchased licence. JetBrains Mono was added for the small
+> technical labels.
 
 # Handoff: DK 11 brand system — amber
 

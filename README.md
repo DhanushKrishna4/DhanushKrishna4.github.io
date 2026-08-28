@@ -27,7 +27,7 @@ No CSS framework and no component library — every element is written by hand.
 - **GSAP** + ScrollTrigger for everything scroll-driven
 - **Lenis** for smooth scrolling
 - **three.js** for the hero object
-- Mona Sans, Bodoni Moda and Archivo, self-hosted via Fontsource
+- Mona Sans, Bodoni Moda and JetBrains Mono, self-hosted via Fontsource
 
 A few things worth knowing if you read the source:
 
