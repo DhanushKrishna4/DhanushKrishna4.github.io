@@ -787,6 +787,24 @@ body.is-ready {
      the radius is now one token so the clip and the paint cannot drift. */
   overflow: hidden;
   clip-path: inset(0 round var(--btn-r));
+  /* The Safari compositor workaround, and the third clip on this element.
+
+     ::before is a 145% circle that transitions, so real Safari promotes it to
+     its own layer and clips it at composite time — and Safari's rounded-rect
+     layer clip is where the accent came out proud of the corner. Neither
+     overflow nor clip-path binds a promoted layer; a MASK does, because it
+     forces WebKit onto a masked-compositing path that honours the radius.
+
+     A uniformly opaque mask, so it changes nothing about how this paints. The
+     commonly quoted form of this hack is -webkit-radial-gradient(white, black),
+     which is a real gradient and really does fade the element's edges; this is
+     the flat version.
+
+     Unverifiable here: headless WebKit does not composite like Safari, which is
+     why the bug does not reproduce in it and why the earlier clip-path moved
+     nothing measurable. */
+  -webkit-mask-image: linear-gradient(#fff, #fff);
+  mask-image: linear-gradient(#fff, #fff);
   isolation: isolate;
 }
 .btn-ghost::before {
