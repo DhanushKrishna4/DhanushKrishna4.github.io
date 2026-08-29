@@ -78,9 +78,27 @@ export default function About() {
         mm.add('(min-width: 900px)', () => {
           /* Only where .pr is actually two columns. Below that it is one column
              and a converge would be two blocks sliding about for no reason. */
-          const range = { trigger: '.pr', start: 'top 88%', end: 'top 42%', scrub: true } as const;
-          gsap.fromTo('.pr-main', { x: -travel }, { x: 0, ease: 'power2.out', scrollTrigger: range });
-          gsap.fromTo('.pr-side', { x: travel }, { x: 0, ease: 'power2.out', scrollTrigger: range });
+          /* Each group is triggered on ITSELF, and starts at `top bottom` —
+             the moment its own top reaches the bottom of the window, which is
+             before any of it is on screen. Triggering the columns on .pr at
+             `top 88%` meant the heading was long since read and the first
+             paragraphs visible before anything moved, so it sat still and then
+             set off. It has to already be moving by the time you see it.
+
+             Two triggers rather than one because the heading and the columns
+             enter at different times — the heading is the top of the section and
+             the columns are most of a screen below it. On a single trigger the
+             heading would finish converging before the columns had appeared. */
+          const span = (trigger: string) =>
+            ({ trigger, start: 'top bottom', end: 'top 55%', scrub: true }) as const;
+
+          /* The heading is left-hand content, so it travels with the left
+             column. .sec-title carries no data-ab of its own — the eyebrow and
+             the lockup inside it do — so it can take the transform directly,
+             the same arrangement as .pr-main and .pr-body. */
+          gsap.fromTo('.sec-title', { x: -travel }, { x: 0, ease: 'power2.out', scrollTrigger: span('.sec-title') });
+          gsap.fromTo('.pr-main', { x: -travel }, { x: 0, ease: 'power2.out', scrollTrigger: span('.pr') });
+          gsap.fromTo('.pr-side', { x: travel }, { x: 0, ease: 'power2.out', scrollTrigger: span('.pr') });
         });
     }, root);
     return () => ctx.revert();
