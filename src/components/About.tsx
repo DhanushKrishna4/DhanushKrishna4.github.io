@@ -52,6 +52,36 @@ export default function About() {
           scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'top 38%', scrub: true },
         },
       );
+
+        /* The two columns converge as the block comes up the screen — his On
+           Track / Off Track section, which brings its halves in from either side.
+
+           Measured off his at 1440, letting the page settle at each position so
+           any smoothing had finished. Both his pairs run to zero and neither is
+           linear:
+
+             scrollY   5700  5900  6000  6100  6300  6600
+             text        28    15     9     3     0     0
+             images      73    42    30    21     9     1
+
+           offset = A x (1 - p)^2 lands on every one of those, which is a
+           scrubbed power2.out — not the `ease: none` the visor above uses. Worth
+           stating because a first read of the numbers looked like the decay of a
+           lerp catching up. It is not: the values hold at each scroll position.
+
+           His text columns travel 28 and his images 73. Ours are text, but here
+           they ARE the content — there are no images carrying the section — so
+           they take the larger figure. Capped in px rather than left as a vw so
+           it cannot grow absurd on a wide monitor. */
+        const travel = Math.min(72, window.innerWidth * 0.05);
+        const mm = gsap.matchMedia();
+        mm.add('(min-width: 900px)', () => {
+          /* Only where .pr is actually two columns. Below that it is one column
+             and a converge would be two blocks sliding about for no reason. */
+          const range = { trigger: '.pr', start: 'top 88%', end: 'top 42%', scrub: true } as const;
+          gsap.fromTo('.pr-main', { x: -travel }, { x: 0, ease: 'power2.out', scrollTrigger: range });
+          gsap.fromTo('.pr-side', { x: travel }, { x: 0, ease: 'power2.out', scrollTrigger: range });
+        });
     }, root);
     return () => ctx.revert();
   }, []);
@@ -74,13 +104,19 @@ export default function About() {
         </header>
 
         <div className="pr">
-          <div className="pr-body" data-ab>
-            {ABOUT.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
+          {/* The wrapper takes the converge, .pr-body keeps the reveal.
+              Both on one element means two tweens writing the same
+              transform and the reveal wins — which showed up as the left
+              column sitting at 0 while the right sat at its full offset. */}
+          <div className="pr-main">
+            <div className="pr-body" data-ab>
+              {ABOUT.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
           </div>
 
-          <div>
+          <div className="pr-side">
             <blockquote className="quote" data-ab>
               “{PULL_QUOTE}”
             </blockquote>
