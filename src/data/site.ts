@@ -211,9 +211,33 @@ export const SKILLS = [
    is what the work is actually built with. Set as wordmarks, not fake logos. */
 export const STACK_ROW = ['Python', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
 
+/* Held as data rather than a hand-written sentence so the count and the issuer list can
+   never drift from the truth — FACTS.certs below is derived from this array, so adding
+   one here is the whole edit. Order is newest issuer group first. */
+export const CERTS = [
+  { name: 'Transform your business with AI', issuer: 'Microsoft', year: 2026 },
+  { name: 'Scale AI in your organization', issuer: 'Microsoft', year: 2026 },
+  { name: 'Embrace responsible AI principles and practices', issuer: 'Microsoft', year: 2026 },
+  { name: 'Create business value with AI', issuer: 'Microsoft', year: 2026 },
+  { name: 'Leverage AI tools and resources for your business', issuer: 'Microsoft', year: 2026 },
+  { name: 'Planning a Generative AI Project', issuer: 'AWS', year: 2026 },
+  { name: 'Introduction to Generative AI — Art of the Possible', issuer: 'AWS', year: 2026 },
+  { name: 'Introduction to Generative AI', issuer: 'Google Cloud', year: 2026 },
+];
+
+const COUNT_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
+  'Nine', 'Ten', 'Eleven', 'Twelve'];
+const CERT_ISSUERS = CERTS.map((c) => c.issuer).filter((v, i, a) => a.indexOf(v) === i);
+const CERT_YEAR = Math.max(...CERTS.map((c) => c.year));
+
 export const FACTS = {
   education: 'B.E. Computer Science — BITS Pilani Dubai, 2022–2026',
-  certs: 'Generative AI — AWS · Google Cloud, 2026',
+  /* The aggregate, not the enumeration. The .skills grid gives every row one line and
+     reads as supporting detail; eight rows of course titles would both swamp the block
+     and invite the reader to weigh each one, which is the weaker case. Count plus
+     issuers is the stronger single fact. Full list is in CERTS above if this ever
+     wants to become its own block. */
+  certs: `${COUNT_WORDS[CERTS.length] ?? CERTS.length} in AI — ${CERT_ISSUERS.join(' · ')}, ${CERT_YEAR}`,
   languages: 'English & Malayalam · Hindi · Spanish & French (A1)',
 };
 
