@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { gsap, reduced } from '../lib/motion';
 import { MARQUEE } from '../data/site';
 import Mark from './Mark';
-import Signature from './Signature';
 
 /**
  * The band: two lines travelling against each other behind the panel, with the
@@ -207,15 +206,6 @@ export default function Marquee() {
       </span>
     </div>
 
-    {/* Outside the band rather than inside it, which is not a preference.
-        `position: sticky` makes a stacking context whatever its z-index, so
-        anything inside the marquee is sealed under the hero panel — the
-        signature drew, and drew BEHIND the thing it is supposed to be signing.
-        Only the edges of it showed, around the panel. As a sibling it can sit
-        over both, which is where his is in every frame. */}
-    <div className="open-sig" aria-hidden="true">
-      <Signature />
-    </div>
     </>
   );
 }
