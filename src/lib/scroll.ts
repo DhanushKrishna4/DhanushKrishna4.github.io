@@ -47,7 +47,16 @@ export function initAnchors(): () => void {
     if (!target) return;
 
     e.preventDefault();
-    if (lenis) lenis.scrollTo(target, { duration: 1.1, offset: -8 });
+    /* Land flush with the section's top edge. A negative offset here stops the
+       scroll short, and since every section is a full-bleed ground butted
+       against the one before it, the leftover strip shows the PREVIOUS
+       section's bottom edge — a red rule sitting above the heading. Zero, not
+       a small negative, is the correct value: there is no fixed header to
+       clear, the nav floats over the ground. The single positive pixel is
+       deliberate: landing at exactly 0 leaves a sub-pixel rounding sliver of
+       the previous section at y=0 on fractional-DPR displays. One pixel past
+       the edge costs nothing — every section carries 80px of top padding. */
+    if (lenis) lenis.scrollTo(target, { duration: 1.1, offset: 1 });
     else target.scrollIntoView();
 
     /* preventDefault also cancels the focus move the browser would have done,
