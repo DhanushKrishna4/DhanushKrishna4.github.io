@@ -2670,7 +2670,16 @@ body.menu-open .nav .btn-ghost::after {
   display: grid;
   gap: clamp(0.9rem, 1.6vw, 1.4rem);
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-items: start;
+  /* stretch, not start. A row is as tall as its tallest card either way, but
+     under `start` the shorter cards keep their own height and leave the slack
+     BELOW them — so the visible gap to the next row was the row gap plus
+     however much shorter that card happened to be, and no two columns matched.
+     Stretching makes every card fill its row, which is the only way the spacing
+     down a column is the row gap and nothing else.
+
+     .wk-out already carries margin-top:auto, so where a card has an outcome the
+     extra height goes above that line and it stays pinned to the bottom edge. */
+  align-items: stretch;
 }
 /* The scatter offsets are NOT here. They were, as an nth-child pattern, and it
    was wrong: this grid is auto-fill, so it is four columns at 1440 and three at
@@ -2859,6 +2868,16 @@ body.menu-open .nav .btn-ghost::after {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+}
+/* Only when the chips are the card's last line — no live link, no outcome.
+   Stretching the cards to a uniform row height is what makes the spacing down
+   a column uniform, and it leaves the shortest cards with real slack. Pinning
+   the chips to the bottom edge puts that slack between the blurb and the chips,
+   where it reads as the card being composed top-and-bottom, instead of trailing
+   off the end as a dead block. Cards that DO have an outcome already end on it,
+   so they are untouched. */
+.wk-in > .wk-stack:last-child {
+  margin-top: auto;
 }
 .wk-stack li {
   font-size: 0.6rem;

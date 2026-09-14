@@ -21,10 +21,9 @@ import Mark from './Mark';
  * the accent and lifts it, which is the same gesture with a tenth of the
  * honest, and the obvious place to spend real assets when there are any.
  */
-/* His two parities, in rem. A card's offset is the sum of them, which is what
-   produces his four values — 0, 5, 10, 15 — as a scatter rather than a ramp. */
+/* How far a deep column sits below a shallow one, in rem. One value, because
+   the offset is per COLUMN and nothing else — see the note in the effect. */
 const BY_COLUMN = 10;
-const BY_ROW = 5;
 
 /* The profile the projects above live in. Read from SOCIALS rather than written
    again, so the footer link and this button can never point at two places. */
@@ -77,22 +76,21 @@ export default function Work() {
        scrolled past it. Linear, because any other ease makes the convergence
        arrive early and then sit there waiting.
 
-       The offsets themselves need care, because his index arithmetic does not
-       transfer. He groups by index % 4, and on HIS layout that lands as:
+       The offset belongs to the COLUMN, not the card. Every card in a column
+       carries the same one, so a column slides as a rigid unit and the spacing
+       between two cards in it is the grid's row gap, always, everywhere. The
+       scatter is columns moving against each other and nothing else.
 
-         column 1:  0, 67, 0, 67 …      column 2:  133, 200, 133, 200 …
-         column 3:  0, 67, 0, 67 …      column 4:  133, 200, 133, 200 …
+       This was previously read out of his bundle as two parities — a column
+       term plus a row term, so cards within a column alternated as well. That
+       is wrong, and it showed as soon as there were three rows: the gap between
+       cards 1 and 5, 5 and 9, and 2 and 6 all came out different sizes. A
+       single per-column offset is what his grid actually does.
 
-       — two independent parities. Columns alternate shallow/deep, and WITHIN a
-       column consecutive cards alternate again. That second alternation is what
-       makes it read as scatter instead of a ramp. Run the same index % 4 on an
-       ordinary row-major grid and you get a clean staircase left to right,
-       which is a different picture entirely; it is what this did at first.
-
-       So the parities are computed from where each card actually landed rather
-       than from its index. That also survives the column count changing: the
-       grid is auto-fill, four columns at 1440 and three at 1100, and anything
-       keyed to the index is only right at one of those. */
+       The column is taken from where the card actually landed rather than from
+       its index, which is what survives the column count changing: the grid is
+       auto-fill, four columns at 1440 and three at 1100, and anything keyed to
+       the index is only right at one of those. */
     const mm = gsap.matchMedia();
     if (grid) {
       /* Above 1100px only. Below it the grid is one or two columns and there is
@@ -103,52 +101,29 @@ export default function Work() {
         /* Layout positions, so they are read before any transform is applied
            and are unaffected by the ones that follow. */
         const xs = [...new Set(cells.map((c) => c.offsetLeft))].sort((a, b) => a - b);
-        const ys = [...new Set(cells.map((c) => c.offsetTop))].sort((a, b) => a - b);
-        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        /* ONE offset per column, and every card in that column carries it.
+           A column therefore moves as a rigid unit: the distance between two
+           cards in the same column is always the grid's row gap and nothing
+           else, and the scatter comes entirely from columns sliding against
+           each other. That is the reference site's arrangement.
 
-        /* The scatter as designed, in px. Resolved to px rather than left in rem
-           because the clamp below compares it against layout distances. */
-        const plan = cells.map((cell) => {
+           What this replaced also varied the offset BY ROW, so two cards in one
+           column sat at different offsets and the gap between them was a
+           different size in every column — visibly so once there were three
+           rows: 0 to 35px between cards 1 and 5, 35 back to 0 between 5 and 9,
+           160 to 176 between 2 and 6.
+
+           It also makes the overlap that prompted this structurally
+           impossible rather than merely clamped. Cards can only ever collide
+           with the card above or below them, which is to say within a column —
+           and within a column every card now moves by the same amount, so the
+           distance between them cannot change at all, at rest or at any point
+           in the scrub. The clamp that used to live here is gone with it. */
+        cells.forEach((cell) => {
           const col = xs.indexOf(cell.offsetLeft);
-          const row = ys.indexOf(cell.offsetTop);
-          return {
-            cell,
-            col,
-            row,
-            top: cell.offsetTop,
-            bottom: cell.offsetTop + cell.offsetHeight,
-            y: ((col % 2) * BY_COLUMN + (row % 2) * BY_ROW) * rem,
-          };
-        });
-
-        /* A transform does not move the cell in layout, so a card pushed down
-           far enough lands ON the card below it. That never showed while there
-           were six projects: the grid was 4x2, the offsets fell on the LAST row,
-           and there was nothing beneath it to hit. At ten it is 4x3 and a middle
-           row collides — Nexus over AI Summarizer by 39px, VoiceGuide over Price
-           Tracker by 58px.
-
-           So each offset is capped by the room actually under that card. Walking
-           a column bottom-up means the neighbour below is already final when its
-           cap is computed, and lowering a card only ever loosens the constraint
-           for the one above it, which is handled next.
-
-           This survives the scrub: every offset scales by the same (1 - progress),
-           so the gap between any two of them only ever shrinks from here. If it
-           clears at rest it clears for the whole passage. */
-        const GUTTER = 6;
-        for (const col of [...new Set(plan.map((p) => p.col))]) {
-          const column = plan.filter((p) => p.col === col).sort((a, b) => a.row - b.row);
-          for (let i = column.length - 2; i >= 0; i--) {
-            const slack = column[i + 1].top - column[i].bottom;
-            const cap = column[i + 1].y + slack - GUTTER;
-            column[i].y = Math.min(column[i].y, Math.max(0, cap));
-          }
-        }
-
-        plan.forEach(({ cell, y }) => {
+          const y = (col % 2) * BY_COLUMN;
           if (!y) return;
-          gsap.set(cell, { y });
+          gsap.set(cell, { y: `${y}rem` });
           /* Reduced motion keeps the offsets and loses the scrub, so the grid
              is a static composition — which is what it was before any of this,
              so nothing is lost there. */
