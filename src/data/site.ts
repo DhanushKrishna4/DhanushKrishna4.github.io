@@ -259,7 +259,7 @@ export const EXPERIENCE: Role[] = [
 ];
 
 export const SKILLS = [
-  { k: 'Languages', v: ['Python', 'Rust', 'Java', 'C', 'SQL', 'JavaScript'] },
+  { k: 'Languages', v: ['Python', 'Rust', 'TypeScript', 'Java', 'C', 'SQL', 'JavaScript'] },
   { k: 'AI / ML', v: ['LLMs', 'RAG', 'Ollama', 'ChromaDB', 'Azure OpenAI', 'Vision models'] },
   { k: 'Backend', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
   { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
