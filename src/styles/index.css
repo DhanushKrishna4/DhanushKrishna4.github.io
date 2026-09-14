@@ -2761,11 +2761,17 @@ body.menu-open .nav .btn-ghost::after {
   inset: 0;
   z-index: 1;
 }
-/* The one element that has to beat that layer. */
-.wk-live {
+/* The one element that has to beat that layer — and the screenshot too, so it
+   stays clickable while the card is hovered. */
+.wk-src {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   align-self: flex-start;
+  /* The card's last line. Under the screenshot everything above it is covered,
+     so anywhere else in the flow leaves it floating in the middle of the
+     picture — and the bottom edge is where the scrim can actually keep it
+     legible. On a card with no outcome it takes the slack itself. */
+  margin-top: auto;
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2776,10 +2782,86 @@ body.menu-open .nav .btn-ghost::after {
   border-bottom: 1px solid var(--signal-0);
   transition: border-color 0.4s var(--ease-grid);
 }
-.wk-live:hover,
-.wk-live:focus-visible {
+.wk-src:hover,
+.wk-src:focus-visible {
   border-bottom-color: var(--signal-hot);
 }
+
+/* ── The screenshot on hover ────────────────────────────────────────────────
+   The reference site swaps a helmet render for a photograph of that helmet in
+   the car. The equivalent here is the project actually running: each of these
+   is a capture of the live build, not a mock-up.
+
+   Sits above the frame and the body copy, below the two things that have to
+   survive the hover — the card's own identity (number, year, title) and the
+   Source link. Those get a scrim rather than a shadow so they stay legible on
+   a screenshot of any brightness, and two of these four are near-white. */
+.wk-shot {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  /* clip-path comes from Frame, in border-box px: the card outline exactly,
+     bite included. */
+  pointer-events: none;
+}
+.wk-shot-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Collapsed at the top edge, so the reveal runs downward over the card the
+     way his photograph does. */
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.62s var(--ease-grid);
+}
+.wk-card:hover .wk-shot-img,
+.wk-card:focus-within .wk-shot-img {
+  clip-path: inset(0 0 0 0);
+}
+/* The scrim rides with the image, so it arrives and leaves on the same clock
+   rather than sitting over the text while the card is at rest. */
+.wk-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgb(5 5 8 / 0.9) 0%, rgb(5 5 8 / 0.55) 18%, rgb(5 5 8 / 0) 40%),
+    /* Reaches 40% up, because the source link sits around 72% of the card and
+       Orrery's screenshot is very nearly white there. */
+    linear-gradient(to top, rgb(5 5 8 / 0.95) 0%, rgb(5 5 8 / 0.78) 14%, rgb(5 5 8 / 0) 34%);
+  opacity: 0;
+  transition: opacity 0.62s var(--ease-grid);
+}
+.wk-card:hover .wk-shot::after,
+.wk-card:focus-within .wk-shot::after {
+  opacity: 1;
+}
+/* Above the screenshot: which card this is, and the way out to the source.
+
+   z-index WITHOUT position, which looks wrong and is not: both of these are
+   flex items, and a flex item takes z-index and makes a stacking context while
+   staying position: static. That distinction is the whole rule here — adding
+   position: relative made .wk-title the containing block for .wk-link::after,
+   and that ::after IS the stretched link. It stopped covering the card and
+   covered only the title, so every card in the grid, including the six with no
+   screenshot at all, lost click-anywhere-for-the-link. */
+.wk-top,
+.wk-title {
+  z-index: 2;
+}
+/* Reduced motion keeps the screenshot and loses the wipe — the information is
+   the picture, not the way it arrives. */
+@media (prefers-reduced-motion: reduce) {
+  .wk-shot-img,
+  .wk-shot::after {
+    transition: none;
+  }
+}
+/* Nothing here for touch screens: the element is not rendered at all on a
+   device that cannot hover — see useCanHover in Frame.tsx. Hiding it in CSS
+   was the first attempt and it does not work, because an eager <img> is
+   fetched whether or not it is displayed. */
 .wk-in {
   /* Was #1a1a1b inside a 1px margin, which together WERE the card: the margin
      let the parent's colour through as a rule and the fill made it a panel.
@@ -2863,6 +2945,9 @@ body.menu-open .nav .btn-ghost::after {
   font-size: 0.78rem;
   line-height: 1.5;
   color: var(--bone);
+}
+.wk-out + .wk-src {
+  margin-top: 0.75rem;
 }
 .wk-stack {
   display: flex;

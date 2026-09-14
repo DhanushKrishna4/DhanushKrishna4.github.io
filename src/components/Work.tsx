@@ -194,16 +194,20 @@ export default function Work() {
               {/* The card IS this outline — there is no fill behind it. Drawn
                   rather than a clip-path, because a clip gives a shape and this
                   needs a stroke with the ground visible on both sides of it. */}
-              <Frame />
+              <Frame shot={p.shot} />
               <div className="wk-in">
                 <div className="wk-top">
                   <span>{p.n}</span>
                   <span>{p.year}</span>
                 </div>
                 <h3 className="wk-title">
+                  {/* The live build where there is one, the repository
+                      otherwise. Four of these projects ARE a page you can open,
+                      so that is what the card should hand you; the source moves
+                      to its own link below. */}
                   <a
                     className="wk-link"
-                    href={p.href}
+                    href={p.live ?? p.href}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -217,25 +221,29 @@ export default function Work() {
                     <li key={s}>{s}</li>
                   ))}
                 </ul>
-                {/* Only where the thing actually runs in a tab. The label is the
-                    same on all four, so the accessible name carries the project
-                    — otherwise a screen reader reads four identical links. */}
-                {p.live && (
-                  <a
-                    className="wk-live"
-                    href={p.live}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Run ${p.title} in the browser`}
-                  >
-                    Run it in the browser
-                  </a>
-                )}
                 {/* Drawn only when there is one. A card with no outcome simply
                     does not have the rule — "used by teams across the region"
                     under a repository with no stars is the one kind of lie on a
                     portfolio that gets checked, and checked easily. */}
                 {p.outcome && <p className="wk-out">{p.outcome}</p>}
+                {/* Only on the four the card now points at a demo for, so the
+                    repository stays one click away rather than being lost to
+                    the swap. Last in the card so it lands on the bottom edge: it
+                    stays above the screenshot on hover, and the bottom edge is
+                    the one place the scrim can keep it legible over a capture
+                    as pale as Orrery's. The label is identical on all four, so the
+                    accessible name carries the project. */}
+                {p.live && (
+                  <a
+                    className="wk-src"
+                    href={p.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${p.title} source on GitHub`}
+                  >
+                    Source
+                  </a>
+                )}
               </div>
             </div>
             </div>

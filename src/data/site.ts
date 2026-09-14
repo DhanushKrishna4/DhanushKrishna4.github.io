@@ -114,9 +114,14 @@ export interface Project {
   href: string;
   /* A build of the project itself, running in the reader's own tab. Only four
      of these have one and it is the whole point of those four — a path tracer
-     you can watch converge argues better than any sentence about it — so it is
-     a link of its own on the card rather than a line in the copy. */
+     you can watch converge argues better than any sentence about it — so the
+     card itself leads here, and the repository moves to a second link. */
   live?: string;
+  /* A screenshot of `live`, taken from the running thing rather than mocked:
+     Loom's attention heatmap, Escapement mid-election with a leader, Orrery's
+     plan for a query it just ran, Lucida's Cornell box at 1,830 samples. Shown
+     on hover. 4:5 to match the card. */
+  shot?: string;
 }
 
 export const PROJECTS: Project[] = [
@@ -131,6 +136,7 @@ export const PROJECTS: Project[] = [
     stack: ['Rust', 'WebAssembly', 'GGUF', 'TypeScript'],
     href: 'https://github.com/DhanushKrishna4/Loom',
     live: 'https://dhanushkrishna4.github.io/Loom/',
+    shot: '/shots/loom.webp',
   },
   {
     n: '02',
@@ -143,6 +149,7 @@ export const PROJECTS: Project[] = [
     stack: ['Rust', 'WebAssembly', 'TypeScript'],
     href: 'https://github.com/DhanushKrishna4/Escapement',
     live: 'https://dhanushkrishna4.github.io/Escapement/',
+    shot: '/shots/escapement.webp',
   },
   {
     n: '03',
@@ -155,6 +162,7 @@ export const PROJECTS: Project[] = [
     stack: ['Rust', 'WebAssembly', 'TypeScript'],
     href: 'https://github.com/DhanushKrishna4/Orrery',
     live: 'https://dhanushkrishna4.github.io/Orrery/',
+    shot: '/shots/orrery.webp',
   },
   {
     n: '04',
@@ -167,6 +175,7 @@ export const PROJECTS: Project[] = [
     stack: ['Rust', 'WGSL', 'WebGPU', 'TypeScript'],
     href: 'https://github.com/DhanushKrishna4/Lucida',
     live: 'https://dhanushkrishna4.github.io/Lucida/',
+    shot: '/shots/lucida.webp',
   },
   {
     n: '05',

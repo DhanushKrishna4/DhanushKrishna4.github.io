@@ -58,9 +58,29 @@ const path = (w: number, h: number) => {
   ].join('');
 };
 
-export default function Frame() {
+/* Whether this device can hover at all. A screenshot that only ever appears on
+   hover is pure weight on a touch screen — and hiding it in CSS does not help,
+   because the browser fetches an eager <img> whether or not it is displayed.
+   Measured: a phone viewport still pulled all four files. So it is not rendered
+   at all rather than rendered and hidden. */
+const useCanHover = () => {
+  const [can, setCan] = useState(
+    () => typeof window === 'undefined' || window.matchMedia('(hover: hover)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover)');
+    const sync = () => setCan(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return can;
+};
+
+export default function Frame({ shot }: { shot?: string }) {
   const host = useRef<SVGSVGElement>(null);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const canHover = useCanHover();
 
   useEffect(() => {
     const card = host.current?.parentElement;
@@ -75,12 +95,45 @@ export default function Frame() {
     return () => ro.disconnect();
   }, []);
 
+  /* Nothing to draw until the box has been measured — a path built from zeroes
+     renders as a smear of arcs in the top-left corner for one frame. */
+  const d = box && box.w > 0 && box.h > DROP + 4 * R ? path(box.w, box.h) : null;
+
   return (
-    <svg className="frame" ref={host} aria-hidden="true" focusable="false">
-      {/* Nothing to draw until the box has been measured — a path built from
-          zeroes renders as a smear of arcs in the top-left corner for one
-          frame. */}
-      {box && box.w > 0 && box.h > DROP + 4 * R && <path d={path(box.w, box.h)} />}
-    </svg>
+    <>
+      {/* The screenshot, clipped to the very same path as the outline. It has
+          to be: the card is not a rectangle — it has the bite out of the
+          bottom-right — and a plain <img> laid over it would square that corner
+          off and paint outside the stroke. Reusing the measured path means the
+          image cannot disagree with the frame at any card size.
+
+          CSS path() takes border-box pixels, which is exactly what this path is
+          already in, so no transform is needed between the two. */}
+      {shot && d && canHover && (
+        <div className="wk-shot" style={{ clipPath: `path("${d}")` }} aria-hidden="true">
+          {/* The wipe lives on the inner element, because the outer one has
+              already spent its clip-path on the card shape and an element gets
+              only one.
+
+              Eager, not lazy. These are hover images: the pointer arrives and
+              the picture has to already be there, and a lazy one starts
+              fetching at exactly the moment it is needed, so the first hover of
+              each card shows an empty wipe. Low priority instead, so the four
+              of them — 116 KB of WebP between them — queue behind everything
+              that paints the page. */}
+          <img
+            className="wk-shot-img"
+            src={shot}
+            alt=""
+            loading="eager"
+            fetchPriority="low"
+            decoding="async"
+          />
+        </div>
+      )}
+      <svg className="frame" ref={host} aria-hidden="true" focusable="false">
+        {d && <path d={d} />}
+      </svg>
+    </>
   );
 }
