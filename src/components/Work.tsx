@@ -171,12 +171,13 @@ export default function Work() {
                entrance. Two elements because they would otherwise both be
                animating `y` and the last tween to run would win. */
             <div className="wk-cell" key={p.n}>
-            <a
-              className="wk-card"
-              href={p.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            {/* A div, not an anchor. Four of these projects have a live build as
+                well as a repository, and an anchor cannot legally contain
+                another one. The title's link stretches an invisible layer over
+                the whole card instead, so the card is still a single click to
+                the repo, and the live link sits above that layer to take its
+                own. */}
+            <div className="wk-card">
               {/* The card IS this outline — there is no fill behind it. Drawn
                   rather than a clip-path, because a clip gives a shape and this
                   needs a stroke with the ground visible on both sides of it. */}
@@ -186,7 +187,16 @@ export default function Work() {
                   <span>{p.n}</span>
                   <span>{p.year}</span>
                 </div>
-                <h3 className="wk-title">{p.title}</h3>
+                <h3 className="wk-title">
+                  <a
+                    className="wk-link"
+                    href={p.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {p.title}
+                  </a>
+                </h3>
                 <p className="wk-kind">{p.kind}</p>
                 <p className="wk-blurb">{p.blurb}</p>
                 <ul className="wk-stack">
@@ -194,13 +204,27 @@ export default function Work() {
                     <li key={s}>{s}</li>
                   ))}
                 </ul>
+                {/* Only where the thing actually runs in a tab. The label is the
+                    same on all four, so the accessible name carries the project
+                    — otherwise a screen reader reads four identical links. */}
+                {p.live && (
+                  <a
+                    className="wk-live"
+                    href={p.live}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Run ${p.title} in the browser`}
+                  >
+                    Run it in the browser
+                  </a>
+                )}
                 {/* Drawn only when there is one. A card with no outcome simply
                     does not have the rule — "used by teams across the region"
                     under a repository with no stars is the one kind of lie on a
                     portfolio that gets checked, and checked easily. */}
                 {p.outcome && <p className="wk-out">{p.outcome}</p>}
               </div>
-            </a>
+            </div>
             </div>
           ))}
         </div>

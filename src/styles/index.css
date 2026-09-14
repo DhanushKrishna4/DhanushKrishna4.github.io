@@ -2726,15 +2726,50 @@ body.menu-open .nav .btn-ghost::after {
   transition: stroke 0.75s var(--ease-grid);
 }
 .wk-card:hover .frame path,
-.wk-card:focus-visible .frame path {
+.wk-card:focus-within .frame path {
   /* His hover lays a second path in lime over the base one. One path whose
      colour changes is the same result without inventing a draw-on animation he
      does have and we have not measured. */
   stroke: var(--signal-hot);
 }
 .wk-card:hover,
-.wk-card:focus-visible {
+/* focus-within, not focus-visible: the card stopped being the anchor when the
+   live link arrived, so a div can never take focus itself. Without this the
+   whole hover state is gone for anyone arriving by keyboard. */
+.wk-card:focus-within {
   transform: translateY(-4px);
+}
+
+/* The stretched link. Covers the card so the repo is still one click anywhere
+   on it, which is what the card did when it WAS the anchor. */
+.wk-link {
+  color: inherit;
+  text-decoration: none;
+}
+.wk-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+/* The one element that has to beat that layer. */
+.wk-live {
+  position: relative;
+  z-index: 2;
+  align-self: flex-start;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--signal-hot);
+  text-decoration: none;
+  /* Transparent to start, so the rule arrives on hover rather than the card
+     carrying four underlines at rest. */
+  border-bottom: 1px solid var(--signal-0);
+  transition: border-color 0.4s var(--ease-grid);
+}
+.wk-live:hover,
+.wk-live:focus-visible {
+  border-bottom-color: var(--signal-hot);
 }
 .wk-in {
   /* Was #1a1a1b inside a 1px margin, which together WERE the card: the margin

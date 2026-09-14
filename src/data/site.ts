@@ -49,6 +49,7 @@ export const STATEMENT = [
 export const ABOUT = [
   'I’m a final-year Computer Science student at BITS Pilani Dubai, based in Abu Dhabi. The work I take on has hard constraints attached: regulated data, air-gapped networks, and whatever hardware is already in the building.',
   'Nexus is the clearest example. Built during my cybersecurity internship at exida, it puts five open-weight models on local hardware behind a router that chooses between them, adds retrieval over the organisation’s own documents, and reads P&ID engineering drawings through a vision pipeline. Nothing it processes leaves the premises.',
+  'The rest is systems work: four engines written from scratch in Rust and compiled to WebAssembly, each one running in a browser tab with no server behind it — a language model’s forward pass, a Raft cluster under deterministic simulation, a SQL query engine, a path tracer. Every one of them is checked against an independent implementation rather than against my own expectations.',
   'The smaller projects are where I try things that don’t have to survive an audit — a travel planner that works in fifteen languages, a link shortener that counts its own clicks, a watcher that tells me when a price drops.',
 ];
 
@@ -101,17 +102,74 @@ export interface Project {
   kind: string;
   year: string;
   blurb: string;
-  /* What changed because it exists. Omitted rather than padded — the repos carry
-     no stars, no deployment and no traffic, so for most of these the honest
-     outcome is that nothing changed and they were built to learn. */
+  /* The one claim on the card a reader could go and check. For the early
+     projects that is who used it and what it was for; for the Rust engines it
+     is what the thing was validated against, which is the strongest honest
+     statement available about a repository with no users. Omitted rather than
+     padded — several of these carry no stars, no deployment and no traffic, and
+     "used by teams across the region" under one of those is the single kind of
+     lie on a portfolio that gets checked, and checked easily. */
   outcome?: string;
   stack: string[];
   href: string;
+  /* A build of the project itself, running in the reader's own tab. Only four
+     of these have one and it is the whole point of those four — a path tracer
+     you can watch converge argues better than any sentence about it — so it is
+     a link of its own on the card rather than a line in the copy. */
+  live?: string;
 }
 
 export const PROJECTS: Project[] = [
   {
     n: '01',
+    title: 'Loom',
+    kind: 'LLM inference engine',
+    year: '2026',
+    blurb:
+      'A language model running in a browser tab — no backend, no ML libraries, the forward pass written out by hand. Eighteen tokens a second, and a revisit loads from cache in under a second.',
+    outcome: 'Byte-identical to the native build, and agrees with PyTorch layer by layer.',
+    stack: ['Rust', 'WebAssembly', 'GGUF', 'TypeScript'],
+    href: 'https://github.com/DhanushKrishna4/Loom',
+    live: 'https://dhanushkrishna4.github.io/Loom/',
+  },
+  {
+    n: '02',
+    title: 'Escapement',
+    kind: 'Distributed consensus',
+    year: '2026',
+    blurb:
+      'A Raft implementation that never touches a clock, a socket or a random number — the simulator owns all three. So a run is a pure function of its seed, and any failure replays exactly.',
+    outcome: 'Every bug the fuzzer found is written up with the seed that reproduces it.',
+    stack: ['Rust', 'WebAssembly', 'TypeScript'],
+    href: 'https://github.com/DhanushKrishna4/Escapement',
+    live: 'https://dhanushkrishna4.github.io/Escapement/',
+  },
+  {
+    n: '03',
+    title: 'Orrery',
+    kind: 'SQL query engine',
+    year: '2026',
+    blurb:
+      'Lexer, parser, optimizer and every operator run in the page, with no backend and no dependencies at all. Type a query and watch each rewrite, and what the plan predicted beside what it cost.',
+    outcome: 'Faster than sql.js on 13 of the 15 queries measured, by as much as 128×.',
+    stack: ['Rust', 'WebAssembly', 'TypeScript'],
+    href: 'https://github.com/DhanushKrishna4/Orrery',
+    live: 'https://dhanushkrishna4.github.io/Orrery/',
+  },
+  {
+    n: '04',
+    title: 'Lucida',
+    kind: 'Physically-based rendering',
+    year: '2026',
+    blurb:
+      'A Monte Carlo path tracer living entirely in WebGPU compute shaders — intersection, acceleration structure and light transport all written here, then diffed against an independent CPU tracer.',
+    outcome: 'Convergence measured against sixteen independent renders rather than assumed.',
+    stack: ['Rust', 'WGSL', 'WebGPU', 'TypeScript'],
+    href: 'https://github.com/DhanushKrishna4/Lucida',
+    live: 'https://dhanushkrishna4.github.io/Lucida/',
+  },
+  {
+    n: '05',
     title: 'Nexus',
     kind: 'Private AI infrastructure',
     year: '2026',
@@ -122,7 +180,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/Nexus',
   },
   {
-    n: '02',
+    n: '06',
     title: 'VoiceGuide AI',
     kind: 'Multilingual voice interface',
     year: '2025',
@@ -133,7 +191,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/VoiceGuideAI',
   },
   {
-    n: '03',
+    n: '07',
     title: 'URL Shortener',
     kind: 'HTTP service',
     year: '2025',
@@ -142,7 +200,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/URL-Shortener',
   },
   {
-    n: '04',
+    n: '08',
     title: 'Stock Dashboard',
     kind: 'Data visualisation',
     year: '2025',
@@ -152,7 +210,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/Stock-Dashboard',
   },
   {
-    n: '05',
+    n: '09',
     title: 'AI Summarizer',
     kind: 'Applied LLM',
     year: '2025',
@@ -162,7 +220,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/AI-Summarizer',
   },
   {
-    n: '06',
+    n: '10',
     title: 'Price Tracker',
     kind: 'Scheduled automation',
     year: '2025',
@@ -201,15 +259,15 @@ export const EXPERIENCE: Role[] = [
 ];
 
 export const SKILLS = [
-  { k: 'Languages', v: ['Python', 'Java', 'C', 'SQL', 'JavaScript'] },
+  { k: 'Languages', v: ['Python', 'Rust', 'Java', 'C', 'SQL', 'JavaScript'] },
   { k: 'AI / ML', v: ['LLMs', 'RAG', 'Ollama', 'ChromaDB', 'Azure OpenAI', 'Vision models'] },
   { k: 'Backend', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
-  { k: 'Systems', v: ['Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
+  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
 ];
 
 /* The logo row. the reference site runs partner brands; the honest equivalent on a portfolio
    is what the work is actually built with. Set as wordmarks, not fake logos. */
-export const STACK_ROW = ['Python', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
+export const STACK_ROW = ['Python', 'Rust', 'WebAssembly', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
 
 /* Held as data rather than a hand-written sentence so the count and the issuer list can
    never drift from the truth — FACTS.certs below is derived from this array, so adding
