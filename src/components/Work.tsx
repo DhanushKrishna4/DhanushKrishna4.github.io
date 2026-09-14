@@ -104,13 +104,51 @@ export default function Work() {
            and are unaffected by the ones that follow. */
         const xs = [...new Set(cells.map((c) => c.offsetLeft))].sort((a, b) => a - b);
         const ys = [...new Set(cells.map((c) => c.offsetTop))].sort((a, b) => a - b);
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 
-        cells.forEach((cell) => {
+        /* The scatter as designed, in px. Resolved to px rather than left in rem
+           because the clamp below compares it against layout distances. */
+        const plan = cells.map((cell) => {
           const col = xs.indexOf(cell.offsetLeft);
           const row = ys.indexOf(cell.offsetTop);
-          const offset = (col % 2) * BY_COLUMN + (row % 2) * BY_ROW;
-          if (!offset) return;
-          gsap.set(cell, { y: `${offset}rem` });
+          return {
+            cell,
+            col,
+            row,
+            top: cell.offsetTop,
+            bottom: cell.offsetTop + cell.offsetHeight,
+            y: ((col % 2) * BY_COLUMN + (row % 2) * BY_ROW) * rem,
+          };
+        });
+
+        /* A transform does not move the cell in layout, so a card pushed down
+           far enough lands ON the card below it. That never showed while there
+           were six projects: the grid was 4x2, the offsets fell on the LAST row,
+           and there was nothing beneath it to hit. At ten it is 4x3 and a middle
+           row collides — Nexus over AI Summarizer by 39px, VoiceGuide over Price
+           Tracker by 58px.
+
+           So each offset is capped by the room actually under that card. Walking
+           a column bottom-up means the neighbour below is already final when its
+           cap is computed, and lowering a card only ever loosens the constraint
+           for the one above it, which is handled next.
+
+           This survives the scrub: every offset scales by the same (1 - progress),
+           so the gap between any two of them only ever shrinks from here. If it
+           clears at rest it clears for the whole passage. */
+        const GUTTER = 6;
+        for (const col of [...new Set(plan.map((p) => p.col))]) {
+          const column = plan.filter((p) => p.col === col).sort((a, b) => a.row - b.row);
+          for (let i = column.length - 2; i >= 0; i--) {
+            const slack = column[i + 1].top - column[i].bottom;
+            const cap = column[i + 1].y + slack - GUTTER;
+            column[i].y = Math.min(column[i].y, Math.max(0, cap));
+          }
+        }
+
+        plan.forEach(({ cell, y }) => {
+          if (!y) return;
+          gsap.set(cell, { y });
           /* Reduced motion keeps the offsets and loses the scrub, so the grid
              is a static composition — which is what it was before any of this,
              so nothing is lost there. */
