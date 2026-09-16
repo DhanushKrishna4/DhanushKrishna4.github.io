@@ -24,11 +24,13 @@ import Mark from './Mark';
  * What was removed and where it went. The display name is the wordmark on the
  * bar, which says it at every scroll position rather than once. The standfirst
  * — "Final-year CS student. I build machine-learning systems for places the
- * cloud can't reach." — is not re-homed anywhere, because both halves of it
- * already exist further down verbatim: the statement band shouts MACHINE
- * LEARNING FOR PLACES THE CLOUD CAN'T REACH, and the about copy opens "I'm a
- * final-year Computer Science student at BITS Pilani Dubai". Moving it would
- * have put the same sentence on the page twice.
+ * cloud can't reach.", quoted as it stood then — is not re-homed anywhere,
+ * because both halves of it are already said further down: the statement band
+ * shouts MACHINE LEARNING FOR PLACES THE CLOUD CAN'T REACH, and the about copy
+ * opens on who he is and where he studied. Moving it would have put the same
+ * sentence on the page twice. (The studying half has since become "a Computer
+ * Science graduate of BITS Pilani Dubai" — he graduated in September 2026 —
+ * which is why this no longer matches the about line word for word.)
  *
  * The <h1> stays as a visually-hidden heading. The name has to be the document
  * heading for search and for anyone navigating by headings; it does not have to

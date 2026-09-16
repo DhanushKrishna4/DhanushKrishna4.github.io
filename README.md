@@ -1,6 +1,6 @@
 # Dhanush Krishna — Portfolio
 
-Single-page portfolio for a final-year Computer Science student in Abu Dhabi,
+Single-page portfolio for a Computer Science graduate in Abu Dhabi,
 working in machine learning and cybersecurity.
 
 **[dhanushkrishna4.github.io](https://dhanushkrishna4.github.io)**
