@@ -49,7 +49,7 @@ export const STATEMENT = [
 export const ABOUT = [
   'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. The work I take on has hard constraints attached: regulated data, air-gapped networks, and whatever hardware is already in the building.',
   'Nexus is the clearest example. Built during my cybersecurity internship at exida, it puts five open-weight models on local hardware behind a router that chooses between them, adds retrieval over the organisation’s own documents, and reads P&ID engineering drawings through a vision pipeline. Nothing it processes leaves the premises.',
-  'The rest is systems work: four engines written from scratch in Rust and compiled to WebAssembly, each one running in a browser tab with no server behind it — a language model’s forward pass, a Raft cluster under deterministic simulation, a SQL query engine, a path tracer. Every one of them is checked against an independent implementation rather than against my own expectations.',
+  'The rest is systems work, all of it running in a browser tab with no server behind it: a language model’s forward pass, a Raft cluster under deterministic simulation and a SQL query engine, each written from scratch in Rust and compiled to WebAssembly, and a path tracer that lives in WebGPU compute shaders. Every one of them is checked against an independent implementation rather than against my own expectations.',
   'The smaller projects are where I try things that don’t have to survive an audit — a travel planner that works in fifteen languages, a link shortener that counts its own clicks, a watcher that tells me when a price drops.',
 ];
 
