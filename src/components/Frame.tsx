@@ -111,9 +111,13 @@ export default function Frame({ shot }: { shot?: string }) {
           already in, so no transform is needed between the two. */}
       {shot && d && canHover && (
         <div className="wk-shot" style={{ clipPath: `path("${d}")` }} aria-hidden="true">
-          {/* The wipe lives on the inner element, because the outer one has
+          {/* The reveal lives on this inner element, because the outer one has
               already spent its clip-path on the card shape and an element gets
-              only one.
+              only one. The scrim rides in here too, as this element's ::after,
+              so it arrives with the picture instead of fading in over ground
+              the picture has not reached yet. */}
+          <div className="wk-shot-in">
+          {/* The image itself does nothing but fill.
 
               Eager, not lazy. These are hover images: the pointer arrives and
               the picture has to already be there, and a lazy one starts
@@ -129,6 +133,7 @@ export default function Frame({ shot }: { shot?: string }) {
             fetchPriority="low"
             decoding="async"
           />
+          </div>
         </div>
       )}
       <svg className="frame" ref={host} aria-hidden="true" focusable="false">

@@ -2805,23 +2805,44 @@ body.menu-open .nav .btn-ghost::after {
      bite included. */
   pointer-events: none;
 }
+/* The reveal, read off his live helmet grid rather than traced from frames.
+   His is an ELLIPSE anchored at the top centre, not a straight-edged wipe:
+
+     at rest   clip-path: ellipse(100% 0%   at 50% 0%)   scale 1.05
+     hovered   clip-path: ellipse(100% 120% at 50% 0%)   scale 1
+
+   The horizontal radius is the full card and the vertical one sweeps down, so
+   the leading edge is the bottom of that ellipse — a curve, which is the whole
+   character of it. It grows to 120% rather than 100%: past the card's own
+   height the arc keeps flattening, so it lands flat instead of stopping while
+   still visibly bowed. Everything after about 100% is off-card and invisible,
+   which is why it reads as quick despite the long tail.
+
+   --ease-grid is already his curve, measured for the grid: slow away, fast
+   across, a long settle. The sampled reveal has exactly that shape. */
+.wk-shot-in {
+  position: absolute;
+  inset: 0;
+  clip-path: ellipse(100% 0% at 50% 0%);
+  transform: scale(1.05);
+  transition:
+    clip-path 0.72s var(--ease-grid),
+    transform 0.72s var(--ease-grid);
+}
+.wk-card:hover .wk-shot-in,
+.wk-card:focus-within .wk-shot-in {
+  clip-path: ellipse(100% 120% at 50% 0%);
+  transform: scale(1);
+}
 .wk-shot-img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Collapsed at the top edge, so the reveal runs downward over the card the
-     way his photograph does. */
-  clip-path: inset(0 0 100% 0);
-  transition: clip-path 0.62s var(--ease-grid);
 }
-.wk-card:hover .wk-shot-img,
-.wk-card:focus-within .wk-shot-img {
-  clip-path: inset(0 0 0 0);
-}
-/* The scrim rides with the image, so it arrives and leaves on the same clock
-   rather than sitting over the text while the card is at rest. */
-.wk-shot::after {
+/* Inside the ellipse, so it is revealed by the same sweep rather than fading
+   in over parts of the card the picture has not covered yet. */
+.wk-shot-in::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -2830,12 +2851,6 @@ body.menu-open .nav .btn-ghost::after {
     /* Reaches 40% up, because the source link sits around 72% of the card and
        Orrery's screenshot is very nearly white there. */
     linear-gradient(to top, rgb(5 5 8 / 0.95) 0%, rgb(5 5 8 / 0.78) 14%, rgb(5 5 8 / 0) 34%);
-  opacity: 0;
-  transition: opacity 0.62s var(--ease-grid);
-}
-.wk-card:hover .wk-shot::after,
-.wk-card:focus-within .wk-shot::after {
-  opacity: 1;
 }
 /* Above the screenshot: which card this is, and the way out to the source.
 
@@ -2853,8 +2868,7 @@ body.menu-open .nav .btn-ghost::after {
 /* Reduced motion keeps the screenshot and loses the wipe — the information is
    the picture, not the way it arrives. */
 @media (prefers-reduced-motion: reduce) {
-  .wk-shot-img,
-  .wk-shot::after {
+  .wk-shot-in {
     transition: none;
   }
 }
