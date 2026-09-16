@@ -2,40 +2,11 @@ import { useEffect, useRef } from 'react';
 import { reduced } from '../lib/motion';
 
 /**
- * The living ground.
- *
- * This is the reference site's background field, rebuilt from its actual
- * construction rather than from what it looks like — which matters, because the
- * two are not the same and the first version of this file guessed.
- *
- * What his is doing, read off the running site: a full-screen fragment shader
- * samples 3D simplex noise with time on the z axis, distorts the sample point
- * with a second, lower-frequency noise and with the cursor, multiplies the
- * result by a detail factor and takes `fract()` of it. That last step is the
- * whole trick — fract of a scaled scalar field turns a smooth hill into a stack
- * of repeating bands, which is exactly what a topographic map is. The banded
- * value then mixes the ground colour toward the foreground colour, which is
- * where the soft masses come from, and a second pass samples the same field at
- * four neighbouring pixels and draws a line wherever they disagree, which is
- * where the hairlines come from. One field, both layers.
- *
- * The old version here drew a couple of dozen wobbling closed curves. That
- * produces meandering rings; his produces nested closed loops that split, merge
- * and pinch off as the surface underneath them moves, because they are level
- * sets of something rather than shapes in their own right. No amount of tuning
- * the old approach reaches that, which is why this is a rewrite.
- *
- * Reimplemented rather than ported. The noise below is Perlin gradient noise
- * written here, the contours are extracted by marching squares rather than by
- * edge-detecting a texture, and none of his shader source is in this file.
- *
- * Why not a shader, given his is one. Each section on this page carries its own
- * ground and its own field, so a shader would mean six WebGL contexts on top of
- * the one the hero object already holds. The split here does the same work
- * without that: the band fill is drawn as a small image and scaled up, where
- * bilinear smoothing is exactly the soft ramp we want, and the contours are cut
- * as vectors from the same grid so they stay hairline-crisp at any size — which
- * an upscaled texture would not be.
+ * Animated contour strokes sampled from a gently warped scalar field.
+ * Static panels use the same field at its starting time. Independent x/y warps
+ * preserve broad rounded bends instead of stretching them into diagonal loops.
+ * A coarse sampling grid keeps the canvas inexpensive; connected quadratic
+ * paths keep the strokes smooth at display resolution.
  */
 
 interface Props {
@@ -50,12 +21,8 @@ interface Props {
 }
 
 /* ── 3D gradient noise ───────────────────────────────────────────────────── */
-/* Perlin rather than simplex. Simplex is what his shader uses and is the better
-   choice inside a fragment shader, where its lower sample count per lookup is
-   worth the more complex setup; in JS at a few thousand samples a frame neither
-   cost matters, and the classic lattice is the one that is easy to be certain
-   is correct. With the domain distortion applied below, the axis alignment that
-   is Perlin's usual tell does not survive to the output. */
+/* Deterministic 3D Perlin noise. Time moves through the third dimension;
+   a noninteger starting slice avoids grid-aligned frozen panels. */
 const PERM = new Uint8Array(512);
 {
   const p = new Uint8Array(256);
@@ -116,19 +83,18 @@ function noise3(x: number, y: number, z: number): number {
   );
 }
 
-/* His uniform names, kept so the two can be compared. */
+/* Field scale is shared by moving sections and static panels. */
 const SCALE = 1.65;
 const SPEED = 0.055;
 const DISTORT_SCALE = 0.42;
-const DISTORT_INTENSITY = 0.85;
+const DISTORT_INTENSITY = 0.24;
 const CURSOR_INTENSITY = 0.28;
-/* Grid spacing. Contours land sub-pixel whatever this is, because marching
-   squares interpolates each crossing along its cell edge — and since the band
-   fill is now cut from those same crossings rather than rasterised, it inherits
-   that accuracy too. Three finer grids were tried first (9px, 6px) on the
-   assumption that the fill needed resolution; 6px still staircased and cost 26
-   fps at the work section. The fill was the wrong shape, not the wrong size. */
+/* Subpixel edge interpolation and quadratic joins keep a 14px grid smooth
+   without the cost of evaluating noise at screen resolution. */
 const CELL = 14;
+// Distortion varies much more slowly than the contours. Sample it on a coarser
+// grid and interpolate to keep the rounded field within the original budget.
+const WARP_STEP = 4;
 
 export default function Contours({ seed = 1, count = 9, still: frozen = false }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -145,6 +111,10 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     let cols = 0;
     let rows = 0;
     let field = new Float32Array(0);
+    let warpCols = 0;
+    let warpRows = 0;
+    let warpX = new Float32Array(0);
+    let warpY = new Float32Array(0);
     /* Segment buffers, one per weight band, allocated once and refilled each
        frame. Four numbers a segment; a full field runs to a couple of thousand
        across every level, so this is generous. */
@@ -160,11 +130,7 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     let grad = new Float32Array(0);
     const HIST = 96;
     const hist = new Int32Array(HIST);
-    /* Two device pixels. Dropping to one was tried for the even-odd fill's
-       sake and gives the cost back in the wrong currency: the hairlines lose
-       half their depth, measured, because a 1px stroke on a 1x buffer is
-       resampled by the browser instead of drawn. The fill is made cheaper below
-       instead, where it does not show. */
+    // Cap backing resolution at 2x while preserving thin antialiased strokes.
     const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
 
     /* Read once, not per frame. The stylesheet sets `color` here and .on-dark
@@ -191,12 +157,14 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     let raf = 0;
 
     const size = () => {
-      const r = canvas.getBoundingClientRect();
-      w = r.width;
-      h = r.height;
+      // The hero scales this canvas during scrolling. Its transformed bounds
+      // can be much smaller than its layout box, leaving a stretched, blurry
+      // field when it expands again without another layout resize.
+      const cs = getComputedStyle(canvas);
+      w = parseFloat(cs.width);
+      h = parseFloat(cs.height);
       if (!w || !h) return;
 
-      const cs = getComputedStyle(canvas);
       const m = cs.color.match(/[\d.]+/g);
       if (m && m.length >= 3) line = [+m[0], +m[1], +m[2]];
       const wv = parseFloat(cs.getPropertyValue('--field-weight'));
@@ -210,6 +178,10 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
       rows = Math.max(2, Math.ceil(h / CELL)) + 1;
       field = new Float32Array(cols * rows);
       grad = new Float32Array(cols * rows);
+      warpCols = Math.ceil((cols - 1) / WARP_STEP) + 1;
+      warpRows = Math.ceil((rows - 1) / WARP_STEP) + 1;
+      warpX = new Float32Array(warpCols * warpRows);
+      warpY = new Float32Array(warpCols * warpRows);
     };
     size();
     /* Setting canvas.width clears the canvas — that is what assigning to it
@@ -253,15 +225,12 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
     const draw = (now: number) => {
       raf = requestAnimationFrame(draw);
       if (!visible || !w || !h) return;
-      /* Twenty-two frames a second. It was thirty; the banded fill costs more
-         than the smooth one it replaced, and this is the cheapest place to give
-         some of that back — the field drifts slowly enough that the difference
-         is not perceptible, where a softer hairline or a coarser band edge
-         both were. */
+      // About 22fps is enough for this slow drift and keeps canvas work bounded.
       if (now - last < 45) return;
       last = now;
 
-      const t = still ? 0 : (now / 1000) * SPEED;
+      // A noninteger starting slice keeps frozen fields off the Perlin lattice.
+      const t = 0.73 + (still ? 0 : (now / 1000) * SPEED);
       /* A frozen field paints once. Leaving the loop running to re-draw an
          identical frame thirty times a second is the kind of thing that only
          shows up on a battery. */
@@ -274,14 +243,36 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
       const unit = Math.min(w, h);
       const off = seed * 13.37;
 
+      for (let j = 0; j < warpRows; j++) {
+        const y = ((j * WARP_STEP * CELL) / unit * SCALE + off) * DISTORT_SCALE;
+        for (let i = 0; i < warpCols; i++) {
+          const x = ((i * WARP_STEP * CELL) / unit * SCALE + off) * DISTORT_SCALE;
+          const k = j * warpCols + i;
+          warpX[k] = noise3(x + 7.1, y, t * 0.6);
+          warpY[k] = noise3(x, y + 19.3, t * 0.6);
+        }
+      }
+
       for (let j = 0; j < rows; j++) {
+        const wy = Math.min(Math.floor(j / WARP_STEP), warpRows - 2);
+        const fy = j / WARP_STEP - wy;
+        const y = ((j * CELL) / unit) * SCALE + off;
         for (let i = 0; i < cols; i++) {
           const x = ((i * CELL) / unit) * SCALE + off;
-          const y = ((j * CELL) / unit) * SCALE + off;
-          const d = noise3(x * DISTORT_SCALE, y * DISTORT_SCALE, t * 0.6);
+          const wx = Math.min(Math.floor(i / WARP_STEP), warpCols - 2);
+          const fx = i / WARP_STEP - wx;
+          const k = wy * warpCols + wx;
+          const a = (1 - fx) * (1 - fy);
+          const b = fx * (1 - fy);
+          const c = (1 - fx) * fy;
+          const d = fx * fy;
+          // Independent, gentle warps keep bends rounded. Applying one large
+          // displacement to both axes sheared the field into diagonal spindles.
+          const dx = a * warpX[k] + b * warpX[k + 1] + c * warpX[k + warpCols] + d * warpX[k + warpCols + 1];
+          const dy = a * warpY[k] + b * warpY[k + 1] + c * warpY[k + warpCols] + d * warpY[k + warpCols + 1];
           const n = noise3(
-            x + d * DISTORT_INTENSITY + have.x * CURSOR_INTENSITY,
-            y + d * DISTORT_INTENSITY + have.y * CURSOR_INTENSITY,
+            x + dx * DISTORT_INTENSITY + have.x * CURSOR_INTENSITY,
+            y + dy * DISTORT_INTENSITY + have.y * CURSOR_INTENSITY,
             t,
           );
           field[j * cols + i] = n * 0.5 + 0.5;
@@ -318,61 +309,14 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
 
       ctx.clearRect(0, 0, w, h);
 
-      /* ── masses and contours, cut from the same crossings ───────────────── */
-      /* His masses have edges: side by side, his are flat regions with a
-         defined boundary where ours were a smooth gradient with none. That edge
-         is `fract` — his shader posterises the field per pixel and the band
-         boundary is the edge.
-
-         Getting there took four wrong turns, all of them rasterising the fill
-         into a small image and scaling it up. Banding at the grid nodes and
-         interpolating after made the edge crawl a whole cell at a time.
-         Interpolating first and banding after fixed the crawl and left the
-         boundary faceted, because an iso-line of a piecewise-linear surface is
-         piecewise-linear — a staircase wherever it runs near-horizontal.
-         Smoothstep across the cell replaced the facets with notches, since its
-         gradient vanishes at every node. Finer grids helped and did not
-         converge: 9px still staircased, 6px still staircased and cost 26fps.
-
-         The fill was the wrong shape rather than the wrong size. Marching
-         squares already locates each crossing sub-pixel along its cell edge —
-         that is why the contour lines were smooth the whole time — so the bands
-         are filled from those same crossings: for every level, the part of each
-         cell lying above it, with runs of fully-covered cells merged into one
-         rectangle per row so the path stays a few hundred pieces rather than
-         one per cell. The fills nest, so the tone accumulates level by level
-         and the field posterises into steps whose boundaries are exactly the
-         contours drawn over them.
-
-         It is also cheaper than any of the rasters: the grid went back to 14px
-         and the whole field is one pass. */
+      // Strokes only: all levels share the sampled field, with no filled bands.
       for (let i = 0; i < BANDS; i++) segN[i] = 0;
-
-      /* No soft masses, and this is a removal rather than a value set to zero.
-
-         They were added because a whole-screen comparison read his ground as
-         carrying large pale shapes and ours as a blank sheet with a few lines
-         on it. That reading was wrong. Blurring both grounds hard enough to
-         destroy the hairlines and then stretching the remaining twenty-six
-         levels across full black to white — which is the only way to see tone
-         this faint — his comes back flat cream everywhere except the halo
-         around his own portrait. Ours came back covered in grey shapes.
-
-         Dhanush has said three times that he has no blobs. He was right three
-         times. What his ground actually has at low frequency is nothing: the
-         tone people think they see there is his cursor effect, which this site
-         does not have and is not getting until there is a portrait to build it
-         around.
-
-         The whole layer goes, not its opacity: the low-resolution canvas, the
-         per-cell loop, the putImageData and the scaled drawImage were a frame's
-         work every frame to paint something that should not be on the page. */
 
       /* ── the contours ──────────────────────────────────────────────────── */
       for (let c = 1; c < count; c++) {
         const level = c / count;
         for (let j = 0; j < rows - 1; j++) {
-          const y0 = j * CELL - CELL / 2;
+          const y0 = j * CELL;
           const y1 = y0 + CELL;
           for (let i = 0; i < cols - 1; i++) {
             const a = field[j * cols + i];
@@ -386,7 +330,7 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
             if (dd > level) code |= 1;
             if (code === 0 || code === 15) continue;
 
-            const x0 = i * CELL - CELL / 2;
+            const x0 = i * CELL;
             const x1 = x0 + CELL;
             const tx = x0 + ((level - a) / (b - a || 1e-6)) * CELL;
             const ry = y0 + ((level - b) / (cc - b || 1e-6)) * CELL;
@@ -413,10 +357,17 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
               case 4: case 11: put(tx, y0, x1, ry); break;
               case 6: case 9: put(tx, y0, bx, y1); break;
               case 7: case 8: put(x0, ly, tx, y0); break;
-              /* Saddles. Both pairings are valid; taking one consistently is
-                 what stops the line flickering as the field crosses. */
-              case 5: put(x0, ly, tx, y0); put(bx, y1, x1, ry); break;
-              case 10: put(x0, ly, bx, y1); put(tx, y0, x1, ry); break;
+              // The asymptotic decider follows the actual surface at a saddle.
+              // A fixed pairing produces sharp pinches as two contours meet.
+              case 5: case 10: {
+                const q = (a - level) * (cc - level) - (b - level) * (dd - level);
+                if (q > 0) {
+                  put(tx, y0, x1, ry); put(x0, ly, bx, y1);
+                } else {
+                  put(x0, ly, tx, y0); put(bx, y1, x1, ry);
+                }
+                break;
+              }
             }
             segN[bnd] = n;
           }
@@ -438,8 +389,10 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
          already affordable. */
       const smooth = (buf: Float32Array, n: number) => {
         const count2 = n >> 2;
-        const key = (x: number, y: number) => Math.round(x * 8) * 100000 + Math.round(y * 8);
-        const ends = new Map<number, number[]>();
+        // Shared edges have identical Float32 endpoints. Rounding to 1/8px
+        // merged distinct crossings near a saddle, creating tiny false hooks.
+        const key = (x: number, y: number) => `${x},${y}`;
+        const ends = new Map<string, number[]>();
         for (let i = 0; i < count2; i++) {
           const k = i << 2;
           for (const kk of [key(buf[k], buf[k + 1]), key(buf[k + 2], buf[k + 3])]) {
@@ -464,7 +417,7 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
             if (nxt < 0) return;
             used[nxt] = 1;
             const k = nxt << 2;
-            const sameStart = Math.abs(buf[k] - cx) < 0.01 && Math.abs(buf[k + 1] - cy) < 0.01;
+            const sameStart = buf[k] === cx && buf[k + 1] === cy;
             cx = sameStart ? buf[k + 2] : buf[k];
             cy = sameStart ? buf[k + 3] : buf[k + 1];
             push(cx, cy);
@@ -484,6 +437,18 @@ export default function Contours({ seed = 1, count = 9, still: frozen = false }:
           if (px.length === 2) {
             ctx.moveTo(px[0], py[0]);
             ctx.lineTo(px[1], py[1]);
+            continue;
+          }
+          const end = px.length - 1;
+          if (px[0] === px[end] && py[0] === py[end]) {
+            // Smooth the closing join too; an open stroke leaves a cusp at the
+            // first point even when every other joint on the loop is rounded.
+            ctx.moveTo((px[end - 1] + px[0]) / 2, (py[end - 1] + py[0]) / 2);
+            for (let j = 0; j < end; j++) {
+              const next = (j + 1) % end;
+              ctx.quadraticCurveTo(px[j], py[j], (px[j] + px[next]) / 2, (py[j] + py[next]) / 2);
+            }
+            ctx.closePath();
             continue;
           }
           ctx.moveTo(px[0], py[0]);

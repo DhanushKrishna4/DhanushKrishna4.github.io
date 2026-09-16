@@ -968,11 +968,8 @@ body.is-ready {
 }
 
 /* ── the contour field ─────────────────────────────────────────────────── */
-/* the reference site's grounds are never flat and never still: contours morph and large soft
-   masses drift behind them. See components/Contours.tsx — this is a canvas now,
-   so the alphas live there rather than here. All this has to do is place it and
-   tell it what colour the ground wants, which .on-dark then flips without the
-   field needing to know which section it is in. */
+/* The canvas draws contour strokes. Each ground supplies its stroke color;
+   the component controls animation, line weight, and static panel rendering. */
 .contours {
   position: absolute;
   inset: 0;
