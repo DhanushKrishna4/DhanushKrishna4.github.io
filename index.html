@@ -14,6 +14,16 @@
          URL, which is the only thing that reliably re-fetches — and it fixes it
          for everyone who has already visited, not just for this machine. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=9" />
+    <!-- 144/96/48 are for Google, which wants a square favicon that is a
+         multiple of 48px before it will show one beside a search result; the
+         largest we had was 32 and the result rendered the generic globe. The
+         SVG stays FIRST so Safari keeps choosing it and the dark-mode
+         behaviour settled on above is unchanged. There is also a real
+         /favicon.ico at the root now — Google probes that path by default and
+         it was a 404. -->
+    <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png?v=9" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png?v=9" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=9" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=9" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=9" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=9" />
