@@ -403,6 +403,11 @@ body {
   overflow-x: clip;
 }
 
+#root {
+  /* Keep negative background layers above the body canvas. */
+  isolation: isolate;
+}
+
 img,
 svg,
 canvas {
@@ -1904,6 +1909,7 @@ body.menu-open .nav .btn-ghost::after {
   position: sticky;
   top: 0;
   height: 100vh;
+  z-index: -1;
 }
 .ground-olive > .open,
 .ground-olive > .sec {
@@ -1942,7 +1948,10 @@ body.menu-open .nav .btn-ghost::after {
 .hero {
   position: sticky;
   top: 0;
-  z-index: 2;
+  /* Negative layers inside .open preserve the composition while keeping
+     Safari from treating the viewport-sized stage as browser-bar chrome.
+     Its edge sampling ignores the shrinking clip-path below. */
+  z-index: -2;
   height: 100vh;
   /* The box is the LARGE viewport so the paper runs under the browser toolbar,
      but the content is centred and would ride down with it — measured, the
@@ -1986,7 +1995,7 @@ body.menu-open .nav .btn-ghost::after {
 .open .mq {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: -3;
   height: 100vh;
   margin-top: -100vh;
   padding: 0;
@@ -2298,17 +2307,11 @@ body.menu-open .nav .btn-ghost::after {
    viewport tall, z-index -1. His content scrolls at 1:1 over a ground that
    never moves.
 
-   z-index 0 and FIRST in <main>, which took a second attempt. z-index -1 is the
-   obvious choice and it is wrong here: html carries a background, so body's is
-   painted as an ordinary block background — and block backgrounds are painted
-   AFTER negative-z-index children, not before. Body's opaque paper sat straight
-   on top of this, hiding the field and the colour fade behind a flat sheet the
-   same colour as the ground. The canvas was drawing the whole time.
-
-   A fixed element is positioned, so at z-index 0 it paints in the positioned
-   layer, which is above body's background. Everything else then sorts by DOM
-   order: this is the first thing in <main>, so the olive run and the ink
-   section paint over it, and About and Record are transparent so it shows.
+   Safari excludes negative viewport-sized layers from its fixed-container
+   edge tinting. At z-index 0 this layer could leave solid paper-colored strips
+   behind the status and tab bars while a different section was visible.
+   #root isolates the stack so this negative layer remains above the body's
+   background and visible through the transparent About and Record sections.
 
    The colour is scrubbed to sage across the Record section; see the note in
    Record.tsx. --paper is the resting value so the ground is right before the
@@ -2316,7 +2319,7 @@ body.menu-open .nav .btn-ghost::after {
 .ground-light {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   background: var(--paper);
   pointer-events: none;
 }
@@ -2411,7 +2414,7 @@ body.menu-open .nav .btn-ghost::after {
 .open-eyebrow {
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: -1;
   height: 100vh;
   margin-top: -100vh;
   display: grid;
