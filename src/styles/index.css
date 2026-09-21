@@ -400,7 +400,8 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
+  /* Leave the document unclipped so Safari can extend its scrolling content
+     behind the browser bars. Clip overflowing artwork in its own section. */
 }
 
 #root {
