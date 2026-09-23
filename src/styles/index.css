@@ -386,6 +386,13 @@ body::-webkit-scrollbar {
   will-change: transform;
 }
 
+/* Touch devices omit the indicator; desktop appearance and fade stay intact. */
+@media (hover: none) and (pointer: coarse) {
+  .scroll-indicator {
+    display: none;
+  }
+}
+
 body {
   margin: 0;
   /* The entry colour, not the page colour.
@@ -400,8 +407,7 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  /* Leave the document unclipped so Safari can extend its scrolling content
-     behind the browser bars. Clip overflowing artwork in its own section. */
+  /* Keep decorative clipping local to each section, as in the reference. */
 }
 
 #root {

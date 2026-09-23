@@ -19,7 +19,31 @@ export function initScroll(): () => void {
      asked for. */
   if (reduced()) return () => {};
 
-  const instance = new Lenis({ lerp: 0.1, smoothWheel: true, syncTouch: false });
+  const touchDevice = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  let nativeTouchGesture = false;
+  const instance = new Lenis({
+    lerp: 0.1,
+    smoothWheel: true,
+    // The reference manages touch scrolling too; desktop input stays unchanged.
+    syncTouch: touchDevice,
+    virtualScroll: ({ event }) => {
+      if (!touchDevice || !('touches' in event)) return true;
+
+      // Hand the entire pinch/zoom gesture to Safari, including its touchend.
+      // Rejoining halfway through would apply the pinch's last delta as inertia.
+      if (event.type === 'touchstart' && event.touches.length === 1) {
+        nativeTouchGesture = false;
+      }
+      const zoomed = Math.abs((window.visualViewport?.scale ?? 1) - 1) > 0.01;
+      if (event.touches.length > 1 || zoomed) {
+        if (!nativeTouchGesture) {
+          instance.scrollTo(instance.actualScroll, { immediate: true });
+        }
+        nativeTouchGesture = true;
+      }
+      return !nativeTouchGesture;
+    },
+  });
   lenis = instance;
 
   instance.on('scroll', ScrollTrigger.update);
