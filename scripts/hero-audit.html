@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>DK sculpture — isolated component checks</title>
+  </head>
+  <body>
+    <main class="audit-page">
+      <header class="audit-header">
+        <p class="audit-eyebrow">Local component audit · never included in the portfolio build</p>
+        <h1>DK sculpture checks</h1>
+        <p>This page mounts the actual production Core component. Motion preference changes are simulated only for this test page; context loss uses the browser's WebGL extension.</p>
+        <div class="audit-actions">
+          <button id="run-checks" type="button">Run checks</button>
+          <button id="show-fallback" type="button">View SVG fallback only</button>
+          <button id="show-live" type="button">View live sculpture</button>
+        </div>
+        <output id="audit-status" aria-live="polite">Preparing the live sculpture…</output>
+      </header>
+      <div class="audit-grid">
+        <section class="audit-stage" aria-label="Actual sculpture component">
+          <div id="hero-mount"></div>
+        </section>
+        <aside class="audit-results" aria-label="Test results">
+          <ol id="audit-checks">
+            <li data-check="first-frame" data-state="pending"><strong>First successful WebGL frame</strong><span>Not run</span></li>
+            <li data-check="reduced-motion" data-state="pending"><strong>Reduced motion switches to SVG</strong><span>Not run</span></li>
+            <li data-check="restoration" data-state="pending"><strong>Motion restoration recreates WebGL</strong><span>Not run</span></li>
+            <li data-check="context-loss" data-state="pending"><strong>Real WebGL context loss reveals SVG</strong><span>Not run</span></li>
+            <li data-check="cleanup" data-state="pending"><strong>Three mount/unmount cycles release animation frames</strong><span>Not run</span></li>
+          </ol>
+          <p id="raf-metrics" class="audit-metrics"></p>
+          <p class="audit-note">A live sculpture normally has one pending animation frame. SVG-only mode and every unmount must leave zero.</p>
+          <pre id="audit-log" aria-label="Detailed check log"></pre>
+        </aside>
+      </div>
+    </main>
+    <script type="module" src="./hero-audit.tsx"></script>
+  </body>
+</html>

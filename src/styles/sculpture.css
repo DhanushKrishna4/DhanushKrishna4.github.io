@@ -1,0 +1,55 @@
+/* Share a single footprint so the first-paint sculpture and the rendered one
+   participate identically in the existing hero-panel shrink. */
+.hero-sculpture {
+  position: relative;
+  width: min(92vw, 940px);
+  height: min(86svh, 860px);
+  align-self: end;
+  pointer-events: none;
+  /* These offsets describe the actual projected solid, excluding its glow.
+     Keep the full hero pose; remove its offsets as the panel contracts. */
+  transform: translate(
+    calc(var(--sculpture-center-x, 0px) * var(--sculpture-dock, 0)),
+    calc(var(--sculpture-center-y, 0px) * var(--sculpture-dock, 0) + var(--sculpture-stage-height, 0px) * var(--sculpture-panel-y, 0))
+  );
+}
+
+.hero-sculpture > .hero-canvas,
+.hero-sculpture > .sculpture-fallback {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-sculpture > .hero-core {
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+
+.hero-sculpture > .sculpture-fallback {
+  opacity: 1;
+  transition: opacity 360ms ease;
+}
+
+.hero-sculpture[data-ready='true'] > .hero-core {
+  opacity: 1;
+}
+
+.hero-sculpture[data-ready='true'] > .sculpture-fallback {
+  opacity: 0;
+}
+
+@media (max-width: 860px) {
+  .hero-sculpture {
+    width: 100vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-sculpture > .hero-core,
+  .hero-sculpture > .sculpture-fallback {
+    transition: none;
+  }
+}

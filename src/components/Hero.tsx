@@ -124,78 +124,85 @@ export default function Hero() {
     const ctx = gsap.context(() => {
       const p = { v: 0 };
       const nav = document.querySelector('.nav');
+      const updateFraming = () => {
+        const k = p.v;
+        const E = endNow();
+        el.style.setProperty('--ct', `${E.t * k}%`);
+        el.style.setProperty('--cx', `${E.x * k}%`);
+        el.style.setProperty('--cb', `${E.b * k}%`);
+        el.style.setProperty('--cr', `${E.r * k}px`);
+        /* The bar is over olive long before the hero stops being under it, and
+           lib/tone.ts cannot see that: its trigger for this section fired once
+           at the top and stays active for the whole pin. Written directly
+           here, and handed back the moment the marquee's own trigger takes
+           over below. */
+        /* Early, and deliberately before there is anything for it to be
+           legible against. His flips within the first 75px of a 900 viewport
+           and spends the next 150px white on a still-paper hero. I had this at
+           0.28, waiting for the panel's top edge to clear the bar so the
+           wordmark was always readable, and that is a different animation: his
+           bar changes with the scroll, mine changed with the panel.
+
+           0.035 of a 70%-of-viewport range — about 22px in, where 0.08 put it
+           at 50. Both the wordmark's colour and the toggle's outline wipe hang
+           off this one flag, so they move together, which they should: on his
+           they are one theme change. */
+        nav?.setAttribute('data-tone', k > 0.035 ? 'dark' : 'light');
+        /* The canvas too, on the same flag. This is the one section without a
+           single ground — it starts paper and turns olive under the fog — so a
+           static data-ground cannot describe it, and this overrides the one
+           tone.ts set on entry. */
+        if (root.current) root.current.dataset.ground = k > 0.035 ? 'olive' : 'paper';
+        /* The picture scales WITH the panel, it is not cropped by it.
+
+           The panel ends at 472x305 in a 1440x900 viewport — 0.328 of the
+           width — and the content has to travel the same distance or the
+           panel is just a window closing over a scene that never moved. Ours
+           went to 0.62 against the panel's 0.328, so the crystal stayed very
+           nearly its full size while the box came down around it, which is
+           exactly what Dhanush described as cropping in.
+
+           At 0.328 the object fills the shrunken panel the way it filled the
+           screen, which is what his portrait does.
+
+           Taken FROM the panel rather than written next to it. 0.672 was
+           1 - 0.328, the desktop panel's own width fraction, and once the
+           narrow screens got a panel of their own at 0.71 the object still
+           collapsed to a third inside a frame that only came to seven tenths.
+           Measured: 13% of our panel carried any detail against 33% of his —
+           the box matched his to the pixel and the thing inside it did not
+           fill it. Derived here, the two can no longer disagree. */
+        const fill = (100 - 2 * E.x) / 100;
+        const scale = 1 - (1 - fill) * k;
+        el.style.setProperty('--fs', String(scale));
+        // Scaling preserves the opening composition's offsets. The sculpture
+        // must also travel from that position to the clipped panel's centre.
+        // Share this exact scrubbed progress with its WebGL and SVG wrapper.
+        el.style.setProperty('--sculpture-dock', String(k));
+        el.style.setProperty('--sculpture-panel-y', String((E.t - E.b) * k / (200 * scale)));
+        el.style.setProperty('--sat', String(1 - (1 - FX.sat) * k));
+        el.style.setProperty('--sep', String(FX.sep * k));
+        el.style.setProperty('--con', String(1 - (1 - FX.con) * k));
+        el.style.setProperty('--bri', String(1 - (1 - FX.bri) * k));
+      };
       gsap.to(p, {
         v: 1,
         ease: 'none',
         scrollTrigger: {
           trigger: band,
           start: 'top top',
-          /* Seven tenths of a screen. His panel has finished contracting around
-             650 of a 900 viewport and spends the rest of the pin drifting up. */
+          /* Seven tenths of a screen, then the contracted panel drifts up. */
           end: '+=70%',
           scrub: 0.6,
         },
-        onUpdate: () => {
-          const k = p.v;
-          const E = endNow();
-          el.style.setProperty('--ct', `${E.t * k}%`);
-          el.style.setProperty('--cx', `${E.x * k}%`);
-          el.style.setProperty('--cb', `${E.b * k}%`);
-          el.style.setProperty('--cr', `${E.r * k}px`);
-          /* The bar is over olive long before the hero stops being under it, and
-             lib/tone.ts cannot see that: its trigger for this section fired once
-             at the top and stays active for the whole pin. Written directly
-             here, and handed back the moment the marquee's own trigger takes
-             over below. */
-          /* Early, and deliberately before there is anything for it to be
-             legible against. His flips within the first 75px of a 900 viewport
-             and spends the next 150px white on a still-paper hero. I had this at
-             0.28, waiting for the panel's top edge to clear the bar so the
-             wordmark was always readable, and that is a different animation: his
-             bar changes with the scroll, mine changed with the panel.
-
-             0.035 of a 70%-of-viewport range — about 22px in, where 0.08 put it
-             at 50. Both the wordmark's colour and the toggle's outline wipe hang
-             off this one flag, so they move together, which they should: on his
-             they are one theme change. */
-          nav?.setAttribute('data-tone', k > 0.035 ? 'dark' : 'light');
-          /* The canvas too, on the same flag. This is the one section without a
-             single ground — it starts paper and turns olive under the fog — so a
-             static data-ground cannot describe it, and this overrides the one
-             tone.ts set on entry. */
-          if (root.current) root.current.dataset.ground = k > 0.035 ? 'olive' : 'paper';
-          /* The picture scales WITH the panel, it is not cropped by it.
-
-             The panel ends at 472x305 in a 1440x900 viewport — 0.328 of the
-             width — and the content has to travel the same distance or the
-             panel is just a window closing over a scene that never moved. Ours
-             went to 0.62 against the panel's 0.328, so the crystal stayed very
-             nearly its full size while the box came down around it, which is
-             exactly what Dhanush described as cropping in.
-
-             At 0.328 the object fills the shrunken panel the way it filled the
-             screen, which is what his portrait does.
-
-             Taken FROM the panel rather than written next to it. 0.672 was
-             1 - 0.328, the desktop panel's own width fraction, and once the
-             narrow screens got a panel of their own at 0.71 the object still
-             collapsed to a third inside a frame that only came to seven tenths.
-             Measured: 13% of our panel carried any detail against 33% of his —
-             the box matched his to the pixel and the thing inside it did not
-             fill it. Derived here, the two can no longer disagree. */
-          const fill = (100 - 2 * E.x) / 100;
-          el.style.setProperty('--fs', String(1 - (1 - fill) * k));
-          el.style.setProperty('--sat', String(1 - (1 - FX.sat) * k));
-          el.style.setProperty('--sep', String(FX.sep * k));
-          el.style.setProperty('--con', String(1 - (1 - FX.con) * k));
-          el.style.setProperty('--bri', String(1 - (1 - FX.bri) * k));
-          /* No lift any more. It existed to keep a half-scaled object inside a
-             panel it did not fit; scaled properly about the panel's own centre
-             there is nothing to correct. */
-        },
+        onUpdate: updateFraming,
       });
 
+      // A completed scrub does not emit another update merely because the
+      // viewport crossed a breakpoint. Refresh the panel and docking together.
+      window.addEventListener('resize', updateFraming, { passive: true });
       ScrollTrigger.refresh();
+      return () => window.removeEventListener('resize', updateFraming);
     }, el);
     return () => ctx.revert();
   }, []);

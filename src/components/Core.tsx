@@ -1,105 +1,115 @@
 import { useEffect, useRef, useState } from 'react';
-import { reduced } from '../lib/motion';
 import type { CoreHandle } from '../lib/core';
-import Machine from './Machine';
+import SculptureFallback from './SculptureFallback';
+import '../styles/sculpture.css';
+
+const MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const POINTER_QUERY = '(hover: hover) and (pointer: fine)';
+const clamp = (value: number) => Math.max(-1, Math.min(1, value));
 
 /**
- * The hero object, with the old one kept as its fallback.
- *
- * WebGL is not guaranteed: it can be disabled, blocked by an extension, absent
- * on a locked-down machine, or taken away mid-session when the GPU resets. All
- * four end the same way — a hole where the only thing in the frame should be —
- * so the Canvas 2D drawing this replaced is still here and still correct, and
- * takes over in each of those cases. It is a worse object and a working page,
- * which is the right way round.
- *
- * The context is probed before the scene is built rather than after. Building
- * first and catching the failure means a WebGLRenderer constructor has already
- * run, and on some drivers that is the thing that hangs.
- *
- * three is imported dynamically, which is worth the asynchrony. Measured, in one
- * chunk it was 897kB raw and 258kB gzipped; split, the entry is 366kB / 125kB
- * and the scene is a separate 532kB / 133kB. That second half would otherwise
- * sit in front of the first paint of a page whose opening two seconds are a
- * loader with no use for it — this way the chunk arrives during the entry
- * animation instead. The fallback covers it never arriving at all.
+ * A complete SVG sculpture is present from first paint. The transparent WebGL
+ * scene replaces it only after its first rendered frame; the same SVG remains
+ * available if the context is lost or the visitor requests reduced motion.
  */
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
 export default function Core() {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [fallback, setFallback] = useState(() => !hasWebGL());
+  const [ready, setReady] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const [motionReduced, setMotionReduced] = useState(() =>
+    typeof matchMedia === 'function' && matchMedia(MOTION_QUERY).matches,
+  );
 
   useEffect(() => {
-    if (fallback) return;
+    const preference = window.matchMedia(MOTION_QUERY);
+    const update = () => setMotionReduced(preference.matches);
+    preference.addEventListener('change', update);
+    update();
+    return () => preference.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    setReady(false);
+    if (motionReduced || unavailable) return;
     const el = canvas.current;
     if (!el) return;
 
     let handle: CoreHandle | null = null;
-    let dead = false;
-    let onMove: ((e: PointerEvent) => void) | null = null;
-    let onScroll: (() => void) | null = null;
+    let disposed = false;
+    const finePointer = window.matchMedia(POINTER_QUERY);
+    const band = el.closest('.open');
+
+    const onPointer = (event: PointerEvent) => {
+      if (!finePointer.matches || event.pointerType === 'touch') return;
+      // The sculpture itself travels into its panel; using that moving box as
+      // the input frame would feed its own translation back into the pointer.
+      const bounds = (el.closest('.hero') ?? el).getBoundingClientRect();
+      handle?.setPointer(
+        clamp((event.clientX - bounds.left - bounds.width / 2) / Math.max(1, bounds.width / 2)),
+        clamp((event.clientY - bounds.top - bounds.height / 2) / Math.max(1, bounds.height / 2)),
+      );
+    };
+    const resetPointer = () => handle?.setPointer(0, 0);
+    const onScroll = () => {
+      if (!band || !handle) return;
+      // .hero itself sticks at top:0, so its rectangle cannot measure scroll
+      // progress. The enclosing opening band remains in normal document flow.
+      // Match Hero.tsx's 70%-of-viewport shrink; the renderer eases this target.
+      const bandDocumentTop = band.getBoundingClientRect().top + window.scrollY;
+      const progress = (window.scrollY - bandDocumentTop) / Math.max(1, window.innerHeight * 0.7);
+      handle.setProgress(Math.max(0, Math.min(1, progress)));
+    };
 
     import('../lib/core')
       .then(({ createCore }) => {
-        /* The effect can be torn down while the chunk is in flight — in
-           development that happens on every hot update, and in production it
-           happens if the object falls back before the import resolves. Building
-           the scene then would leak a WebGL context with no one holding it. */
-        if (dead) return;
-
+        // Strict Mode and a changed motion preference can dispose this effect
+        // while the chunk is loading. Never create an orphaned WebGL context.
+        if (disposed) return;
         handle = createCore(el, {
-          /* Reduced motion gets one painted frame rather than an empty box. The
-             preference is about movement, not about content. */
-          animate: !reduced(),
-          onLost: () => setFallback(true),
+          animate: true,
+          onReady: () => {
+            if (!disposed) setReady(true);
+          },
+          onLost: () => {
+            if (!disposed) {
+              setReady(false);
+              setUnavailable(true);
+            }
+          },
         });
         if (!handle) {
-          setFallback(true);
+          setUnavailable(true);
           return;
         }
 
-        const h = handle;
-        onMove = (e: PointerEvent) =>
-          h.setPointer(
-            (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2),
-            (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2),
-          );
-        window.addEventListener('pointermove', onMove, { passive: true });
-
-        /* Progress across the hero's own passage up the screen, read off the
-           section rather than off a share of total page scroll — a percentage
-           of the document silently means something different the moment any
-           section above it changes height. */
-        onScroll = () => {
-          const hero = el.closest('section');
-          if (!hero) return;
-          const r = hero.getBoundingClientRect();
-          h.setProgress(Math.min(1, Math.max(0, -r.top / Math.max(1, r.height))));
-        };
         onScroll();
+        window.addEventListener('pointermove', onPointer, { passive: true });
+        window.addEventListener('blur', resetPointer);
+        document.documentElement.addEventListener('pointerleave', resetPointer);
+        finePointer.addEventListener('change', resetPointer);
         window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
       })
       .catch(() => {
-        if (!dead) setFallback(true);
+        if (!disposed) setUnavailable(true);
       });
 
     return () => {
-      dead = true;
-      if (onMove) window.removeEventListener('pointermove', onMove);
-      if (onScroll) window.removeEventListener('scroll', onScroll);
+      disposed = true;
+      window.removeEventListener('pointermove', onPointer);
+      window.removeEventListener('blur', resetPointer);
+      document.documentElement.removeEventListener('pointerleave', resetPointer);
+      finePointer.removeEventListener('change', resetPointer);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
       handle?.destroy();
     };
-  }, [fallback]);
+  }, [motionReduced, unavailable]);
 
-  if (fallback) return <Machine />;
-
-  return <canvas ref={canvas} className="hero-canvas hero-core" aria-hidden="true" />;
+  return (
+    <div className="hero-sculpture" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
+      <SculptureFallback />
+      <canvas ref={canvas} className="hero-canvas hero-core" aria-hidden="true" />
+    </div>
+  );
 }
