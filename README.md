@@ -1,7 +1,7 @@
 # Dhanush Krishna — Portfolio
 
 Single-page portfolio for a Computer Science graduate in Abu Dhabi,
-working in machine learning and cybersecurity.
+focused on AI applications in Python, with backend, data and systems projects.
 
 **[dhanushkrishna4.github.io](https://dhanushkrishna4.github.io)**
 
@@ -11,11 +11,11 @@ Seven sections, read top to bottom:
 
 | | |
 |---|---|
-| **Hero** | Name, a status card, and a faceted orb rendered in three.js |
+| **Hero** | Name, a status card, and the layered DK sculpture rendered in three.js |
 | **Marquee** | A band of running type under the opening |
 | **Statement** | The thesis, set as the largest type on the page |
-| **Work** | Six projects — Nexus, VoiceGuide AI, URL Shortener, Stock Dashboard, AI Summarizer, Price Tracker |
-| **About** | The longer version, with a pull quote |
+| **Work** | Ten projects across AI, systems, backend services, data and automation |
+| **About** | Background and approach to building software |
 | **Track record** | Internships, skills and the stack behind them |
 | **Contact** | Links, availability, and a mail button |
 

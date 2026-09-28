@@ -317,13 +317,13 @@ export default function Contact() {
             <h2 className="ct-title lockup">
               <span className="a">
                 <span className="rv">
-                  Let’s build
+                  Have something in mind?
                   <span className="rv-b" />
                 </span>
               </span>
               <span className="b">
                 <span className="rv">
-                  Something that runs.
+                  Let’s talk.
                   <span className="rv-b" />
                 </span>
               </span>

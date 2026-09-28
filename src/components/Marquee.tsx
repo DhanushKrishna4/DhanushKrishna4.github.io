@@ -145,10 +145,8 @@ export default function Marquee() {
     };
   }, []);
 
-  /* One sentence across two lines, which is his arrangement: a serif line in
-     the accent above a heavy sans line in bone, running against each other. */
-  const all = MARQUEE.split(' ');
-  const lines = [all.slice(0, 4), all.slice(4)];
+  /* Independent topics on the two opposing tracks. */
+  const lines = MARQUEE.map((line) => line.split(' '));
 
   return (
     <>
@@ -172,7 +170,7 @@ export default function Marquee() {
           ))}
         </div>
       ))}
-      <p className="visually-hidden">{MARQUEE}</p>
+      <p className="visually-hidden">{MARQUEE.join('. ')}</p>
 
       {/* The plate that used to sit here — an empty outline and a caption
           admitting it was empty — is gone, and not as a tidy-up: the hero panel

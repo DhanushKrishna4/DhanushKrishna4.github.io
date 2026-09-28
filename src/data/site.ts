@@ -9,7 +9,7 @@ export const SITE = {
   name: 'Dhanush Krishna',
   first: 'DHANUSH',
   last: 'KRISHNA',
-  role: 'Machine Learning & Cybersecurity',
+  role: 'AI & Software Development',
   location: 'Abu Dhabi, UAE',
   email: 'dhanushk0611@gmail.com',
   resume: '/dhanush-krishna-resume.pdf',
@@ -25,76 +25,33 @@ export const SOCIALS = [
   { label: 'Email', href: 'mailto:dhanushk0611@gmail.com', handle: 'dhanushk0611@gmail.com' },
 ];
 
-/* The marquee line. the reference site runs a race result here — a thing that just happened,
-   in his own voice. The equivalent is the one sentence that says what the work
-   is for, short enough to read sideways at speed. */
-export const MARQUEE = 'BUILT TO RUN WHERE THE CLOUD CANNOT REACH';
+/* Two independent lines; each repeats in its own moving track. */
+export const MARQUEE = ['MACHINE LEARNING', 'SOFTWARE & SYSTEMS'] as const;
 
-/* The statement. the reference site's is serif-and-sans mixed with the emphasised words in
-   acid; the emphasis carries the meaning, so the split has to fall on words
-   that are worth emphasising rather than on a rhythm. */
+/* Explicit line breaks preserve the oversized serif/sans reveal on narrow screens. */
 export const STATEMENT = [
-  { t: 'MACHINE LEARNING', em: false },
-  { t: 'FOR PLACES THE', em: false },
-  { t: 'CLOUD', em: true },
-  { t: "CAN'T REACH.", em: false },
-  { t: 'REGULATED DATA,', em: false },
-  { t: 'AIR-GAPPED', em: true },
-  { t: 'NETWORKS, AND', em: false },
-  { t: 'WHATEVER HARDWARE', em: false },
-  { t: 'IS ALREADY IN', em: false },
-  { t: 'THE BUILDING.', em: false },
+  { t: 'I WORK ON', em: false },
+  { t: 'MACHINE LEARNING', em: true },
+  { t: 'AND SYSTEMS SOFTWARE.', em: false },
+  { t: 'SOME PROJECTS SOLVE', em: false },
+  { t: 'PRACTICAL PROBLEMS.', em: true },
+  { t: 'OTHERS START WITH', em: false },
+  { t: 'SOMETHING I WANT', em: false },
+  { t: 'TO FIGURE OUT.', em: false },
 ];
 
 export const ABOUT = [
-  'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. The work I take on has hard constraints attached: regulated data, air-gapped networks, and whatever hardware is already in the building.',
-  'Nexus is the clearest example. Built during my cybersecurity internship at exida, it puts five open-weight models on local hardware behind a router that chooses between them, adds retrieval over the organisation’s own documents, and reads P&ID engineering drawings through a vision pipeline. Nothing it processes leaves the premises.',
-  'The rest is systems work, all of it running in a browser tab with no server behind it: a language model’s forward pass, a Raft cluster under deterministic simulation and a SQL query engine, each written from scratch in Rust and compiled to WebAssembly, and a path tracer that lives in WebGPU compute shaders. Every one of them is checked against an independent implementation rather than against my own expectations.',
-  'The smaller projects are where I try things that don’t have to survive an audit — a travel planner that works in fifteen languages, a link shortener that counts its own clicks, a watcher that tells me when a price drops.',
+  'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. My main focus is AI development in Python, with projects spanning language models, document tools, and voice interfaces.',
+  'My Python work includes AI tools for documents and engineering drawings, a multilingual travel planner, and smaller tools for data analysis and automation. I also build backend services with FastAPI.',
+  'I’m interested in the systems behind those applications, too. That’s led me to build a language-model inference engine, a distributed-systems simulator, a SQL query engine, and a path tracer in Rust and TypeScript. Each has a browser demo and source code you can explore.',
 ];
 
-/* His words, kept unpolished on purpose — the clipped run is the least fluent
-   writing here and that is exactly its value. "auto-switcher" stays over the
-   site's own word "router" for the same reason: it is his. */
 export const ASIDE = [
-  'The companies we worked with couldn’t send their data to a cloud model. That’s the entire reason this runs locally.',
-  'I built the first version on Qwen 2.5 and had to rebuild it. The RAG pipeline didn’t work. The auto-switcher didn’t work. I fixed them.',
+  'Building an inference engine, a query engine, or a renderer gives me a closer look at what the libraries normally handle.',
+  'For application projects, I use established libraries and APIs so I can focus on the feature someone actually needs.',
 ];
 
-/* The pull quote. the reference site's is "It doesn't matter where you start, it's how you
-   progress from there." set in serif beside his signature. */
-export const PULL_QUOTE = 'Nothing it processes leaves the premises.';
-
-export const NEXUS = {
-  title: 'NEXUS',
-  kicker: 'Private AI infrastructure · exida Middle East · 2026',
-  href: 'https://github.com/DhanushKrishna4/Nexus',
-  lede: 'Some places cannot send a single token to a cloud provider. Regulated data, air-gapped networks, client drawings that legally cannot leave the building. Nexus is a complete AI workbench for those places — five open-weight models on local hardware, a router that picks between them, retrieval over the organisation’s own documents, and a vision pipeline aimed at engineering diagrams.',
-  facts: [
-    { k: 'Models served locally', v: '5' },
-    { k: 'Largest', v: '122B' },
-    { k: 'Tokens sent to the cloud', v: '0' },
-  ],
-  detail: [
-    {
-      k: 'Blueprint analyzer',
-      v: 'Reads instrument tags off P&ID engineering drawings and cross-references them against failure-mode data. The reason the whole thing exists: that reading was done by hand before, and exida are using it now.',
-    },
-    {
-      k: 'Sandboxed execution',
-      v: 'Model-written code runs behind three escalating tiers — static denylist, hard resource limits, then filesystem isolation via bubblewrap with an unshare fallback.',
-    },
-    {
-      k: 'Retrieval',
-      v: 'Documents ingested into ChromaDB through a dedicated embedding model, so answers are grounded in the corpus instead of the model’s memory.',
-    },
-    {
-      k: 'Deployment',
-      v: 'Separate provisioning paths for a cloud H200 and an on-prem workstation, supervised as systemd services with documented persistence.',
-    },
-  ],
-  stack: ['Python', 'Open WebUI', 'Ollama', 'ChromaDB', 'Qwen', 'bubblewrap', 'systemd'],
-};
+export const PULL_QUOTE = 'I like understanding the tools I use.';
 
 export interface Project {
   n: string;
@@ -184,7 +141,7 @@ export const PROJECTS: Project[] = [
     year: '2026',
     blurb:
       'Five open-weight models on local hardware behind a router that picks between them, with retrieval over the organisation’s own documents and a vision pipeline aimed at engineering drawings.',
-    outcome: 'Built at exida Middle East. They are using it.',
+    outcome: 'Developed during my cybersecurity internship at exida Middle East.',
     stack: ['Python', 'Ollama', 'ChromaDB', 'Qwen'],
     href: 'https://github.com/DhanushKrishna4/Nexus',
   },
@@ -251,7 +208,7 @@ export const EXPERIENCE: Role[] = [
     title: 'Cybersecurity Intern',
     org: 'exida Middle East',
     period: 'Jan – Jul 2026',
-    blurb: 'Cybersecurity work alongside building Nexus, the locally-hosted LLM pipeline that reads P&ID drawings.',
+    blurb: 'Cybersecurity work and development of Nexus, a Python-based AI workbench for documents and engineering drawings.',
   },
   {
     title: 'Engineering Intern',
@@ -269,14 +226,14 @@ export const EXPERIENCE: Role[] = [
 
 export const SKILLS = [
   { k: 'Languages', v: ['Python', 'Rust', 'TypeScript', 'Java', 'C', 'SQL', 'JavaScript'] },
-  { k: 'AI / ML', v: ['LLMs', 'RAG', 'Ollama', 'ChromaDB', 'Azure OpenAI', 'Vision models'] },
-  { k: 'Backend', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
-  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
+  { k: 'AI / ML', v: ['PyTorch', 'LLMs', 'RAG', 'Azure OpenAI', 'Azure Speech'] },
+  { k: 'Backend / Data', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
+  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'WGSL', 'Git'] },
 ];
 
 /* The logo row. the reference site runs partner brands; the honest equivalent on a portfolio
    is what the work is actually built with. Set as wordmarks, not fake logos. */
-export const STACK_ROW = ['Python', 'Rust', 'WebAssembly', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
+export const STACK_ROW = ['Python', 'PyTorch', 'FastAPI', 'Streamlit', 'Pandas', 'Rust', 'TypeScript', 'WebAssembly', 'WebGPU', 'Git'];
 
 /* Held as data rather than a hand-written sentence so the count and the issuer list can
    never drift from the truth — FACTS.certs below is derived from this array, so adding

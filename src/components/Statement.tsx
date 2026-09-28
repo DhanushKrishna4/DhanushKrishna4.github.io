@@ -15,8 +15,8 @@ const STAGGER = 0.15;
  *
  * the reference site alternates a Didone in his accent against a heavy grotesk in bone, and
  * the alternation carries the meaning rather than a rhythm — the emphasised
- * words are the ones worth emphasising. Same rule here: the serif italic falls
- * on "cloud" and "air-gapped", which are the two words the whole site is about.
+ * words are the ones worth emphasising. The highlighted lines introduce the
+ * focus on machine learning and practical problems.
  *
  * The reveal is his `data-anim-high` mechanism, which is two moves per line:
  *

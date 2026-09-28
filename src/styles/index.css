@@ -2634,6 +2634,12 @@ body.menu-open .nav .btn-ghost::after {
   color: var(--signal-off);
 }
 
+/* Keep the new statement's explicit lines intact on the narrowest phones. */
+@media (max-width: 360px) {
+  .st-line { font-size: 6.75vw; }
+  .st-line.em { font-size: 7.02vw; }
+}
+
 /* The light run's muted ink, darker than the rest of the site's.
 
    --ash is #535450 because that is his, and his is right for HIS ground: he sets
@@ -3472,7 +3478,8 @@ body.menu-open .nav .btn-ghost::after {
    the shared lockup sets it smaller. */
 .ct-title .a {
   font-weight: 700;
-  font-size: 1.035em;
+  /* The longer invitation must fit on one line above “Let’s talk.” */
+  font-size: 0.97em;
   /* -0.023em, his, measured constant at all three widths. This was inheriting
      -0.012em from .lockup .a — half his, and never set for this headline at
      all. His SANS line is a different matter: it computes -0.0625px, which is a
@@ -3868,6 +3875,10 @@ body.menu-open .nav .btn-ghost::after {
        OLD 1.5rem already wrapped. 8.5cqw is 27.2px here, a little under the 28px
        ceiling so font loading and rounding cannot tip it over. */
     font-size: 8.5cqw;
+  }
+  .ct-title .a {
+    /* Keep the complete invitation on one line at phone widths. */
+    font-size: 0.8em;
   }
   .ct-cols {
     order: 1;

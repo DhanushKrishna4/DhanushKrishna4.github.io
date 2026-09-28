@@ -2,16 +2,7 @@ import { useEffect, useRef } from 'react';
 import { gsap, reduced, reveal } from '../lib/motion';
 import { ABOUT, ASIDE, PULL_QUOTE } from '../data/site';
 
-/**
- * The story. the reference site's is "Since I was 7 years old…" set small beside a pull
- * quote in the serif and a scatter of archival photographs.
- *
- * The quote and the aside carry the weight here. The aside is his own words,
- * kept unpolished on purpose — the clipped run is the least fluent writing on
- * the page and that is exactly its value, because everything else is balanced
- * and being well made is what makes prose about oneself read as written by
- * somebody else.
- */
+/** Personal background and approach, separate from individual project descriptions. */
 export default function About() {
   const root = useRef<HTMLElement>(null);
 
@@ -135,9 +126,9 @@ export default function About() {
           </div>
 
           <div className="pr-side">
-            <blockquote className="quote" data-ab>
-              “{PULL_QUOTE}”
-            </blockquote>
+            <p className="quote" data-ab>
+              {PULL_QUOTE}
+            </p>
             <div className="aside" data-ab>
               {ASIDE.map((p, i) => (
                 <p key={i}>{p}</p>
