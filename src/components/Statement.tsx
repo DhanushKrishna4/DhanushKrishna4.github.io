@@ -43,6 +43,21 @@ export default function Statement() {
   const lines = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
+    const section = root.current;
+    if (!section) return;
+
+    // A statement taller than the screen must scroll to its final line before
+    // it sticks. The reference-sized type can exceed short desktop viewports.
+    const measure = () => {
+      section.style.setProperty('--statement-height', `${section.offsetHeight}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const host = lines.current;
     if (!host) return;
     const rows = gsap.utils.toArray<HTMLElement>(host.querySelectorAll('.st-line'));

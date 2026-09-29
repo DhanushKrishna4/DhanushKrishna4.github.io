@@ -1871,7 +1871,8 @@ body.menu-open .nav .btn-ghost::after {
    scrolls away, which looks exactly like a sticky that is not supported. */
 .ground-olive > .sec.stick-item {
   position: sticky;
-  top: 0;
+  /* Read the complete statement before the next section slides over it. */
+  top: min(0px, calc(100vh - var(--statement-height, 100vh)));
 }
 /* One screen of olive under the statement, which is what the statement sticks
    across. It is never seen: .slides-over is pulled back up by exactly this much
@@ -2534,6 +2535,8 @@ body.menu-open .nav .btn-ghost::after {
    and is noted where the token is set. */
 .st {
   text-align: center;
+  /* The type scales with the viewport, including beyond the shared 1560px cap. */
+  max-width: none;
 }
 /* One row per line. line-height: 0 and the vertical-align below are a pair:
    an inline-block sits on its parent's baseline by default, which reserves
@@ -2563,12 +2566,8 @@ body.menu-open .nav .btn-ghost::after {
   /* Covered before anything runs. See the note in Statement.tsx for why the
      start state is here rather than written by the effect. */
   clip-path: inset(0 100% 0 0);
-  /* Smaller than his, and it has to be. His statement is seven lines and this
-     one is ten, so set at his 105.8px it stood 943px tall against a 900px
-     screen and ran off the bottom. 5.32vw is the size at which the whole block
-     clears the section's own padding on a 900-tall screen — the ratios between
-     the two faces, the leading and the tracking are all still his. */
-  font-size: clamp(1.5rem, 5.32vw, 4.8rem);
+  /* Reference scale: 105.83px at 1440px, without the former 76.8px cap. */
+  font-size: 7.34954vw;
   line-height: 0.9;
   text-transform: uppercase;
   font-family: var(--f-sans);
@@ -2624,8 +2623,8 @@ body.menu-open .nav .btn-ghost::after {
 
 .st-line.em {
   font-family: var(--f-display);
-  /* His serif runs 1.039x the sans; kept, at the new size. */
-  font-size: clamp(1.56rem, 5.53vw, 4.99rem);
+  /* Reference serif: 110px at 1440px. */
+  font-size: 7.63889vw;
   /* Its own, because it is set larger: his serif leads 91.3 on 110px, which is
      0.83 where the sans is 0.90. Inheriting the sans figure put ours 8px loose. */
   line-height: 0.83;
@@ -2634,10 +2633,15 @@ body.menu-open .nav .btn-ghost::after {
   color: var(--signal-off);
 }
 
-/* Keep the new statement's explicit lines intact on the narrowest phones. */
-@media (max-width: 360px) {
-  .st-line { font-size: 6.75vw; }
-  .st-line.em { font-size: 7.02vw; }
+/* The reference uses equal serif/sans sizes on tablet and phone. Longer
+   phrases wrap within their reveal rather than reducing the type size. */
+@media (max-width: 991px) {
+  .st-line,
+  .st-line.em { font-size: 8.10185vw; }
+}
+@media (max-width: 479px) {
+  .st-line,
+  .st-line.em { font-size: 9.72222vw; }
 }
 
 /* The light run's muted ink, darker than the rest of the site's.
