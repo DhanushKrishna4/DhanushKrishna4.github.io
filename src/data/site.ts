@@ -42,8 +42,9 @@ export const STATEMENT = [
 
 export const ABOUT = [
   'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. My main focus is AI development in Python, with projects spanning language models, document tools, and voice interfaces.',
-  'My Python work includes AI tools for documents and engineering drawings, a multilingual travel planner, and smaller tools for data analysis and automation. I also build backend services with FastAPI.',
+  'My Python work includes Nexus, an AI workbench for documents and engineering drawings, and VoiceGuide AI, a multilingual travel planner. I also build backend services with FastAPI.',
   'I’m interested in the systems behind those applications, too. That’s led me to build a language-model inference engine, a distributed-systems simulator, a SQL query engine, and a path tracer in Rust and TypeScript. Each has a browser demo and source code you can explore.',
+  'The smaller projects are where I try things that don’t have to survive an audit — a link shortener that counts its own clicks, a stock dashboard, a PDF summarizer, and a watcher that tells me when a price drops.',
 ];
 
 export const ASIDE = [
@@ -141,7 +142,7 @@ export const PROJECTS: Project[] = [
     year: '2026',
     blurb:
       'Five open-weight models on local hardware behind a router that picks between them, with retrieval over the organisation’s own documents and a vision pipeline aimed at engineering drawings.',
-    outcome: 'Developed during my cybersecurity internship at exida Middle East.',
+    outcome: 'Built at exida Middle East. They are using it.',
     stack: ['Python', 'Ollama', 'ChromaDB', 'Qwen'],
     href: 'https://github.com/DhanushKrishna4/Nexus',
   },
@@ -226,14 +227,14 @@ export const EXPERIENCE: Role[] = [
 
 export const SKILLS = [
   { k: 'Languages', v: ['Python', 'Rust', 'TypeScript', 'Java', 'C', 'SQL', 'JavaScript'] },
-  { k: 'AI / ML', v: ['PyTorch', 'LLMs', 'RAG', 'Azure OpenAI', 'Azure Speech'] },
-  { k: 'Backend / Data', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
-  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'WGSL', 'Git'] },
+  { k: 'AI / ML', v: ['LLMs', 'RAG', 'Ollama', 'ChromaDB', 'Azure OpenAI', 'Vision models'] },
+  { k: 'Backend', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
+  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
 ];
 
 /* The logo row. the reference site runs partner brands; the honest equivalent on a portfolio
    is what the work is actually built with. Set as wordmarks, not fake logos. */
-export const STACK_ROW = ['Python', 'PyTorch', 'FastAPI', 'Streamlit', 'Pandas', 'Rust', 'TypeScript', 'WebAssembly', 'WebGPU', 'Git'];
+export const STACK_ROW = ['Python', 'Rust', 'WebAssembly', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
 
 /* Held as data rather than a hand-written sentence so the count and the issuer list can
    never drift from the truth — FACTS.certs below is derived from this array, so adding
