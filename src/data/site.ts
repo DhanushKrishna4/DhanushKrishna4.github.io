@@ -9,7 +9,7 @@ export const SITE = {
   name: 'Dhanush Krishna',
   first: 'DHANUSH',
   last: 'KRISHNA',
-  role: 'AI & Software Development',
+  role: 'Machine Learning & Systems',
   location: 'Abu Dhabi, UAE',
   email: 'dhanushk0611@gmail.com',
   resume: '/dhanush-krishna-resume.pdf',
@@ -41,15 +41,16 @@ export const STATEMENT = [
 ];
 
 export const ABOUT = [
-  'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. My main focus is AI development in Python, with projects spanning language models, document tools, and voice interfaces.',
-  'My Python work includes Nexus, an AI workbench for documents and engineering drawings, and VoiceGuide AI, a multilingual travel planner. I also build backend services with FastAPI.',
-  'I’m interested in the systems behind those applications, too. That’s led me to build a language-model inference engine, a distributed-systems simulator, a SQL query engine, and a path tracer in Rust and TypeScript. Each has a browser demo and source code you can explore.',
+  'I’m a Computer Science graduate of BITS Pilani Dubai, based in Abu Dhabi. My main focus is machine learning in Python: building the tools that train models, explore cause and effect, and estimate uncertainty.',
+  'My recent work is Forge, a deep-learning framework and WebGPU compiler; Meridian, a causal inference lab; Mycelium, a neural cellular automata lab; and Posterior, a Bayesian inference engine. All four have interactive browser demos that run the Python code locally.',
+  'Alongside those, I build systems in Rust, TypeScript and WGSL: Loom for language-model inference, Escapement for distributed consensus, Orrery for SQL queries, and Lucida for path tracing. Their browser demos let you inspect the computation as it happens.',
+  'On the application side, I built Nexus, an AI workbench for documents and engineering drawings, during my internship at exida Middle East. My other work includes VoiceGuide AI, a multilingual travel planner, and backend services with FastAPI.',
   'The smaller projects are where I try things that don’t have to survive an audit — a link shortener that counts its own clicks, a stock dashboard, a PDF summarizer, and a watcher that tells me when a price drops.',
 ];
 
 export const ASIDE = [
-  'Building an inference engine, a query engine, or a renderer gives me a closer look at what the libraries normally handle.',
-  'For application projects, I use established libraries and APIs so I can focus on the feature someone actually needs.',
+  'Writing the autodiff engine, sampler or query planner myself gives me a closer look at what the libraries normally handle.',
+  'The demos let you explore that work too: change the inputs, inspect intermediate results, and compare what the algorithms produce.',
 ];
 
 export const PULL_QUOTE = 'I like understanding the tools I use.';
@@ -60,31 +61,72 @@ export interface Project {
   kind: string;
   year: string;
   blurb: string;
-  /* The one claim on the card a reader could go and check. For the early
-     projects that is who used it and what it was for; for the Rust engines it
-     is what the thing was validated against, which is the strongest honest
-     statement available about a repository with no users. Omitted rather than
-     padded — several of these carry no stars, no deployment and no traffic, and
-     "used by teams across the region" under one of those is the single kind of
-     lie on a portfolio that gets checked, and checked easily. */
+  /* A checkable result: validation evidence, measured behaviour or adoption.
+     Omit it when there is no supported claim to make. */
   outcome?: string;
   stack: string[];
   href: string;
-  /* A build of the project itself, running in the reader's own tab. Only four
-     of these have one and it is the whole point of those four — a path tracer
-     you can watch converge argues better than any sentence about it — so the
-     card itself leads here, and the repository moves to a second link. */
+  /* The card opens the running project when available; source stays a separate link. */
   live?: string;
-  /* A screenshot of `live`, taken from the running thing rather than mocked:
-     Loom's attention heatmap, Escapement mid-election with a leader, Orrery's
-     plan for a query it just ran, Lucida's Cornell box at 1,830 samples. Shown
-     on hover. 4:5 to match the card. */
+  /* Actual computed states captured from `live`, shown on hover. 4:5 for the cards. */
   shot?: string;
 }
 
 export const PROJECTS: Project[] = [
   {
     n: '01',
+    title: 'Forge',
+    kind: 'Deep learning & GPU compilation',
+    year: '2026',
+    blurb:
+      'A Python deep-learning framework with its own tensor graph, autodiff engine and WebGPU compiler. Train a network in the browser, then inspect its gradients, generated shaders and memory use.',
+    outcome: 'Numerical operations checked against PyTorch; CPU and WebGPU paths validated separately.',
+    stack: ['Python', 'NumPy', 'WebGPU', 'WGSL'],
+    href: 'https://github.com/DhanushKrishna4/Forge',
+    live: 'https://dhanushkrishna4.github.io/Forge/',
+    shot: '/shots/forge.webp',
+  },
+  {
+    n: '02',
+    title: 'Meridian',
+    kind: 'Causal machine learning',
+    year: '2026',
+    blurb:
+      'Different causal models can explain the same observations. Compare those explanations, choose an intervention, and explore counterfactuals in a Python lab that makes its assumptions explicit.',
+    outcome: 'PC-stable and NOTEARS checked against independent implementations.',
+    stack: ['Python', 'NumPy', 'SciPy', 'Pyodide'],
+    href: 'https://github.com/DhanushKrishna4/Meridian',
+    live: 'https://dhanushkrishna4.github.io/Meridian/',
+    shot: '/shots/meridian.webp',
+  },
+  {
+    n: '03',
+    title: 'Mycelium',
+    kind: 'Neural cellular automata',
+    year: '2026',
+    blurb:
+      'A tiny neural network learns how each cell should update from its neighbours. Grow a pattern from one cell, cut into it, and compare how different training regimes affect its recovery.',
+    outcome: 'Five trained models, with growth, persistence and repair measured separately.',
+    stack: ['Python', 'PyTorch', 'NumPy', 'Pyodide'],
+    href: 'https://github.com/DhanushKrishna4/Mycelium',
+    live: 'https://dhanushkrishna4.github.io/Mycelium/',
+    shot: '/shots/mycelium.webp',
+  },
+  {
+    n: '04',
+    title: 'Posterior',
+    kind: 'Bayesian inference',
+    year: '2026',
+    blurb:
+      'A Python inference engine with HMC, slice-based NUTS and variational inference. Run multiple chains in the browser, inspect how they move, and compare their estimates with reference distributions.',
+    outcome: 'Checked against exact solutions and independent references, with failed cases retained.',
+    stack: ['Python', 'NumPy', 'SciPy', 'Pyodide'],
+    href: 'https://github.com/DhanushKrishna4/Posterior',
+    live: 'https://dhanushkrishna4.github.io/Posterior/',
+    shot: '/shots/posterior.webp',
+  },
+  {
+    n: '05',
     title: 'Loom',
     kind: 'LLM inference engine',
     year: '2026',
@@ -97,7 +139,7 @@ export const PROJECTS: Project[] = [
     shot: '/shots/loom.webp',
   },
   {
-    n: '02',
+    n: '06',
     title: 'Escapement',
     kind: 'Distributed consensus',
     year: '2026',
@@ -110,7 +152,7 @@ export const PROJECTS: Project[] = [
     shot: '/shots/escapement.webp',
   },
   {
-    n: '03',
+    n: '07',
     title: 'Orrery',
     kind: 'SQL query engine',
     year: '2026',
@@ -123,7 +165,7 @@ export const PROJECTS: Project[] = [
     shot: '/shots/orrery.webp',
   },
   {
-    n: '04',
+    n: '08',
     title: 'Lucida',
     kind: 'Physically-based rendering',
     year: '2026',
@@ -136,7 +178,7 @@ export const PROJECTS: Project[] = [
     shot: '/shots/lucida.webp',
   },
   {
-    n: '05',
+    n: '09',
     title: 'Nexus',
     kind: 'Private AI infrastructure',
     year: '2026',
@@ -147,7 +189,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/Nexus',
   },
   {
-    n: '06',
+    n: '10',
     title: 'VoiceGuide AI',
     kind: 'Multilingual voice interface',
     year: '2025',
@@ -158,7 +200,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/VoiceGuideAI',
   },
   {
-    n: '07',
+    n: '11',
     title: 'URL Shortener',
     kind: 'HTTP service',
     year: '2025',
@@ -167,7 +209,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/URL-Shortener',
   },
   {
-    n: '08',
+    n: '12',
     title: 'Stock Dashboard',
     kind: 'Data visualisation',
     year: '2025',
@@ -177,7 +219,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/Stock-Dashboard',
   },
   {
-    n: '09',
+    n: '13',
     title: 'AI Summarizer',
     kind: 'Applied LLM',
     year: '2025',
@@ -187,7 +229,7 @@ export const PROJECTS: Project[] = [
     href: 'https://github.com/DhanushKrishna4/AI-Summarizer',
   },
   {
-    n: '10',
+    n: '14',
     title: 'Price Tracker',
     kind: 'Scheduled automation',
     year: '2025',
@@ -227,14 +269,16 @@ export const EXPERIENCE: Role[] = [
 
 export const SKILLS = [
   { k: 'Languages', v: ['Python', 'Rust', 'TypeScript', 'Java', 'C', 'SQL', 'JavaScript'] },
+  { k: 'ML methods', v: ['Autodiff', 'Causal inference', 'Bayesian inference', 'Neural cellular automata'] },
+  { k: 'Scientific Python', v: ['NumPy', 'SciPy', 'PyTorch', 'Pyodide'] },
   { k: 'AI / ML', v: ['LLMs', 'RAG', 'Ollama', 'ChromaDB', 'Azure OpenAI', 'Vision models'] },
   { k: 'Backend', v: ['FastAPI', 'Streamlit', 'SQLite', 'Pandas'] },
-  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
+  { k: 'Systems', v: ['WebAssembly', 'WebGPU', 'WGSL', 'Open WebUI', 'systemd', 'bubblewrap', 'Git'] },
 ];
 
 /* The logo row. the reference site runs partner brands; the honest equivalent on a portfolio
    is what the work is actually built with. Set as wordmarks, not fake logos. */
-export const STACK_ROW = ['Python', 'Rust', 'WebAssembly', 'PyTorch', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
+export const STACK_ROW = ['Python', 'NumPy', 'SciPy', 'PyTorch', 'Rust', 'WebAssembly', 'WebGPU', 'Ollama', 'ChromaDB', 'FastAPI', 'Azure', 'AWS', 'Git'];
 
 /* Held as data rather than a hand-written sentence so the count and the issuer list can
    never drift from the truth — FACTS.certs below is derived from this array, so adding

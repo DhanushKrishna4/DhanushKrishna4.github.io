@@ -1,7 +1,7 @@
 # Dhanush Krishna — Portfolio
 
 Single-page portfolio for a Computer Science graduate in Abu Dhabi,
-focused on AI applications in Python, with backend, data and systems projects.
+focused on machine learning in Python and systems software in Rust, TypeScript and WGSL.
 
 **[dhanushkrishna4.github.io](https://dhanushkrishna4.github.io)**
 
@@ -14,10 +14,21 @@ Seven sections, read top to bottom:
 | **Hero** | Name, a status card, and the layered DK sculpture rendered in three.js |
 | **Marquee** | A band of running type under the opening |
 | **Statement** | The thesis, set as the largest type on the page |
-| **Work** | Ten projects across AI, systems, backend services, data and automation |
+| **Work** | Fourteen projects, led by Python ML tools, followed by Rust systems, applications, data and automation |
 | **About** | Background and approach to building software |
 | **Track record** | Internships, skills and the stack behind them |
 | **Contact** | Links, availability, and a mail button |
+
+## Selected projects
+
+The gallery opens with **Forge**, **Meridian**, **Mycelium**, and **Posterior**:
+a deep-learning framework and WebGPU compiler, a causal inference lab, a neural
+cellular automata lab, and a Bayesian inference engine. Each runs Python locally
+in its browser demo.
+
+**Loom**, **Escapement**, **Orrery**, and **Lucida** follow, covering language-model
+inference, distributed consensus, SQL execution, and path tracing. The existing
+application projects follow in their original order.
 
 ## How it's built
 

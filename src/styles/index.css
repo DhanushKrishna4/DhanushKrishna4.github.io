@@ -2686,7 +2686,7 @@ body.menu-open .nav .btn-ghost::after {
 .wk-grid {
   display: grid;
   gap: clamp(0.9rem, 1.6vw, 1.4rem);
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   /* stretch, not start. A row is as tall as its tallest card either way, but
      under `start` the shorter cards keep their own height and leave the slack
      BELOW them — so the visible gap to the next row was the row gap plus

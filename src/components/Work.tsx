@@ -7,20 +7,7 @@ import Roll from './Roll';
 import Arrow from './Arrow';
 import Mark from './Mark';
 
-/**
- * The gallery, mapped from HELMETS / HALL OF FAME.
- *
- * That section is the closest thing on the reference site to a portfolio: a dark
- * ground, a grid of named things, each on a card with the same cut corner, each
- * labelled with what it is and the year. It is the section this whole build was
- * worth doing for, because the mapping is exact.
- *
- * What is missing is the thing that makes his version sing: hovering one of his
- * cards swaps the isolated product render for a photograph of that helmet in
- * the car. Six cards, twelve images. The hover here changes the card's frame to
- * the accent and lifts it, which is the same gesture with a tenth of the
- * honest, and the obvious place to spend real assets when there are any.
- */
+/** Project gallery with live-demo links and screenshots from real computed states. */
 /* How far a deep column sits below a shallow one, in rem. One value, because
    the offset is per COLUMN and nothing else — see the note in the effect. */
 const BY_COLUMN = 10;
@@ -184,12 +171,7 @@ export default function Work() {
                entrance. Two elements because they would otherwise both be
                animating `y` and the last tween to run would win. */
             <div className="wk-cell" key={p.n}>
-            {/* A div, not an anchor. Four of these projects have a live build as
-                well as a repository, and an anchor cannot legally contain
-                another one. The title's link stretches an invisible layer over
-                the whole card instead, so the card is still a single click to
-                the repo, and the live link sits above that layer to take its
-                own. */}
+            {/* Separate links let the whole card open the demo while Source opens the repo. */}
             <div className="wk-card">
               {/* The card IS this outline — there is no fill behind it. Drawn
                   rather than a clip-path, because a clip gives a shape and this
@@ -201,10 +183,7 @@ export default function Work() {
                   <span>{p.year}</span>
                 </div>
                 <h3 className="wk-title">
-                  {/* The live build where there is one, the repository
-                      otherwise. Four of these projects ARE a page you can open,
-                      so that is what the card should hand you; the source moves
-                      to its own link below. */}
+                  {/* Prefer the live build; otherwise open the repository. */}
                   <a
                     className="wk-link"
                     href={p.live ?? p.href}
@@ -226,13 +205,7 @@ export default function Work() {
                     under a repository with no stars is the one kind of lie on a
                     portfolio that gets checked, and checked easily. */}
                 {p.outcome && <p className="wk-out">{p.outcome}</p>}
-                {/* Only on the four the card now points at a demo for, so the
-                    repository stays one click away rather than being lost to
-                    the swap. Last in the card so it lands on the bottom edge: it
-                    stays above the screenshot on hover, and the bottom edge is
-                    the one place the scrim can keep it legible over a capture
-                    as pale as Orrery's. The label is identical on all four, so the
-                    accessible name carries the project. */}
+                {/* Keep source accessible above the screenshot at the bottom of the card. */}
                 {p.live && (
                   <a
                     className="wk-src"

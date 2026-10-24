@@ -61,7 +61,7 @@ const path = (w: number, h: number) => {
 /* Whether this device can hover at all. A screenshot that only ever appears on
    hover is pure weight on a touch screen — and hiding it in CSS does not help,
    because the browser fetches an eager <img> whether or not it is displayed.
-   Measured: a phone viewport still pulled all four files. So it is not rendered
+   A phone viewport would otherwise still pull every preview file. So it is not rendered
    at all rather than rendered and hidden. */
 const useCanHover = () => {
   const [can, setCan] = useState(
@@ -122,8 +122,8 @@ export default function Frame({ shot }: { shot?: string }) {
               Eager, not lazy. These are hover images: the pointer arrives and
               the picture has to already be there, and a lazy one starts
               fetching at exactly the moment it is needed, so the first hover of
-              each card shows an empty wipe. Low priority instead, so the four
-              of them — 116 KB of WebP between them — queue behind everything
+              each card shows an empty wipe. Low priority instead, so these
+              small WebP previews queue behind everything
               that paints the page. */}
           <img
             className="wk-shot-img"
