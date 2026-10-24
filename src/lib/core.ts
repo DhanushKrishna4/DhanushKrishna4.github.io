@@ -159,8 +159,8 @@ export function createCore(
     front.add(pocket, screw, slot);
   }
 
-  // Closed, physically routed paths. Light advances along a route rather than
-  // throwing unrelated particles around the emblem.
+  // Physically routed open traces. Their endpoints are paired for the light,
+  // so the head can exit the start while its tail is still entering the end.
   const routes: number[][][] = [
     [[48, 23], [123, 23], [136, 32], [132, 49]],
     [[31, 51], [15, 133], [24, 139], [93, 139]],
@@ -189,8 +189,12 @@ export function createCore(
       uniforms: { uTime: { value: 0 }, uPhase: { value: index * 0.17 }, uEnergy: { value: 1 }, uColor: { value: new THREE.Color(RED) } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
       fragmentShader: `uniform float uTime; uniform float uPhase; uniform float uEnergy; uniform vec3 uColor; varying vec2 vUv;
-        void main(){ float t=fract(uTime*.17+uPhase); float d=abs(vUv.x-t);
-        float head=exp(-d*d*1100.); float tail=exp(-pow(max(0.,t-vUv.x),2.)*95.)*step(vUv.x,t);
+        void main(){ float t=fract(uTime*.17+uPhase);
+        // Signed distance around the loop: positive is behind the moving head.
+        // Wrap the whole profile, not just t, to keep the tail at the far end.
+        float behind=fract(t-vUv.x+.5)-.5;
+        float head=exp(-behind*behind*1100.);
+        float tail=exp(-pow(max(0.,behind),2.)*95.)*smoothstep(-.015,.015,behind);
         float power=.13+uEnergy*(head*2.2+tail*.65);
         gl_FragColor=vec4(uColor*power,1.); #include <tonemapping_fragment>\n#include <colorspace_fragment> }`,
       toneMapped: true,
