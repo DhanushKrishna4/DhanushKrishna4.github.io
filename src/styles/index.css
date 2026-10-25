@@ -3051,6 +3051,13 @@ body.menu-open .nav .btn-ghost::after {
 }
 
 /* ── record ────────────────────────────────────────────────────────────── */
+#record .rec-oval-line {
+  /* Centre each oval on its text, not on the full-width heading container. */
+  width: fit-content;
+}
+@media (prefers-reduced-motion: reduce) {
+  #record .rec-oval { clip-path: none !important; }
+}
 .rec-row {
   display: grid;
   gap: 0.5rem 2rem;

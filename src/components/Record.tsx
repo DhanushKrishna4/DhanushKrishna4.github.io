@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger, reduced, reveal } from '../lib/motion';
+import { gsap, ScrollTrigger, reduced } from '../lib/motion';
 import { EXPERIENCE, SKILLS, STACK_ROW, FACTS } from '../data/site';
 
 /**
@@ -57,13 +57,37 @@ export default function Record() {
         return;
       }
 
-      reveal('.rec-row', {
-        y: 24,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        stagger: 0.08,
-        scrollTrigger: { trigger: '.rec-list', start: 'top 82%' },
+      /* The reference's Socials title opens an oval over each line, rather
+         than moving or fading the type. Keep that same mask and timing, with
+         separate triggers for rows that sit below the fold on a phone. */
+      const ovalReveal = (targets: HTMLElement[], trigger: HTMLElement) => {
+        // Restored scroll positions must not hide content already being read.
+        if (!targets.length || targets.some((el) => el.getBoundingClientRect().top < innerHeight)) return;
+
+        gsap.fromTo(
+          targets,
+          { clipPath: 'ellipse(20% 0% at 50% 0%)' },
+          {
+            clipPath: 'ellipse(100% 120% at 50% 0%)',
+            duration: 1.5,
+            ease: 'power2.inOut',
+            stagger: 0.15,
+            clearProps: 'clipPath',
+            scrollTrigger: {
+              trigger,
+              start: 'top 95%',
+              once: true,
+              // A fast anchor jump should leave skipped content fully visible.
+              onLeave: (self) => { self.animation?.progress(1); },
+            },
+          },
+        );
+      };
+
+      const heading = root.current!.querySelector<HTMLElement>('.sec-title')!;
+      ovalReveal(Array.from(heading.querySelectorAll<HTMLElement>('.rec-oval')), heading);
+      root.current!.querySelectorAll<HTMLElement>('.rec-row, .skill, .row').forEach((row) => {
+        ovalReveal([row], row);
       });
 
       /* The ground arrives by changing colour rather than by starting.
@@ -165,16 +189,16 @@ export default function Record() {
     <section className="sec" id="record" data-tone="light" data-ground="light" ref={root}>
       <div className="wrap">
         <header className="sec-title">
-          <p className="eyebrow">Where I have worked</p>
+          <p className="eyebrow rec-oval rec-oval-line">Where I have worked</p>
           <h2 className="sec-head lockup">
-            <span className="a">Track</span>
-            <span className="b">Record</span>
+            <span className="a rec-oval rec-oval-line">Track</span>
+            <span className="b rec-oval rec-oval-line">Record</span>
           </h2>
         </header>
 
         <div className="rec-list">
           {EXPERIENCE.map((r) => (
-            <div className="rec-row" key={r.title + r.org}>
+            <div className="rec-row rec-oval" key={r.title + r.org}>
               <div className="rec-when">{r.period}</div>
               <h3 className="rec-what">
                 {r.title}
@@ -187,22 +211,22 @@ export default function Record() {
 
         <dl className="skills">
           {SKILLS.map((s) => (
-            <div className="skill" key={s.k}>
+            <div className="skill rec-oval" key={s.k}>
               <dt>{s.k}</dt>
               <dd>{s.v.join(' · ')}</dd>
             </div>
           ))}
-          <div className="skill">
+          <div className="skill rec-oval">
             <dt>Education</dt>
             <dd>{FACTS.education}</dd>
           </div>
-          <div className="skill">
+          <div className="skill rec-oval">
             <dt>Certified</dt>
             <dd>{FACTS.certs}</dd>
           </div>
         </dl>
 
-        <ul className="row" style={{ marginTop: '3.5rem' }} aria-label="Built with">
+        <ul className="row rec-oval" style={{ marginTop: '3.5rem' }} aria-label="Built with">
           {STACK_ROW.map((s) => (
             <li key={s}>{s}</li>
           ))}
