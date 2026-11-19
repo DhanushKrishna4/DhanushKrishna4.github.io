@@ -21,10 +21,13 @@
 // and the cards 1000 units in front of it, so a unit is 2px. Above a line a
 // third of the way down (their bend points: 100 to 700 units above the
 // middle, for a screen 1100 tall), a card is pushed back into the distance,
-// up to 1200 units, and pulled down, up to 1.5 times its image's height, with
-// two slow waves running across it (±50 units of depth, ±0.5 of the pull).
+// up to 1200 units, and pulled down, up to 1.5 times the height of their card
+// image (pullFor: theirs, not ours, which are bigger), with two slow waves
+// running across it (±50 units of depth, ±0.5 of the pull).
 // So the top row tips back and folds away behind itself as it rises, its
-// edge rippling, and fades out between 1500 and 2000 units away, misting
+// edge rippling, sinking at first and then climbing back up the screen into
+// the distance, fading out between 1500 and 2000 units of their depth (read
+// off their depth buffer, a little less than the true distance) and misting
 // toward the background colour (from 500 units to 4500) as it goes. Once
 // whatever follows the grid (the footer, or the home page's button) starts
 // coming up, the fold comes down the screen to meet the last row, easing in,
@@ -54,9 +57,11 @@ import { reducedMotion, isTouch, hexToRgb, changingPage } from '../core/env.js';
 import { fullscreenVert } from './glsl.js';
 import { cubicInOut, fit, expoOut, expoInOut, lusionEase } from '../core/projectZoom.js';
 
-// Unseen's breakpoints (min-widths): sm, md.
+// Unseen's breakpoints (min-widths): sm, md, lg, xlg.
 const SM = 768;
 const MD = 1024;
+const LG = 1366;
+const XLG = 1921;
 // Lusion's phone layout.
 const MOBILE = 812;
 
@@ -67,12 +72,24 @@ export function bendFor(w, h) {
   return [100, 600];
 }
 
+// How far down a folding card is pulled (before their 1.5 times and the
+// wave): the height of Unseen's card image, in units, for this screen width
+// (their 430-unit image times its size for the breakpoint, grown with the
+// width on large screens). Ours are Lusion's cards, taller than theirs, so
+// pulling by our own height would drag a folded row down behind the next one
+// before it could climb back up into the distance, as theirs do.
+export function pullFor(w) {
+  const size = w >= LG ? 0.35 : w >= MD ? 0.28 : w >= SM ? 0.3 : 0.21;
+  const grow = w >= XLG ? w / 2150 + 0.2 : w >= LG ? w / 2150 + 0.3 : 1;
+  return 430 * size * grow;
+}
+
 // How far up the screen a card's lowest point must be (px, maybe above the
-// top) for it to have faded out completely: 80% of the way through the fold,
-// it is more than 2000 units away whatever the wave does.
+// top) for it to have faded out completely: 83% of the way through the fold,
+// its depth (as their shader reads it) is past 2000 whatever the wave does.
 export function goneLine(w, h) {
   const [bx, by] = bendFor(w, h);
-  return h / 2 - 2 * (bx + 0.8 * (by - bx));
+  return h / 2 - 2 * (bx + 0.83 * (by - bx));
 }
 
 
@@ -153,8 +170,13 @@ void main() {
   // How far it is from their camera, and the same point for ours, placed so
   // it lands where theirs draws it (shifted down by uShift). Flat cards land
   // exactly on their DOM copies.
-  vDepth = 2000.0 - p.z;
-  float f = vDepth / 1000.0;
+  float d = 2000.0 - p.z;
+  float f = d / 1000.0;
+  // Their fade and fog read depth as gl_FragCoord.z / gl_FragCoord.w, which
+  // with their camera (near 100, far 4500) is 4500/4400 of (distance - 100):
+  // a little less than the distance, so a folded card fades later and is
+  // still there as it climbs back up the screen into the distance.
+  vDepth = (4500.0 / 4400.0) * (d - 100.0);
   vec3 w = vec3(uView.x * 0.5 + p.x * 2.0, -uView.y * 0.5 + p.y * 2.0 - uShift * f, uDist * (1.0 - f));
 
   // Lusion's zoom into a card (their ProjectItemList): the whole grid shifts
@@ -1004,6 +1026,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       shared.uShift.value = lusion ? 0 : shiftNow();
       shared.uTime.value = reducedMotion() ? 0 : state.time;
       const gone = goneLine(w, h) + shared.uShift.value;
+      const pull = pullFor(w);
       for (const it of lusion ? [] : items) {
         hover(it, dt, mobile);
         const m = it.media.getBoundingClientRect();
@@ -1020,8 +1043,8 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         it.uniforms.uSize.value.set(mb.w / dpr, mb.h / dpr);
         it.metaUniforms.uPos.value.set(cb.left / dpr, cb.top / dpr);
         it.metaUniforms.uSize.value.set(cb.w / dpr, cb.h / dpr);
-        // Pulled down by its image's height (Unseen's units: half the px).
-        it.uniforms.uPull.value = mb.h / dpr / 2;
+        // Pulled down by Unseen's card height for this width (pullFor).
+        it.uniforms.uPull.value = pull;
       }
       layer.visible = any;
       postUniforms.uShift.value = Math.min(Math.abs(velocity) * 0.07, 2.5) * dpr;
