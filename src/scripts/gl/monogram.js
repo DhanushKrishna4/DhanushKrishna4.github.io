@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { clamp, smoothstep, isTouch, reducedMotion } from '../core/env.js';
-import { lenis } from '../core/scroll.js';
+import { browserScrolls } from '../core/scroll.js';
 
 // The monogram's outline in its 256-unit drawing (public/favicon.svg): the D
 // and K as one polygon, with the D's two stripes cut through it.
@@ -285,15 +285,13 @@ export function createMonogram(engine, hero) {
   scene.add(piece);
   const camera = new THREE.PerspectiveCamera(30, 1, 1, 10000);
 
-  // Where the browser scrolls the page itself (touch screens, or without our
-  // smooth scroll), it moves the page before any script can redraw the
-  // shared canvas behind it, so a piece drawn there trails the page by about
-  // a frame in a fast flick (measured: 30 to 50px). There the monogram gets
-  // its own see-through canvas at the top of the opening screen instead,
-  // which the browser scrolls along with the page, and it moves exactly with
-  // the page, as Dennis's photo does on his phone. It still tilts back and
-  // fades as it goes.
-  const own = isTouch() || !lenis;
+  // Where the browser scrolls the page itself (core/scroll.js browserScrolls),
+  // a piece drawn on the shared canvas trails the page by about a frame in a
+  // fast flick. There the monogram gets its own see-through canvas at the top
+  // of the opening screen instead, which the browser scrolls along with the
+  // page, and it moves exactly with the page, as Dennis's photo does on his
+  // phone. It still tilts back and fades as it goes.
+  const own = browserScrolls();
   let ownCanvas = null;
   let ownRenderer = null;
   let drawn = false;

@@ -3,11 +3,19 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { reducedMotion } from './env.js';
+import { reducedMotion, isTouch } from './env.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export let lenis = null;
+
+// Whether the browser moves the page itself: on touch screens (Lenis leaves
+// touch alone) and with reduced motion (no Lenis). It moves the page a frame
+// before any script can redraw the fixed WebGL canvas behind it, so whatever
+// is drawn there to follow the page trails it in a fast flick (measured 30 to
+// 50px). Pieces that must stay with the page (the home page's monogram, the
+// red lines) then get their own canvas inside the page, which scrolls with it.
+export const browserScrolls = () => !lenis || isTouch();
 
 export function initScroll() {
   history.scrollRestoration = 'manual';

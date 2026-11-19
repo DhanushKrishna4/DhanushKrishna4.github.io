@@ -50,6 +50,15 @@
   pointer-events: none;
 }
 
+/* Likewise the red lines' own canvases on touch screens (gl/line.js): a
+   strip of the section, behind its text as the shared canvas is. */
+.line-gl {
+  position: absolute;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* Location pill, built like Dennis's: his 300 x 121 pill shape with a
    circle cut out of the right end (the page shows through it), 6em tall,
    hugging the left edge and centred on the screen. */

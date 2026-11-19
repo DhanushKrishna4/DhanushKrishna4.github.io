@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isSmall, reducedMotion } from '../core/env.js';
+import { browserScrolls } from '../core/scroll.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -364,6 +365,38 @@ export function createLine(engine, section, kind = 'home') {
   let line = null;
   const progress = { value: reducedMotion() ? 1 : 0 };
 
+  // Where the browser scrolls the page itself (core/scroll.js browserScrolls),
+  // a line drawn on the shared canvas trails the page by about a frame in a
+  // fast flick (measured: 30 to 45px). There it gets its own see-through
+  // canvas inside its section instead, just tall enough for its path, which
+  // the browser scrolls with the page; on About it also pins and is cut off
+  // with the top part that holds it. It sits behind the section's text, as
+  // the shared canvas does.
+  const own = browserScrolls();
+  let ownCanvas = null;
+  let ownRenderer = null;
+  let drawn = false;
+  let box = null; // its own canvas in the section: top, width, height (px)
+  if (own) {
+    ownCanvas = document.createElement('canvas');
+    ownCanvas.className = 'line-gl';
+    ownCanvas.setAttribute('aria-hidden', 'true');
+    section.prepend(ownCanvas);
+    ownRenderer = new THREE.WebGLRenderer({ canvas: ownCanvas, antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false });
+    ownRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.setPixelRatio(state.dpr);
+  }
+  // The camera shows the screen (shared canvas), or the strip of the section
+  // its own canvas covers.
+  const fit = () => {
+    camera.left = 0;
+    camera.right = own && box ? box.width : state.width;
+    camera.top = own && box ? -box.top : 0;
+    camera.bottom = own && box ? -(box.top + box.height) : -state.height;
+    camera.updateProjectionMatrix();
+  };
+
   const build = () => {
     const L = measure(section, kind);
     if (!L) return;
@@ -380,6 +413,18 @@ export function createLine(engine, section, kind = 'home') {
     material.uniforms.u_radius.value = radius;
     material.uniforms.u_aoThreshold.value = line.threshold;
     cap.scale.set(radius, radius, 1);
+    if (own) {
+      // From just above the path's highest point to just below its lowest,
+      // the ribbon and its round tip included; the section's full width.
+      const ys = line.points.map(([, y]) => -y);
+      const pad = radius * 1.5 + 4;
+      const top = Math.floor(Math.min(...ys) - pad);
+      box = { top, width: section.clientWidth, height: Math.ceil(Math.max(...ys) + pad) - top };
+      ownCanvas.style.top = `${top}px`;
+      ownRenderer.setSize(box.width, box.height);
+      drawn = false;
+      fit();
+    }
   };
 
   const { start, span } = DRAW[kind];
@@ -406,22 +451,27 @@ export function createLine(engine, section, kind = 'home') {
     order: 2,
     visible: true,
     resize() {
-      camera.left = 0;
-      camera.right = state.width;
-      camera.top = 0;
-      camera.bottom = -state.height;
-      camera.updateProjectionMatrix();
+      fit();
     },
     update() {
       const rect = section.getBoundingClientRect();
       const t = progress.value;
-      layer.visible = !!line && t > 0.0005 && rect.bottom > -state.height && rect.top < state.height * 2;
+      const showing = !!line && t > 0.0005 && rect.bottom > -state.height && rect.top < state.height * 2;
+      // With its own canvas the shared one draws nothing of it.
+      layer.visible = showing && !own;
       if (state.width !== built.w || state.height !== built.h || section.offsetHeight !== built.s) {
         build();
         built = { w: state.width, h: state.height, s: section.offsetHeight };
       }
+      if (own && !showing && drawn) {
+        // Its own canvas keeps its last picture until told otherwise.
+        ownRenderer.clear();
+        drawn = false;
+      }
       if (!line) return;
-      group.position.set(rect.left, -rect.top, 0);
+      // On its own canvas the path stays in the section's own coordinates
+      // and the browser scrolls it; on the shared one it follows the section.
+      group.position.set(own ? 0 : rect.left, own ? 0 : -rect.top, 0);
       material.uniforms.u_showRatio.value = t;
       // The cap sits where the drawing has reached, in the line's colour there.
       const pts = line.points;
@@ -434,6 +484,10 @@ export function createLine(engine, section, kind = 'home') {
       const on = Math.min(1, Math.max(0, (t - (th - 0.02)) / 0.04));
       capMaterial.uniforms.u_ao.value = Math.min(1, 0.9 + 0.1 * shade + 1 - on);
       capMaterial.uniforms.u_mixRatio.value = 1 - (1 - Math.min(1, t)) ** 2;
+      if (own && showing) {
+        ownRenderer.render(scene, camera);
+        drawn = true;
+      }
     },
     render(renderer) {
       renderer.clearDepth();
@@ -446,6 +500,12 @@ export function createLine(engine, section, kind = 'home') {
       cap.geometry.dispose();
       material.dispose();
       capMaterial.dispose();
+      // Hand its WebGL context back, or each visit would leave one behind.
+      if (ownRenderer) {
+        ownRenderer.dispose();
+        ownRenderer.forceContextLoss();
+        ownCanvas.remove();
+      }
     },
   };
   return layer;
