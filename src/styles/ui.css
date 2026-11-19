@@ -444,11 +444,20 @@ html.menu-open .menu {
   transform: translateY(calc(var(--roll) * -1));
 }
 
-/* As on Lando's, links animate only on screens at least 992px wide; below
-   that a tap leaves these as they are (core/env.js hoverMotion). */
+/* As on Lando's, links animate only on screens at least 992px wide
+   (core/env.js hoverMotion). */
 @media (min-width: 992px) {
   html:not(.is-unhovered) .menu__link:not([aria-current='page']):hover .char {
     transform: translateY(calc(var(--roll) * -1));
+  }
+}
+
+/* Narrower, his menu links don't roll; a tapped one just takes its hover
+   colour at once (his lime; ours the black the roll brings in) and keeps it
+   while the page changes, since a tap doesn't unhover (core/router.js). */
+@media (max-width: 991.98px) {
+  html:not(.is-unhovered) .menu__link:not([aria-current='page']):hover {
+    color: var(--black);
   }
 }
 
