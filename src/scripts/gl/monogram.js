@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { clamp, smoothstep, isTouch, reducedMotion } from '../core/env.js';
+import { lenis } from '../core/scroll.js';
 
 // The monogram's outline in its 256-unit drawing (public/favicon.svg): the D
 // and K as one polygon, with the D's two stripes cut through it.
@@ -284,6 +285,29 @@ export function createMonogram(engine, hero) {
   scene.add(piece);
   const camera = new THREE.PerspectiveCamera(30, 1, 1, 10000);
 
+  // Where the browser scrolls the page itself (touch screens, or without our
+  // smooth scroll), it moves the page before any script can redraw the
+  // shared canvas behind it, so a piece drawn there trails the page by about
+  // a frame in a fast flick (measured: 30 to 50px). There the monogram gets
+  // its own see-through canvas at the top of the opening screen instead,
+  // which the browser scrolls along with the page, and it moves exactly with
+  // the page, as Dennis's photo does on his phone. It still tilts back and
+  // fades as it goes.
+  const own = isTouch() || !lenis;
+  let ownCanvas = null;
+  let ownRenderer = null;
+  let drawn = false;
+  if (own) {
+    ownCanvas = document.createElement('canvas');
+    ownCanvas.className = 'hero__gl';
+    ownCanvas.setAttribute('aria-hidden', 'true');
+    hero.prepend(ownCanvas);
+    ownRenderer = new THREE.WebGLRenderer({ canvas: ownCanvas, antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false });
+    ownRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.setPixelRatio(state.dpr);
+  }
+
   // Pose pieces, each eased on its own: the opening, and the lean toward the
   // cursor with the cursor light.
   const intro = { rx: 0, ry: 0, y: 0, scale: 1, opacity: 0 };
@@ -317,6 +341,9 @@ export function createMonogram(engine, hero) {
       camera.position.set(w / 2, -h / 2, dist);
       camera.lookAt(w / 2, -h / 2, 0);
       camera.updateProjectionMatrix();
+      // Its own canvas covers the first screen, so the same camera fits it.
+      ownRenderer?.setSize(w, h);
+      drawn = false;
     },
     intro({ fromLoader = false } = {}) {
       introStarted = true;
@@ -331,22 +358,39 @@ export function createMonogram(engine, hero) {
 
       const opacity = (introStarted ? intro.opacity : 0) * (1 - smoothstep(0.15, 0.6, progress));
       uniforms.uOpacity.value = opacity;
-      layer.visible = opacity > 0.002 && rect.bottom > 0;
-      if (!layer.visible) return;
+      const showing = opacity > 0.002 && rect.bottom > 0;
+      // With its own canvas the shared one draws nothing of it.
+      layer.visible = showing && !own;
+      if (!showing) {
+        // Its own canvas keeps its last picture until told otherwise.
+        if (own && drawn) {
+          ownRenderer.clear();
+          drawn = false;
+        }
+        return;
+      }
 
       const { width, cy } = layout();
       const cx = state.width / 2;
-      const centerY = rect.top + cy;
+      // On its own canvas it stays put on the opening screen and the browser
+      // scrolls it; on the shared one it is moved to follow the page.
+      const centerY = own ? cy : rect.top + cy;
       const s = steer.step(cx, centerY, width);
 
-      // Scrolling away: it tilts back, lags a little behind the page and fades.
+      // Scrolling away: it tilts back, lags a little behind the page (not on
+      // its own canvas) and fades.
       const tiltBack = progress * 0.8;
-      const lag = progress * rect.height * 0.28;
+      const lag = own ? 0 : progress * rect.height * 0.28;
 
       piece.rotation.set(REST.x + intro.rx + s.x - tiltBack, REST.y + intro.ry + s.y, s.z);
       piece.scale.setScalar((width / WIDTH) * intro.scale);
       piece.position.set(cx, -(centerY + intro.y + lag - s.lift), 0);
       uniforms.uCursor.value.set(s.light.x, -s.light.y, width * 1.6);
+
+      if (own) {
+        ownRenderer.render(scene, camera);
+        drawn = true;
+      }
     },
     render(renderer) {
       renderer.clearDepth();
@@ -358,6 +402,13 @@ export function createMonogram(engine, hero) {
       engine.field.uniforms.uFade.value = 1;
       geometry.dispose();
       solid.dispose();
+      // Hand its WebGL context back, or each visit to the home page would
+      // leave one more behind.
+      if (ownRenderer) {
+        ownRenderer.dispose();
+        ownRenderer.forceContextLoss();
+        ownCanvas.remove();
+      }
     },
   };
   return layer;

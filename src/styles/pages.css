@@ -40,6 +40,16 @@
   font-size: var(--d-fs);
 }
 
+/* On touch screens the 3D monogram has its own canvas here (gl/monogram.js),
+   one screen tall, which the browser scrolls with the page. First in the
+   hero, so the text draws over it. */
+.hero__gl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
 /* Location pill, built like Dennis's: his 300 x 121 pill shape with a
    circle cut out of the right end (the page shows through it), 6em tall,
    hugging the left edge and centred on the screen. */
