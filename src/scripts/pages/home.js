@@ -28,14 +28,8 @@ export function mountHome(root, { gl }) {
     layers.push((cards = gl.add(createCards(gl, root.querySelector('[data-grid="home"]'), { mode: 'home' }))));
   }
 
-  // Parallax: the scrolling name and the hero copy drift slower than the page.
-  const parallax = reducedMotion()
-    ? null
-    : gsap
-        .timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } })
-        .to(marquee, { yPercent: 60, ease: 'none' }, 0)
-        .to(heroItems, { yPercent: 40, ease: 'none' }, 0);
-
+  // The name, the location pill and the role text scroll away with the page,
+  // as Dennis's do (only his photo lags behind; here the 3D mark does).
   if (!reducedMotion()) gsap.set([heroItems, marquee], { opacity: 0 });
 
   return {
@@ -60,8 +54,6 @@ export function mountHome(root, { gl }) {
       common.destroy();
       offMarquee();
       offFeatured();
-      parallax?.scrollTrigger?.kill();
-      parallax?.kill();
       layers.forEach((l) => gl?.remove(l));
     },
   };
