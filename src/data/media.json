@@ -1,0 +1,336 @@
+{
+  "forge": [
+    {
+      "src": "/media/forge/clip.mp4",
+      "poster": "/media/forge/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Forge demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/forge/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Forge demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/forge/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Forge demo, further down the page"
+    },
+    {
+      "src": "/media/forge/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Forge demo, further down the page"
+    },
+    {
+      "src": "/media/forge/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Forge demo on a phone-sized screen"
+    }
+  ],
+  "meridian": [
+    {
+      "src": "/media/meridian/clip.mp4",
+      "poster": "/media/meridian/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Meridian demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/meridian/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Meridian demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/meridian/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Meridian demo, further down the page"
+    },
+    {
+      "src": "/media/meridian/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Meridian demo, further down the page"
+    },
+    {
+      "src": "/media/meridian/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Meridian demo on a phone-sized screen"
+    }
+  ],
+  "mycelium": [
+    {
+      "src": "/media/mycelium/clip.mp4",
+      "poster": "/media/mycelium/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Mycelium demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/mycelium/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Mycelium demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/mycelium/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Mycelium demo, further down the page"
+    },
+    {
+      "src": "/media/mycelium/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Mycelium demo, further down the page"
+    },
+    {
+      "src": "/media/mycelium/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Mycelium demo on a phone-sized screen"
+    }
+  ],
+  "posterior": [
+    {
+      "src": "/media/posterior/clip.mp4",
+      "poster": "/media/posterior/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Posterior demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/posterior/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Posterior demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/posterior/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Posterior demo, further down the page"
+    },
+    {
+      "src": "/media/posterior/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Posterior demo, further down the page"
+    },
+    {
+      "src": "/media/posterior/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Posterior demo on a phone-sized screen"
+    }
+  ],
+  "loom": [
+    {
+      "src": "/media/loom/clip.mp4",
+      "poster": "/media/loom/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Loom demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/loom/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Loom demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/loom/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Loom demo, further down the page"
+    },
+    {
+      "src": "/media/loom/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Loom demo, further down the page"
+    },
+    {
+      "src": "/media/loom/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Loom demo on a phone-sized screen"
+    }
+  ],
+  "escapement": [
+    {
+      "src": "/media/escapement/clip.mp4",
+      "poster": "/media/escapement/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Escapement demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/escapement/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Escapement demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/escapement/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Escapement demo, further down the page"
+    },
+    {
+      "src": "/media/escapement/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Escapement demo, further down the page"
+    },
+    {
+      "src": "/media/escapement/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Escapement demo on a phone-sized screen"
+    }
+  ],
+  "orrery": [
+    {
+      "src": "/media/orrery/clip.mp4",
+      "poster": "/media/orrery/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Orrery demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/orrery/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Orrery demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/orrery/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Orrery demo, further down the page"
+    },
+    {
+      "src": "/media/orrery/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Orrery demo, further down the page"
+    },
+    {
+      "src": "/media/orrery/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Orrery demo on a phone-sized screen"
+    }
+  ],
+  "lucida": [
+    {
+      "src": "/media/lucida/clip.mp4",
+      "poster": "/media/lucida/clip.jpg",
+      "w": 1280,
+      "h": 800,
+      "alt": "Lucida demo in use",
+      "video": true
+    },
+    {
+      "src": "/media/lucida/1.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Lucida demo, top of the page",
+      "cover": true
+    },
+    {
+      "src": "/media/lucida/2.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Lucida demo, further down the page"
+    },
+    {
+      "src": "/media/lucida/3.jpg",
+      "w": 1600,
+      "h": 1000,
+      "alt": "Lucida demo, further down the page"
+    },
+    {
+      "src": "/media/lucida/4.jpg",
+      "w": 669,
+      "h": 1400,
+      "alt": "Lucida demo on a phone-sized screen"
+    }
+  ],
+  "nexus": [
+    {
+      "src": "/media/nexus/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of Nexus: one request entering a sealed boundary, passing a router and going to one of six models, drawn like an engineering diagram",
+      "cover": true
+    }
+  ],
+  "voiceguide-ai": [
+    {
+      "src": "/media/voiceguide-ai/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of VoiceGuide AI: a voice waveform becoming a route through nine timed stops, ending in a PDF, among greetings in many languages",
+      "cover": true
+    }
+  ],
+  "ai-summarizer": [
+    {
+      "src": "/media/ai-summarizer/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of AI Summarizer: the lines of a document page, down to a 4,000-character cut, flowing into three bullet points",
+      "cover": true
+    }
+  ],
+  "price-tracker": [
+    {
+      "src": "/media/price-tracker/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of Price Tracker: a price checked once a minute, stepping below a dashed £60 target and raising an alert",
+      "cover": true
+    }
+  ],
+  "stock-dashboard": [
+    {
+      "src": "/media/stock-dashboard/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of Stock Dashboard: a year of closing prices over volume bars, with a crosshair, two metric panels and a ten-row table",
+      "cover": true
+    }
+  ],
+  "url-shortener": [
+    {
+      "src": "/media/url-shortener/1.jpg",
+      "w": 2400,
+      "h": 1500,
+      "alt": "Drawing of URL Shortener: a long folded link condensed into a four-character key, with clicks fanning out and tallied below",
+      "cover": true
+    }
+  ]
+}

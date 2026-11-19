@@ -1,0 +1,43 @@
+---
+// A call-to-action button, built the way casadisolare.com builds theirs: a pill
+// with the label, and a circle with an arrow beside it. On hover the pill grows
+// under the circle, the circle shrinks into the pill's end, and the arrow
+// slides out one side while a second one slides in from the other.
+//   href       link target (renders an <a>); without it, a <button>
+//   type       button type when there is no href (default "button")
+//   external   opens in a new tab
+//   loop       marks the button the home/about red line loops around
+interface Props {
+  label: string;
+  href?: string;
+  type?: 'button' | 'submit';
+  external?: boolean;
+  loop?: boolean;
+  class?: string;
+}
+const { label, href, type = 'button', external = false, loop = false, class: className } = Astro.props;
+const arrow = 'M1 5h7.4M5.3 1.7 8.6 5 5.3 8.3';
+---
+{
+  href ? (
+    <a class:list={['cta', className]} href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener' : undefined} data-line-loop={loop ? '' : undefined}>
+      <span class="cta__label">{label}</span>
+      <span class="cta__circle" aria-hidden="true">
+        <svg viewBox="0 0 10 10" focusable="false">
+          <path d={arrow} />
+          <path d={arrow} />
+        </svg>
+      </span>
+    </a>
+  ) : (
+    <button class:list={['cta', className]} type={type} data-line-loop={loop ? '' : undefined}>
+      <span class="cta__label">{label}</span>
+      <span class="cta__circle" aria-hidden="true">
+        <svg viewBox="0 0 10 10" focusable="false">
+          <path d={arrow} />
+          <path d={arrow} />
+        </svg>
+      </span>
+    </button>
+  )
+}

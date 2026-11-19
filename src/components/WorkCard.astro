@@ -1,0 +1,52 @@
+---
+// A project card, built as Lusion's project items are (their .project-item):
+// the image, then a line of tags (here the project's stack) and the name,
+// with an arrow waiting just left of the name for the hover. Each of the
+// name's letters is a column of four copies, as theirs is, so it can slide
+// on its own and roll into place like a slot machine (gl/cards.js).
+import { coverFor } from '../data/media.js';
+
+const { project, eager = false } = Astro.props;
+const cover = coverFor(project.slug);
+const letters = [...project.name];
+---
+<a
+  class="card"
+  href={`/work/${project.slug}/`}
+  data-card
+  data-slug={project.slug}
+  data-tags={project.tags.join(' ')}
+  data-bg={project.colors.bg}
+  data-name={project.name}
+  data-summary={project.summary}
+>
+  <div class="card__visual">
+    <div class="card__media">
+      {cover && <img src={cover.src} alt="" width={cover.w} height={cover.h} loading={eager ? 'eager' : 'lazy'} decoding="async" data-card-img />}
+    </div>
+    <div class="card__meta">
+      <p class="card__tags">{project.stack.join(' • ')}</p>
+      <h3 class="card__name">
+        <svg class="card__arrow" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M1.5 8h12.5M8.5 2.5 14 8l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" />
+        </svg>
+        <span class="visually-hidden">{project.name}</span>
+        <span class="card__letters" aria-hidden="true">
+          {
+            letters.map((ch) => {
+              const c = ch === ' ' ? ' ' : ch;
+              return (
+                <span class="card__letter">
+                  <span>{c}</span>
+                  <span>{c}</span>
+                  <span>{c}</span>
+                  <span>{c}</span>
+                </span>
+              );
+            })
+          }
+        </span>
+      </h3>
+    </div>
+  </div>
+</a>

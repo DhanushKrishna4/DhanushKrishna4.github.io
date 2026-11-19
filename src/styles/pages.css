@@ -1,0 +1,1393 @@
+/* ==================================================================
+   Shared section helpers
+   ================================================================== */
+.section {
+  position: relative;
+  padding-inline: var(--gutter);
+}
+
+/* Masked text lines used by the Lusion-style reveals (each line on screen is
+   masked again by core/reveal.js, .reveal-line-mask). The masks reach 0.14em
+   below the line so the serif's descenders (g, y: 0.11em below a
+   line-height-1 line) aren't cut off once the words are in place. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.reveal-line-mask {
+  display: block;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.word {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ==================================================================
+   Home: opening screen (the 3D hills are drawn behind it by WebGL).
+   Heights, sizes and positions use Dennis's own formulas, so the layout
+   matches his hero at every window size.
+   ================================================================== */
+.hero {
+  position: relative;
+  height: 115vh;
+  overflow: hidden;
+  font-size: var(--d-fs);
+}
+
+/* Location pill, built like Dennis's: his 300 x 121 pill shape with a
+   circle cut out of the right end (the page shows through it), 6em tall,
+   hugging the left edge and centred on the screen. */
+.hero__place {
+  position: absolute;
+  left: 0;
+  top: calc(50vh - 3em);
+  width: calc(6em * 300 / 121);
+  height: 6em;
+  font-size: var(--d-fs);
+  color: var(--bone);
+}
+
+.hero__place-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: color-mix(in srgb, var(--oxblood) 72%, var(--black));
+}
+
+.hero__place-text {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  padding-left: var(--d-gap);
+  padding-right: 5em;
+  line-height: 1.2;
+}
+
+.hero__place-text span {
+  display: block;
+}
+
+/* Dennis's line globe: a ring, three meridians that sweep across in turn,
+   a latitude ellipse and an equator, the whole globe rocking gently. */
+.globe-ball {
+  position: absolute;
+  right: 0.9em;
+  top: 0.9em;
+  width: 4.2em;
+  height: 4.2em;
+}
+
+.globe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  font-size: 0.8em;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.globe-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 0.125em var(--bone);
+  transform: translate(-50%, -50%) rotate(30deg);
+  animation: globe-rock 5.4s cubic-bezier(0.35, 0, 0.65, 1) infinite;
+}
+
+.globe .circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  font-size: 0.75em;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0.1em 0 0 0.08em var(--bone);
+  animation: globe-meridian 2.7s linear infinite;
+}
+
+.globe :nth-child(1) {
+  animation-delay: -1.8s;
+}
+
+.globe :nth-child(2) {
+  animation-delay: -0.9s;
+}
+
+.globe .circle-hor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 55%;
+  font-size: 0.75em;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 0 0 0.15em var(--bone);
+}
+
+.globe .circle-hor-middle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 0.15em;
+  font-size: 0.75em;
+  transform: translate(-50%, -50%);
+  background: var(--bone);
+}
+
+@keyframes globe-rock {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(15deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(-15deg);
+  }
+}
+
+@keyframes globe-meridian {
+  0% {
+    border-radius: 50%;
+    box-shadow: inset 0.1em 0 0 0.08em var(--bone);
+    width: 100%;
+  }
+  49% {
+    border-radius: 50%;
+    box-shadow: inset 0.1em 0 0 0.08em var(--bone);
+    background: transparent;
+  }
+  50% {
+    border-radius: 0%;
+    width: 0.175em;
+    background: var(--bone);
+  }
+  51% {
+    border-radius: 50%;
+    box-shadow: inset -0.1em 0 0 0.08em var(--bone);
+    background: transparent;
+  }
+  100% {
+    border-radius: 50%;
+    box-shadow: inset -0.1em 0 0 0.08em var(--bone);
+    width: 100%;
+  }
+}
+
+/* The DK monogram, flat, for when WebGL is off (otherwise WebGL draws it in
+   3D in the same place: page centre, 47% down, 30% of the width). */
+.hero__mark {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 47vh;
+  width: clamp(240px, min(30vw, 50vh), 540px);
+  height: auto;
+  transform: translate(-50%, -50%);
+  fill: var(--crimson);
+}
+
+html.no-gl .hero__mark,
+html:not(.js) .hero__mark {
+  display: block;
+}
+
+/* Role: Dennis's h4 size, centred on the screen. Its right edge sits on his
+   page margin (--pad): 8vw on wide screens (kept between 2.5 and 8 times
+   his body size), 6vw up to 1200px. Past 100 times his body size his
+   content stops widening and centres, so the margin grows with it. */
+.hero__role {
+  --pad: clamp(calc(var(--d-fs) * 2.5), 8vw, calc(var(--d-fs) * 8));
+  position: absolute;
+  right: calc(max(0px, (100% - var(--d-fs) * 100) / 2) + var(--pad));
+  top: calc(50vh - 1.4em);
+  font-size: clamp(calc(var(--d-fs) * 1.55), 2.3vw, calc(var(--d-fs) * 2.5));
+  line-height: 1.4;
+}
+
+@media (max-width: 1200px) {
+  .hero__role {
+    --pad: 6vw;
+  }
+}
+
+/* Phones, as on Dennis's: the name sits higher, the role moves to the
+   bottom left and the pill shrinks to just the globe at the right. */
+@media (max-width: 720px) {
+  .hero {
+    height: 110vh;
+  }
+  .hero .marquee {
+    bottom: 33vh;
+  }
+  .hero__mark {
+    top: 34vh;
+    width: clamp(220px, 64vw, 380px);
+  }
+  .hero__role {
+    right: auto;
+    left: var(--pad);
+    top: auto;
+    bottom: calc(var(--d-gap) * 2 + 9vh);
+  }
+  .hero__place {
+    left: auto;
+    right: 0;
+    top: calc(100vh - 6.6em);
+    width: 6em;
+  }
+  .hero__place-shape,
+  .hero__place-text {
+    display: none;
+  }
+  .globe {
+    width: 3em;
+    height: 3em;
+  }
+}
+
+@media (max-width: 540px) {
+  .hero__role {
+    --pad: clamp(calc(var(--d-fs) * 1.25), 4vw, calc(var(--d-fs) * 2.5));
+  }
+}
+
+/* ==================================================================
+   Home: intro (Lusion's "Bold Ideas, Brought to Life" treatment)
+   ================================================================== */
+.intro {
+  padding-block: clamp(7rem, 16vw, 14rem) clamp(5rem, 10vw, 9rem);
+}
+
+.intro__title {
+  font-size: clamp(2.75rem, 1rem + 6.2vw, 8rem);
+  line-height: 1;
+  max-width: 100%;
+}
+
+.intro__title .line-mask:first-child {
+  padding-left: var(--indent, 22%);
+}
+
+.intro__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 6rem);
+  margin-top: clamp(4rem, 9vw, 8rem);
+}
+
+.intro__body {
+  grid-column: 2;
+  max-width: 34em;
+  font-size: var(--t-21);
+  line-height: 1.45;
+}
+
+/* Room above for the red line, which loops around this button. */
+.intro__button {
+  margin-top: clamp(3.5rem, 6.5vw, 6rem);
+}
+
+@media (max-width: 760px) {
+  .intro__title .line-mask:first-child {
+    padding-left: 0;
+  }
+  .intro__grid {
+    grid-template-columns: 1fr;
+  }
+  .intro__body {
+    grid-column: 1;
+    font-size: var(--t-18);
+  }
+}
+
+/* ==================================================================
+   Project grid (Lusion's) — home "Selected work" and the Work page.
+   Laid out as Lusion's home "Featured Work" section and their Projects
+   page (their CSS): 5vw page margins, a 12-column grid with 2vw gaps, each
+   card 6 columns wide. gl/cards.js draws the cards in WebGL with Unseen's
+   fold as they scroll up.
+   ================================================================== */
+.grid-section {
+  padding: 50px 5vw;
+}
+
+/* Home: their "Featured Work" heading, 8vw, with a note in the bottom right
+   corner as wide as 3 of the 12 columns and 2 gaps. */
+.featured-head {
+  position: relative;
+}
+
+.featured-head__title {
+  display: inline-block;
+  overflow: hidden;
+  padding-top: 0.5em;
+  margin-left: -0.07em;
+  font-family: var(--font-sans);
+  font-size: 8vw;
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.featured-head__note {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 21vw;
+  font-size: 0.9vw;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Work: their Projects page heading, 20vh down, with the count in monospace
+   9vw past the title's end and an arrow under it. Their "PROJECTS" is 17vw
+   and spans 81.1vw, so the count ends at the right margin; "ALL WORK" in
+   our face spans that at 15.56vw. */
+.projects-head {
+  margin-top: 20vh;
+}
+
+.projects-head__wrap {
+  position: relative;
+  left: -0.01em;
+  width: fit-content;
+  font-size: 15.56vw;
+  line-height: 1.15;
+}
+
+.projects-head__title {
+  position: relative;
+  left: -1vw;
+  display: inline-block;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1em;
+  text-transform: uppercase;
+}
+
+.projects-head__count {
+  position: absolute;
+  top: 2vw;
+  right: -9vw;
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+  font-size: 4vw;
+  line-height: 1.15;
+}
+
+.projects-head__arrow {
+  position: absolute;
+  right: -9vw;
+  bottom: 5vw;
+  width: 4vw;
+  height: 4vw;
+}
+
+/* Our filters, kept under the heading. */
+.grid-filters {
+  margin-top: 2vw;
+}
+
+.filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.filter {
+  padding: 0.5em 1.05em;
+  border-radius: 999px;
+  font-size: var(--t-14);
+  line-height: 1.2;
+  transition: background-color 0.35s var(--ease-out), color 0.35s var(--ease-out);
+}
+
+.filter sup {
+  font-size: 0.7em;
+  margin-left: 0.2em;
+  line-height: 0;
+}
+
+html:not(.is-transitioning) .filter:hover {
+  background: var(--surface);
+}
+
+.filter[aria-pressed='true'] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* Their .project-list: 8vh under the heading; from the third card on, each
+   row starts 5em under the last (10em on very wide screens). */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 2vw;
+  margin-top: 8vh;
+}
+
+.card {
+  position: relative;
+  display: block;
+  grid-column: span 6;
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.card:nth-child(n + 3 of .card:not([hidden])) {
+  margin-top: 5rem;
+}
+
+.card__visual {
+  transition: opacity 0.3s linear;
+}
+
+/* Their image: 65% as tall as it is wide, 15px corners. */
+.card__media {
+  position: relative;
+  padding-top: 65%;
+  overflow: hidden;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--crimson) 12%, var(--black));
+}
+
+.card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Their two lines: tags at 0.9vw in capitals, then the name at 3vw in a
+   line 1em tall that hides the arrow waiting at its left. */
+.card__tags {
+  margin: 1.5em 0 1em;
+  font-size: 0.9vw;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.card__name {
+  position: relative;
+  left: -0.06em;
+  height: 1em;
+  overflow: hidden;
+  font-size: 3vw;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.card__letters {
+  position: relative;
+  bottom: 0.2em;
+  display: flex;
+  white-space: pre;
+}
+
+/* Each letter: a column of four copies, the first showing (gl/cards.js
+   rolls the column into place on the home page). */
+.card__letter {
+  display: flex;
+  flex-direction: column;
+}
+
+.card__arrow {
+  position: absolute;
+  top: 0.1em;
+  left: -1em;
+  width: 0.8em;
+  height: 0.8em;
+}
+
+/* When WebGL draws the cards (the Work page: images and captions; the home
+   page: images only, their captions staying on the page as Lusion's do), the
+   DOM copy stays for layout, links and keyboard focus but is not painted. */
+.is-gl-cards .card__visual,
+.is-gl-images .card__media {
+  opacity: 0;
+}
+
+/* Their "See all projects" sits 12vh under the grid, centred. */
+.grid-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 12vh;
+}
+
+@media (min-aspect-ratio: 21 / 9) {
+  .featured-head__title {
+    font-size: 5.3vw;
+  }
+  .featured-head__note {
+    width: 15.33vw;
+    font-size: 0.6vw;
+  }
+  .projects-head__count {
+    top: 2.5vw;
+    right: -7vw;
+    font-size: 2.7vw;
+  }
+  .projects-head__arrow {
+    right: -6.9vw;
+    bottom: 5.5vw;
+    width: 2.7vw;
+    height: 2.7vw;
+  }
+  .card:nth-child(n + 3 of .card:not([hidden])) {
+    margin-top: 10rem;
+  }
+  .card__tags {
+    font-size: 0.6vw;
+  }
+  .card__name {
+    font-size: 2vw;
+  }
+}
+
+/* Their phone layout (812px and under): one column, larger type, the
+   note under the title, the arrow always showing. */
+@media (max-width: 812px) {
+  .featured-head__title {
+    font-size: 15vw;
+  }
+  .featured-head__note {
+    position: relative;
+    width: 100%;
+    margin: 3em 0;
+    font-size: 2.5vw;
+  }
+  .projects-head {
+    margin-top: 6rem;
+    margin-bottom: 2rem;
+  }
+  .cards {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-top: 0;
+  }
+  .card:nth-child(n + 3 of .card:not([hidden])) {
+    margin-top: 0;
+  }
+  .card:nth-child(n + 2 of .card:not([hidden])) {
+    margin-top: 2rem;
+  }
+  .card__tags {
+    font-size: 2.5vw;
+  }
+  .card__name {
+    font-size: 6.5vw;
+  }
+  .card__letters {
+    transform: translateX(1.5em);
+  }
+  .card__arrow {
+    transform: translateX(1em);
+  }
+  .grid-more {
+    margin: 4em 0 5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .featured-head__note {
+    font-size: 3.5vw;
+  }
+}
+
+/* ==================================================================
+   Glowing words (Lusion's awards section): giant outlined words behind a
+   section that light up under the cursor. gl/glow.js draws them in WebGL
+   and marks them .is-drawn; without WebGL this outline copy shows instead.
+   The section needs position: relative and its content drawn over them.
+   The weight gives Lusion's title its thickness: strokes 0.124 of the
+   capital height (21px on 168px letters in their drawing), which Mona
+   Sans reaches at 423. Like their title's lines, ours start level (no
+   indent); they slide left as you scroll (setupWordsSlide in about.js).
+   ================================================================== */
+.glow-words {
+  position: absolute;
+  inset: clamp(2rem, 6vw, 6rem) 0 auto 0;
+  display: grid;
+  font-family: var(--font-sans);
+  font-weight: 423;
+  font-stretch: 100%;
+  font-size: 23.5vw;
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--bone) 14%, transparent);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.glow-words.is-drawn {
+  visibility: hidden;
+}
+
+/* ==================================================================
+   Page headers (Work, About, Contact)
+   ================================================================== */
+.page-head {
+  padding-top: calc(var(--header-h) + clamp(5rem, 12vw, 10rem));
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.page-head__title {
+  font-size: clamp(3rem, 1.2rem + 6vw, 7.5rem);
+  line-height: 1;
+}
+
+/* ==================================================================
+   About
+   ================================================================== */
+
+/* The top part (heading, red line, intro) and the black sheet below it, like
+   Lando's sections: once the top part's bottom reaches the bottom of the
+   screen it stays put, and the sheet slides up over it. about.js sets --pin-top
+   (the screen's height minus the top part's), adds .is-pinnable, and clips the
+   top part at the sheet's edge. The sheet has no background of its own: the
+   background shader leaves the contour lines out from its edge down, so the
+   glowing words, which are drawn behind the page, still show on it. */
+.about-top.is-pinnable {
+  position: sticky;
+  top: var(--pin-top);
+}
+
+.about-sheet {
+  position: relative;
+  z-index: 1;
+}
+
+.about-line {
+  position: relative;
+  height: 1px;
+  margin-inline: var(--gutter);
+  background: var(--line);
+}
+
+.about-line .cta {
+  position: absolute;
+  right: clamp(1rem, 12vw, 12rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.about-intro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  padding-block: clamp(7rem, 12vw, 11rem) clamp(5rem, 9vw, 8rem);
+}
+
+.about-intro__arrow {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.45rem;
+}
+
+.about-intro__body {
+  max-width: 32em;
+  font-size: var(--t-21);
+  line-height: 1.45;
+}
+
+.about-intro__facts {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+.about-intro__facts dd {
+  font-size: var(--t-18);
+}
+
+/* Holds the glowing words: tall enough for all three lines (0.8 x 23.5vw
+   each, below their top inset), with the title and lists drawn over them. */
+.about-areas {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(clamp(2rem, 6vw, 6rem) + 58.4vw);
+  padding-block: clamp(8rem, 20vw, 16rem) clamp(6rem, 12vw, 10rem);
+}
+
+.about-areas__title,
+.about-areas__grid {
+  position: relative;
+}
+
+/* On phones the words are no bigger than the title, so overlapping it reads
+   as clutter: the title starts below them instead. */
+@media (max-width: 600px) {
+  .about-areas {
+    padding-top: calc(clamp(2rem, 6vw, 6rem) + 56.4vw + 2rem);
+  }
+}
+
+.about-areas__title,
+.about-block__title {
+  font-size: var(--t-72);
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+.about-areas__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.area {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.area__title {
+  font-size: var(--t-36);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+
+.area li {
+  padding: 0.3rem 0;
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+}
+
+.about-block {
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+
+.rows__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.6fr) auto;
+  gap: 0.5rem 2rem;
+  align-items: baseline;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.rows__item:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.rows__main {
+  font-size: var(--t-21);
+  font-weight: 600;
+}
+
+.rows__sub {
+  color: color-mix(in srgb, var(--fg) 85%, transparent);
+}
+
+.rows__note {
+  color: var(--muted);
+  font-size: var(--t-16);
+}
+
+.rows__date {
+  color: var(--muted);
+  font-size: var(--t-14);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.certs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.certs__issuer {
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.certs li {
+  color: var(--muted);
+  font-size: var(--t-16);
+  padding: 0.2rem 0;
+}
+
+/* Each links to its credential, and turns red when hovered, as the
+   project pages' links do. */
+html:not(.is-transitioning) .certs a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .about-intro {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .about-intro__facts {
+    grid-column: 2;
+  }
+  .about-areas__grid,
+  .certs {
+    grid-template-columns: 1fr;
+  }
+  .rows__item {
+    grid-template-columns: 1fr auto;
+  }
+  .rows__sub,
+  .rows__note {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ==================================================================
+   Contact (Dennis's numbered form)
+   ================================================================== */
+.contact {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: clamp(3rem, 6vw, 7rem);
+  padding-bottom: clamp(5rem, 9vw, 8rem);
+}
+
+.form__q {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.5rem 1.5rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem) 0;
+  border-top: 1px solid var(--line);
+}
+
+.form__q:last-of-type {
+  border-bottom: 1px solid var(--line);
+}
+
+.form__n {
+  color: var(--muted);
+  font-size: var(--t-14);
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.45rem;
+}
+
+.form__label {
+  font-size: var(--t-24);
+  line-height: 1.2;
+}
+
+.form__field {
+  grid-column: 2;
+  width: 100%;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  font-size: var(--t-21);
+  color: var(--fg);
+  resize: vertical;
+  outline: none;
+}
+
+.form__field::placeholder {
+  color: color-mix(in srgb, var(--fg) 34%, transparent);
+}
+
+.form__q:focus-within .form__n {
+  color: var(--accent);
+}
+
+.form__send {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2rem;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.form__note {
+  color: var(--muted);
+  font-size: var(--t-14);
+  max-width: 18em;
+  text-align: right;
+}
+
+.form__error {
+  grid-column: 2;
+  color: var(--ember);
+  font-size: var(--t-14);
+}
+
+.contact__aside {
+  display: grid;
+  gap: 2.25rem;
+  align-content: start;
+  padding-top: 0.5rem;
+}
+
+.contact__aside li {
+  padding: 0.15rem 0;
+}
+
+@media (max-width: 900px) {
+  .contact {
+    grid-template-columns: 1fr;
+  }
+  .form__q {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+}
+
+.foot-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem var(--gutter);
+  font-size: var(--t-14);
+}
+
+/* ==================================================================
+   Project page (Lusion): intro, then a sideways gallery
+   ================================================================== */
+.project__track {
+  position: relative;
+}
+
+.project__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.project__rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 3rem);
+  height: 100%;
+  padding-inline: var(--gutter);
+  will-change: transform;
+}
+
+.project__intro {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  width: min(56vw, 60rem);
+  padding-top: var(--header-h);
+}
+
+.project__title {
+  grid-column: 1 / -1;
+  font-size: clamp(3.25rem, 1.5rem + 5vw, 7rem);
+  margin-bottom: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.project__body {
+  font-size: var(--t-16);
+  line-height: 1.55;
+  max-width: 34em;
+  color: color-mix(in srgb, var(--fg) 88%, transparent);
+}
+
+.project__launch {
+  margin-top: 2rem;
+}
+
+.project__side {
+  display: grid;
+  gap: 1.75rem;
+  align-content: start;
+  font-size: var(--t-16);
+}
+
+.project__side h2 {
+  color: var(--accent);
+  font-size: var(--t-14);
+  font-weight: 560;
+  margin-bottom: 0.45rem;
+}
+
+html:not(.is-transitioning) .project__side a:hover {
+  color: var(--accent);
+}
+
+.media {
+  position: relative;
+  flex: none;
+  height: min(76svh, 52rem);
+  aspect-ratio: var(--ar, 16 / 10);
+  border-radius: 0.8rem;
+  /* Its own stacking order, so the glow below always sits behind the image. */
+  isolation: isolate;
+}
+
+.media__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--fg) 8%, var(--bg));
+  /* Lusion's entrance (project.js sets --open, 0.6 to 1): the rounded frame
+     opens from the middle while the picture inside settles from a zoom. */
+  clip-path: inset(calc((1 - var(--open, 1)) * 50%) round 0.8rem);
+}
+
+.media img,
+.media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(calc(1 / var(--open, 1)));
+}
+
+/* The first image gets Lusion's glowing edge, in the project's colours: a
+   sharp 2px ring and a blurred halo, both behind the image (z-index 0, the
+   frame above is 1), so only the ring's edge and the glow show. */
+@property --spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.media--hero::before,
+.media--hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: -2px;
+  border-radius: calc(0.8rem + 2px);
+  background: conic-gradient(
+    from var(--spin),
+    var(--accent),
+    color-mix(in srgb, var(--accent) 40%, var(--fg)),
+    color-mix(in srgb, var(--accent) 60%, #6b8cff),
+    var(--accent)
+  );
+  animation: spin 8s linear infinite;
+  /* The glow opens with the frame. */
+  transform: scale(var(--open, 1));
+}
+
+.media--hero::before {
+  filter: blur(18px);
+  opacity: 0.75;
+  inset: -6px;
+}
+
+@keyframes spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+/* With WebGL the gallery is drawn by gl/gallery.js on top of these frames,
+   which stay for layout, links and readers but show nothing themselves. */
+.gl-gallery .media__frame {
+  background: none;
+  clip-path: none;
+}
+
+.gl-gallery .media__frame > img,
+.gl-gallery .media__frame > video {
+  opacity: 0 !important;
+}
+
+.gl-gallery .media--hero::before,
+.gl-gallery .media--hero::after {
+  display: none;
+}
+
+.media__caption {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.75rem);
+  font-size: var(--t-14);
+  color: var(--muted);
+}
+
+.project__next {
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  display: grid;
+  align-content: center;
+  gap: 2rem;
+  width: min(70vw, 64rem);
+  margin-right: calc(var(--gutter) * -1);
+  padding: var(--gutter) calc(var(--gutter) * 2);
+  background: var(--next-bg);
+  color: var(--next-fg);
+  /* The name below is sized to this panel's own width. */
+  container-type: inline-size;
+}
+
+/* 15% of the panel's width: the widest single words (ESCAPEMENT, SUMMARIZER)
+   measure 6.3em, so they fill about 95% of it. Two-word names break onto two
+   balanced lines instead of running off the edge. */
+.project__next-name {
+  font-size: clamp(2.5rem, 15cqi, 9rem);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.project__next-foot {
+  position: absolute;
+  left: calc(var(--gutter) * 2);
+  right: calc(var(--gutter) * 2);
+  bottom: clamp(1.5rem, 4vh, 3rem);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: var(--t-14);
+}
+
+.project__next-bar {
+  height: 2px;
+  background: color-mix(in srgb, var(--next-fg) 22%, transparent);
+  overflow: hidden;
+}
+
+.project__next-bar span {
+  display: block;
+  height: 100%;
+  background: var(--next-accent);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+}
+
+.scroll-hint {
+  position: fixed;
+  right: var(--gutter);
+  bottom: clamp(1.25rem, 3vh, 2.25rem);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--accent);
+  font-size: var(--t-14);
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.scroll-hint svg {
+  width: 0.9em;
+  height: 0.9em;
+}
+
+/* Phones: no sideways scrolling, everything stacks. */
+@media (max-width: 760px) {
+  .project__sticky {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+  .project__rail {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    transform: none !important;
+    padding-bottom: 0;
+  }
+  .project__intro {
+    width: auto;
+    grid-template-columns: 1fr;
+  }
+  .media {
+    height: auto;
+    width: 100%;
+  }
+  .project__next {
+    width: auto;
+    margin: 2rem calc(var(--gutter) * -1) 0;
+    min-height: 70svh;
+  }
+  .scroll-hint {
+    display: none;
+  }
+}
+
+/* ==================================================================
+   404: Lando's (landonorris.com at any missing address), measured on his
+   site at widths from 390 to 1920. Everything is sized in his unit (--u),
+   a fixed share of the screen's width: a 108th above 991px, an 86.4th down
+   to 480px, a 36th below. His helmet is left out; the 404 is the DK
+   monogram's lettering in 3D (scripts/gl/lost.js) across his row of 4s.
+   ================================================================== */
+html[data-page='notfound'] {
+  --u: calc(100vw / 108);
+}
+
+@media (max-width: 991px) {
+  html[data-page='notfound'] {
+    --u: calc(100vw / 86.4);
+  }
+}
+
+@media (max-width: 479px) {
+  html[data-page='notfound'] {
+    --u: calc(100vw / 36);
+  }
+}
+
+.lost {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* His "Go to home": his lime button in our accent, 3 units tall. His sits as
+   far into its corner as his menu button does into the other, tops level;
+   ours mirrors our menu button the same way (ui.css .menu-btn). On phones
+   his sits under his Store button; we have none. */
+.lost__home {
+  position: absolute;
+  left: var(--d-gap);
+  top: calc(var(--d-gap) / 2);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 0.625);
+  height: calc(var(--u) * 3);
+  padding: 0 calc(var(--u) + 1px);
+  border-radius: calc(var(--u) * 0.54);
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: var(--u);
+  font-weight: 800;
+  font-stretch: 86%;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* His return arrow: drawn 0.78125 units across in a 1.2-unit box, its line
+   1.52 of its 10.94 thick, square-ended, the head's point mitred. While
+   hovered it keeps rubbing itself out and drawing back in (pages/notfound.js). */
+.lost__arrow {
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 1.2);
+  height: calc(var(--u) * 1.2);
+}
+
+.lost__arrow svg {
+  width: calc(var(--u) * 0.78125);
+  height: calc(var(--u) * 0.78125);
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.52;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+
+/* Where his LN4 mark sits, the DK monogram, fitted inside the same square. */
+.lost__mark {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 1.75);
+  width: calc(var(--u) * 2.75);
+  height: calc(var(--u) * 2.75);
+  transform: translateX(-50%);
+  fill: var(--fg);
+}
+
+/* His row of 4s: centred, 62.5 units wide. On phones his runs the whole
+   width; ours keeps his 1.25-unit margin there, so the 3D piece's side walls
+   aren't cut off by the screen's edges. The WebGL 404 fills its width; the
+   flat one shows only without WebGL. */
+.lost__stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(calc(var(--u) * 62.5), 100% - var(--u) * 2.5);
+  aspect-ratio: var(--aspect);
+  transform: translate(-50%, -50%);
+}
+
+.lost__flat {
+  display: none;
+  width: 100%;
+  height: 100%;
+  fill: var(--crimson);
+}
+
+html.no-gl .lost__flat,
+html:not(.js) .lost__flat {
+  display: block;
+}
+
+/* His two lines, 1.25 units off the bottom: the sans at weight 750 and
+   width 93, then the serif (Fraunces set as the name's first line) in our
+   accent dimmed as his lime is for his (OKLCH lightness x0.843, chroma
+   x0.716, hue -4 degrees: #f2475a to #b64454). */
+.lost__text {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * 1.25);
+  transform: translateX(-50%);
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 0.886;
+  letter-spacing: calc(var(--u) * -0.125);
+}
+
+.lost__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: calc(var(--u) * 2.625);
+  font-weight: 750;
+  font-stretch: 93%;
+  color: var(--fg);
+}
+
+.lost__sub {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: calc(var(--u) * 2.75);
+  font-weight: 560;
+  font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+  color: #b64454;
+}
+
+@media (max-width: 479px) {
+  .lost__arrow {
+    width: calc(var(--u) * 1.5);
+    height: calc(var(--u) * 1.5);
+  }
+
+  .lost__mark {
+    top: calc(var(--u) * 2.35);
+    width: calc(var(--u) * 2.5);
+    height: calc(var(--u) * 2.5);
+  }
+
+  .lost__title,
+  .lost__sub {
+    font-size: calc(var(--u) * 1.9);
+  }
+}

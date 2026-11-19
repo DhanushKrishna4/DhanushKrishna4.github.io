@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import Footer from '../../components/Footer.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { projects, filters, countFor } from '../../data/projects.js';
+---
+<Base page="work" label="Work" title="Work" current="/work/" description="Projects by Dhanush Krishna: machine learning tools, systems software and applied AI, most of them running live in the browser.">
+  <!-- Lusion's Projects page: the giant title with the count and an arrow, then the grid (with Unseen's fold) -->
+  <section class="section grid-section" data-grid="work" aria-labelledby="work-title">
+    <div class="projects-head">
+      <div class="projects-head__wrap">
+        <h1 id="work-title" class="projects-head__title" data-reveal="chars">All work</h1>
+        <span class="projects-head__count" aria-hidden="true">{projects.length}</span>
+        <svg class="projects-head__arrow" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M1.5 1.5 14.5 14.5M14.5 4v10.5H4" fill="none" stroke="currentColor" stroke-width="0.6" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="grid-filters">
+      <div class="filters" role="group" aria-label="Filter projects">
+        {
+          filters.map((f, i) => (
+            <button class="filter" type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-filter={f.id}>
+              {f.label}
+              <sup>{countFor(f.id)}</sup>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="cards" data-cards>
+      {projects.map((p, i) => <WorkCard project={p} eager={i < 2} />)}
+    </div>
+  </section>
+
+  <Footer slot="after" />
+</Base>

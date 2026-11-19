@@ -1,0 +1,41 @@
+---
+import { site } from '../data/site.js';
+import Cta from './Cta.astro';
+---
+<footer class="footer" data-footer>
+  <div class="footer__body">
+    <h2 class="footer__title serif">{site.footer.title[0]}<br />{site.footer.title[1]}</h2>
+
+    <div class="footer__rule">
+      <Cta class="footer__cta" href="/contact/" label={site.footer.button} />
+    </div>
+
+    <!-- Dennis's button fill on hover (core/pill.js) -->
+    <div class="footer__contacts">
+      <a class="pill" href={`mailto:${site.email}`}><span class="pill__fill" aria-hidden="true"></span>{site.email}</a>
+      <a class="pill" href={site.linkedin} target="_blank" rel="noopener"><span class="pill__fill" aria-hidden="true"></span>LinkedIn</a>
+      <a class="pill" href={site.github} target="_blank" rel="noopener"><span class="pill__fill" aria-hidden="true"></span>GitHub</a>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="footer__meta">
+        <div>
+          <span class="label">Version</span>
+          {site.edition}
+        </div>
+        <div>
+          <span class="label">Local time</span>
+          <span data-clock>--:--</span>
+          {site.timeZoneLabel}
+        </div>
+      </div>
+      <div>
+        <span class="label">Socials</span>
+        <div class="footer__socials">
+          <a href={site.github} target="_blank" rel="noopener" data-roll>GitHub</a>
+          <a href={site.linkedin} target="_blank" rel="noopener" data-roll>LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

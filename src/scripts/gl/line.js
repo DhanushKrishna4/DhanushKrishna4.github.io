@@ -1,0 +1,452 @@
+// The red line, made the way Lusion makes theirs (the Line class in
+// lusion.co's code). It is a flat ribbon of even width, not a lit tube: the
+// edges are smoothed over one pixel, and the colour runs along its length from
+// a deep red to the accent (blended in hue, saturation and brightness, quickly
+// at first). Where the line crosses itself, the stretch underneath darkens by
+// up to a tenth near the crossing once the stretch on top has been drawn. A
+// round cap rides the tip as it draws. The ribbon's width follows Lusion's
+// formula: 0.8% of the screen's diagonal, doubled on narrow screens.
+// Each path is a few pen strokes in the manner of theirs: long, even curves
+// joined smoothly, placed from the layout of the section it runs through.
+// It draws itself as you scroll, eased in and out, and retracts on the way up.
+import * as THREE from 'three';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { isSmall, reducedMotion } from '../core/env.js';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// From the brand red at its start to the accent (--ember) at its end.
+const COLOR_START = '#c1121f';
+const COLOR_END = '#f2475a';
+
+const hsv = /* glsl */ `
+vec3 hsv2rgb(in vec3 c) {
+  vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+  rgb = rgb * rgb * (3.0 - 2.0 * rgb);
+  return c.z * mix(vec3(1.0), rgb, c.y);
+}
+vec3 rgb2hsv(vec3 c) {
+  vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+  vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+  vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+  float d = q.x - min(q.w, q.y);
+  float e = 1.0e-10;
+  return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+vec3 lerpHSV(in vec3 a, in vec3 b, in float x) {
+  float hue = (mod(mod((b.x - a.x), 1.0) + 1.5, 1.0) - 0.5) * x + a.x;
+  return vec3(hue, mix(a.yz, b.yz, x));
+}
+`;
+
+// CP: the centre line's point (xy, px) and which side this vertex is (z: 0 or
+// 1). position: the side's direction (xy) and how far along the line (z, 0..1).
+// Cd: 1 where nothing crosses over this stretch, falling to 0 under a crossing.
+const vert = /* glsl */ `
+attribute vec3 CP;
+attribute float Cd;
+uniform float u_radius;
+varying float v_cd;
+varying float v_lineRatio;
+varying float v_s;
+void main() {
+  vec3 pos = vec3(CP.xy + position.xy * u_radius, 0.0);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  v_cd = Cd;
+  v_lineRatio = position.z;
+  v_s = CP.z;
+}
+`;
+
+const frag = /* glsl */ `
+varying float v_cd;
+varying float v_lineRatio;
+varying float v_s;
+uniform float u_showRatio;
+uniform vec3 u_color0;
+uniform vec3 u_color1;
+uniform float u_aoThreshold;
+float linearStep(float edge0, float edge1, float x) {
+  return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+}
+${hsv}
+void main() {
+  float ao = 0.9 + 0.1 * v_cd;
+  float aoRatio = linearStep(u_aoThreshold - 0.02, u_aoThreshold + 0.02, u_showRatio);
+  if (step(u_showRatio, v_lineRatio) > 0.5) discard;
+  float mixRatio = 1.0 - pow(1.0 - clamp(v_lineRatio, 0.0, 1.0), 2.0);
+  gl_FragColor.rgb = hsv2rgb(lerpHSV(rgb2hsv(u_color1), rgb2hsv(u_color0), mixRatio));
+  gl_FragColor.rgb *= min(1.0, ao + 1.0 - aoRatio);
+  float alpha = abs(v_s - 0.5);
+  gl_FragColor.a = linearStep(0.5, 0.5 - fwidth(alpha), alpha);
+}
+`;
+
+// The round cap at the tip, in the colour the line has there.
+const capVert = /* glsl */ `
+uniform vec3 u_color0;
+uniform vec3 u_color1;
+uniform float u_mixRatio;
+uniform float u_ao;
+${hsv}
+varying vec3 v_color;
+varying vec2 v_uv;
+void main() {
+  v_color = u_ao * hsv2rgb(lerpHSV(rgb2hsv(u_color1), rgb2hsv(u_color0), u_mixRatio));
+  v_uv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const capFrag = /* glsl */ `
+varying vec3 v_color;
+varying vec2 v_uv;
+void main() {
+  float d = length(v_uv - 0.5) * 2.0;
+  gl_FragColor.rgb = v_color;
+  gl_FragColor.a = smoothstep(1.0, 1.0 - fwidth(d), d);
+}
+`;
+
+// --- Pen paths -------------------------------------------------------------
+// Nodes: { p: [x, y], a: direction in degrees (0 = right, 90 = down) }. Each
+// pair is joined by a cubic Bezier with its handles along the node
+// directions, sized so the curve is the circular arc that fits both
+// directions (a third of the chord when they agree). Bends stay even.
+const rad = (d) => (d * Math.PI) / 180;
+const wrap = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
+
+function segments(nodes) {
+  const out = [];
+  for (let i = 0; i < nodes.length - 1; i++) {
+    const A = nodes[i];
+    const B = nodes[i + 1];
+    const c = Math.hypot(B.p[0] - A.p[0], B.p[1] - A.p[1]);
+    const turn = Math.abs(wrap(B.a - A.a));
+    let h = c / 3;
+    if (turn > 1) {
+      const th = rad(turn);
+      h = (4 / 3) * Math.tan(th / 4) * (c / (2 * Math.sin(th / 2)));
+    }
+    const da = [Math.cos(rad(A.a)), Math.sin(rad(A.a))];
+    const db = [Math.cos(rad(B.a)), Math.sin(rad(B.a))];
+    out.push([A.p, [A.p[0] + da[0] * h, A.p[1] + da[1] * h], [B.p[0] - db[0] * h, B.p[1] - db[1] * h], B.p]);
+  }
+  return out;
+}
+
+const bezier = (s, t) => {
+  const u = 1 - t;
+  return [0, 1].map((k) => u * u * u * s[0][k] + 3 * u * u * t * s[1][k] + 3 * u * t * t * s[2][k] + t * t * t * s[3][k]);
+};
+
+// Points evenly spaced along the whole path, about `step` px apart, as
+// Lusion's are (each point's share of the length is its place along it).
+function resample(segs, step) {
+  const dense = [];
+  segs.forEach((s, si) => {
+    for (let i = si ? 1 : 0; i <= 160; i++) dense.push(bezier(s, i / 160));
+  });
+  const acc = [0];
+  for (let i = 1; i < dense.length; i++) {
+    acc.push(acc[i - 1] + Math.hypot(dense[i][0] - dense[i - 1][0], dense[i][1] - dense[i - 1][1]));
+  }
+  const length = acc[acc.length - 1];
+  const n = Math.max(2, Math.round(length / step) + 1);
+  const pts = [];
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    const d = (length * i) / (n - 1);
+    while (j < acc.length - 2 && acc[j + 1] < d) j++;
+    const f = (d - acc[j]) / Math.max(1e-9, acc[j + 1] - acc[j]);
+    pts.push([dense[j][0] + (dense[j + 1][0] - dense[j][0]) * f, dense[j][1] + (dense[j + 1][1] - dense[j][1]) * f]);
+  }
+  return pts;
+}
+
+// --- Layout ----------------------------------------------------------------
+// Boxes relative to the section's top-left. Heading lines are measured from
+// their line boxes (height) and their text (width), since the reveal moves the
+// words while it plays; line one slides in from its indent.
+function measure(section, kind) {
+  const s = section.getBoundingClientRect();
+  const box = (el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height };
+  };
+  const title = [...section.querySelectorAll('.line-mask')].map((line, i) => {
+    const b = box(line);
+    const range = document.createRange();
+    range.selectNodeContents(line);
+    const ink = range.getBoundingClientRect();
+    const indent = i === 0 ? parseFloat(getComputedStyle(line).paddingLeft) || 0 : 0;
+    return { x: b.x + indent, y: b.y, w: ink.width, h: b.h };
+  });
+  const button = kind === 'home' ? section.querySelector('[data-line-loop]') : document.querySelector('.about-line [data-line-loop]');
+  const body = kind === 'home' ? [...section.querySelectorAll('.intro__body .prose p')] : [...document.querySelectorAll('.about-intro__body p, .about-intro__facts')];
+  if (!title.length || !button || !body.length) return null;
+  return { vw: innerWidth, vh: innerHeight, title, button: box(button), body: body.map(box) };
+}
+
+// The paths, as pen nodes in px from the section's top-left.
+const PATHS = {
+  // Sweeps in from the left behind the heading, crossing between "systems,"
+  // and "from", comes down beside the paragraph, loops the "About me" button
+  // (hanging from halfway between the paragraph and the button), crosses
+  // itself and drifts out to the left. Phones: a swoop under the button.
+  home(L) {
+    const { vw } = L;
+    const b = L.button;
+    const [t1, t2 = t1] = L.title;
+    if (isSmall()) {
+      const cy = b.y + b.h / 2;
+      return [
+        { p: [vw + 60, b.y - 80], a: 160 },
+        { p: [b.x + b.w + 44, cy], a: 100 },
+        { p: [b.x + b.w * 0.45, b.y + b.h + 42], a: 180 },
+        { p: [-60, b.y + b.h + 22], a: 192 },
+      ];
+    }
+    const textEnd = Math.max(...L.body.map((r) => r.y + r.h));
+    const cx = b.x + b.w / 2;
+    const top = (textEnd + b.y) / 2 - 4;
+    const rx = b.w / 2 + b.h * 1.29;
+    const ry = b.h * 1.8;
+    const cy = top + ry;
+    const low = cy + ry;
+    return [
+      { p: [-0.0625 * vw, t1.y - 0.063 * vw], a: 6 },
+      { p: [t2.x + t2.w * 0.504, t2.y + t2.h * 0.65], a: 62 },
+      { p: [cx - rx, cy], a: 90 },
+      { p: [cx, low], a: 0 },
+      { p: [cx + rx, cy], a: -90 },
+      { p: [cx, top], a: 180 },
+      { p: [0.3 * vw, low - 85], a: 168 },
+      { p: [0.139 * vw, low - 85], a: 188 },
+      { p: [-0.0625 * vw, low - 40], a: 172 },
+    ];
+  },
+  // Sweeps in from the top right behind the heading, loops the Contact button,
+  // crosses itself and runs out to the left halfway between the button and the
+  // text below. Phones: a swoop round the end of the button and under it.
+  about(L) {
+    const { vw } = L;
+    const b = L.button;
+    const [t1] = L.title;
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    if (isSmall()) {
+      return [
+        { p: [vw + 60, b.y - 70], a: 165 },
+        { p: [b.x + b.w + 36, cy], a: 95 },
+        { p: [cx, b.y + b.h + 40], a: 180 },
+        { p: [-60, b.y + b.h + 28], a: 186 },
+      ];
+    }
+    const bodyTop = Math.min(...L.body.map((r) => r.y));
+    const rx = b.w / 2 + 80;
+    const ry = b.h / 2 + 64;
+    const tailY = (b.y + b.h + bodyTop) / 2;
+    return [
+      { p: [1.0625 * vw, t1.y - 0.047 * vw], a: 172 },
+      { p: [cx - rx, cy], a: 90 },
+      { p: [cx, cy + ry], a: 0 },
+      { p: [cx + rx, cy], a: -90 },
+      { p: [cx, cy - ry], a: 180 },
+      { p: [cx - rx - 0.1125 * vw, cy + 8], a: 130 },
+      { p: [0.389 * vw, tailY], a: 175 },
+      { p: [-0.0625 * vw, tailY - 10], a: 180 },
+    ];
+  },
+};
+
+// How the drawing follows the scroll: it starts when the section's top is
+// `start` of the way down the screen and is done `span` screen heights later.
+const DRAW = {
+  home: { start: 0.55, span: 1.25 },
+  about: { start: 0.4, span: 0.667 },
+};
+
+// Lusion's ribbon width: 0.8% of the screen's diagonal, times 2 at 540px wide
+// and below, easing to 1 at 1920px.
+const ribbonRadius = (w, h) => 0.008 * (2 - Math.min(1, Math.max(0, (w - 540) / (1920 - 540)))) * Math.hypot(w, h);
+
+const quadInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
+// The ribbon: two vertices per point, one each side of the centre line.
+// Where a later stretch passes over an earlier one, the earlier one gets a
+// soft shadow (Cd), and the shadow appears once the later stretch is drawn.
+function buildRibbon(pts, radius) {
+  const n = pts.length;
+  const cp = new Float32Array(n * 6);
+  const pos = new Float32Array(n * 6);
+  const cd = new Float32Array(n * 2);
+  const index = [];
+  const ratio = new Float32Array(n);
+  const shade = new Float32Array(n).fill(1);
+  const step = Math.hypot(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]) || 1;
+  const gap = Math.ceil((radius * 8) / step);
+  let threshold = 2;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + gap; j < n; j++) {
+      const d = Math.hypot(pts[j][0] - pts[i][0], pts[j][1] - pts[i][1]);
+      if (d < radius * 4.4) {
+        const t = Math.min(1, Math.max(0, (d - radius * 0.2) / (radius * 4.2)));
+        const v = t * t * (3 - 2 * t);
+        if (v < shade[i]) shade[i] = v;
+        if (v < 0.5) threshold = Math.min(threshold, j / (n - 1));
+      }
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)];
+    const b = pts[Math.min(n - 1, i + 1)];
+    let tx = b[0] - a[0];
+    let ty = -(b[1] - a[1]);
+    const len = Math.hypot(tx, ty) || 1;
+    tx /= len;
+    ty /= len;
+    const nx = -ty;
+    const ny = tx;
+    const x = pts[i][0];
+    const y = -pts[i][1];
+    ratio[i] = i / (n - 1);
+    cp.set([x, y, 1, x, y, 0], i * 6);
+    pos.set([-nx, -ny, ratio[i], nx, ny, ratio[i]], i * 6);
+    cd[i * 2] = cd[i * 2 + 1] = shade[i];
+    if (i < n - 1) {
+      const k = i * 2;
+      index.push(k, k + 2, k + 1, k + 1, k + 2, k + 3);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geometry.setAttribute('CP', new THREE.BufferAttribute(cp, 3));
+  geometry.setAttribute('Cd', new THREE.BufferAttribute(cd, 1));
+  geometry.setIndex(index);
+  return { geometry, points: pts.map(([x, y]) => [x, -y]), shade, threshold: threshold > 1 ? 2 : threshold };
+}
+
+export function createLine(engine, section, kind = 'home') {
+  if (!section || !PATHS[kind]) return null;
+  const { state } = engine;
+
+  const colors = { u_color0: { value: new THREE.Color(COLOR_END) }, u_color1: { value: new THREE.Color(COLOR_START) } };
+  const material = new THREE.ShaderMaterial({
+    vertexShader: vert,
+    fragmentShader: frag,
+    uniforms: { ...colors, u_showRatio: { value: 0 }, u_aoThreshold: { value: 2 }, u_radius: { value: 10 } },
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const capMaterial = new THREE.ShaderMaterial({
+    vertexShader: capVert,
+    fragmentShader: capFrag,
+    uniforms: { ...colors, u_mixRatio: { value: 0 }, u_ao: { value: 1 } },
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+
+  const scene = new THREE.Scene();
+  const group = new THREE.Group();
+  scene.add(group);
+  const camera = new THREE.OrthographicCamera(0, 1, 0, -1, -10, 10);
+  const cap = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), capMaterial);
+  cap.frustumCulled = false;
+  cap.renderOrder = 1;
+  group.add(cap);
+  let mesh = null;
+  let line = null;
+  const progress = { value: reducedMotion() ? 1 : 0 };
+
+  const build = () => {
+    const L = measure(section, kind);
+    if (!L) return;
+    const radius = ribbonRadius(L.vw, L.vh);
+    const next = buildRibbon(resample(segments(PATHS[kind](L)), 6), radius);
+    if (mesh) {
+      group.remove(mesh);
+      mesh.geometry.dispose();
+    }
+    line = next;
+    mesh = new THREE.Mesh(line.geometry, material);
+    mesh.frustumCulled = false;
+    group.add(mesh);
+    material.uniforms.u_radius.value = radius;
+    material.uniforms.u_aoThreshold.value = line.threshold;
+    cap.scale.set(radius, radius, 1);
+  };
+
+  const { start, span } = DRAW[kind];
+  const trigger = ScrollTrigger.create({
+    trigger: section,
+    start: `top ${start * 100}%`,
+    end: () => `+=${span * innerHeight}`,
+    onUpdate: (self) => {
+      if (!reducedMotion()) progress.value = quadInOut(self.progress);
+    },
+    onRefresh: (self) => {
+      build();
+      if (!reducedMotion()) progress.value = quadInOut(self.progress);
+    },
+  });
+  let disposed = false;
+  build();
+  if (!reducedMotion()) progress.value = quadInOut(trigger.progress);
+  // Text settles once the fonts arrive; measure again then.
+  document.fonts?.ready.then(() => !disposed && build());
+  let built = { w: state.width, h: state.height, s: section.offsetHeight };
+
+  const layer = {
+    order: 2,
+    visible: true,
+    resize() {
+      camera.left = 0;
+      camera.right = state.width;
+      camera.top = 0;
+      camera.bottom = -state.height;
+      camera.updateProjectionMatrix();
+    },
+    update() {
+      const rect = section.getBoundingClientRect();
+      const t = progress.value;
+      layer.visible = !!line && t > 0.0005 && rect.bottom > -state.height && rect.top < state.height * 2;
+      if (state.width !== built.w || state.height !== built.h || section.offsetHeight !== built.s) {
+        build();
+        built = { w: state.width, h: state.height, s: section.offsetHeight };
+      }
+      if (!line) return;
+      group.position.set(rect.left, -rect.top, 0);
+      material.uniforms.u_showRatio.value = t;
+      // The cap sits where the drawing has reached, in the line's colour there.
+      const pts = line.points;
+      const f = Math.min(1, Math.max(0, t)) * (pts.length - 1);
+      const i = Math.min(pts.length - 2, Math.floor(f));
+      const k = f - i;
+      cap.position.set(pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k, 0);
+      const th = material.uniforms.u_aoThreshold.value;
+      const shade = line.shade[i] + (line.shade[i + 1] - line.shade[i]) * k;
+      const on = Math.min(1, Math.max(0, (t - (th - 0.02)) / 0.04));
+      capMaterial.uniforms.u_ao.value = Math.min(1, 0.9 + 0.1 * shade + 1 - on);
+      capMaterial.uniforms.u_mixRatio.value = 1 - (1 - Math.min(1, t)) ** 2;
+    },
+    render(renderer) {
+      renderer.clearDepth();
+      renderer.render(scene, camera);
+    },
+    dispose() {
+      disposed = true;
+      trigger.kill();
+      mesh?.geometry.dispose();
+      cap.geometry.dispose();
+      material.dispose();
+      capMaterial.dispose();
+    },
+  };
+  return layer;
+}

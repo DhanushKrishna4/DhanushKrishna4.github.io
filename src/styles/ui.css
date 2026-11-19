@@ -1,0 +1,976 @@
+/* ==================================================================
+   Header (Dennis's layout, Lando's name lockup)
+   ================================================================== */
+.header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: calc(var(--d-gap) / 2);
+  color: var(--fg);
+  pointer-events: none;
+}
+
+.header > * {
+  pointer-events: auto;
+}
+
+html[data-page='project'] .header {
+  position: fixed;
+}
+
+/* Phones scroll project pages vertically, so a fixed header would sit over
+   the text; there it scrolls away (the menu button appears once scrolled). */
+@media (max-width: 760px) {
+  html[data-page='project'] .header {
+    position: absolute;
+  }
+}
+
+/* DHANUSH in the serif over KRISHNA in heavy sans, both the same width. */
+.lockup {
+  --w: clamp(7.5rem, 11vw, 11.25rem);
+  margin-left: calc(var(--d-gap) / 2);
+  display: inline-flex;
+  flex-direction: column;
+  width: var(--w);
+  text-transform: uppercase;
+  line-height: 0.8;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.lockup__first,
+.lockup__last {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.04em;
+}
+
+.lockup__first {
+  font-family: var(--font-serif);
+  /* Weight 560 is the closest Fraunces gets to Brier Bold, Lando's serif. */
+  font-weight: 560;
+  font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+  font-size: calc(var(--w) * 0.205);
+  letter-spacing: -0.01em;
+}
+
+.lockup__last {
+  font-family: var(--font-sans);
+  font-weight: 830;
+  font-stretch: 100%;
+  font-size: calc(var(--w) * 0.2);
+  letter-spacing: -0.015em;
+}
+
+.lockup__inner {
+  display: inline-block;
+}
+
+.nav {
+  display: flex;
+  font-size: var(--d-fs);
+}
+
+.nav__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 2.75em;
+  padding: 0 calc(var(--d-gap) / 2);
+}
+
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0.15em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.35s var(--ease-out);
+}
+
+.nav__link[aria-current='page']::after {
+  transform: translateX(-50%) scale(1);
+}
+
+/* ==================================================================
+   Rolling link text (Lando's link hover, core/roll.js): the nav, the
+   footer's socials and the contact page's links. Each letter carries a copy
+   of itself one line lower; the word is clipped to its own line (a little
+   wider, so no letter's overhang is cut).
+   ================================================================== */
+.roll {
+  display: inline-block;
+  white-space: nowrap;
+  clip-path: inset(0 -0.25em);
+}
+
+.roll__char {
+  display: inline-block;
+  text-shadow: 0 1.5em 0 currentColor;
+  text-shadow: 0 1lh 0 currentColor;
+}
+
+/* Project pages: the Lusion "Back" pill sits in the header. */
+.back-pill {
+  display: none;
+  align-items: center;
+  gap: 0.5em;
+  margin-left: auto;
+  /* Clears the menu button, which sits a gap in from the edge. */
+  margin-right: calc(var(--d-gap) / 2 + var(--ham-size) + 1rem);
+  padding: 0.8em 1.4em;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: var(--t-14);
+  font-weight: 600;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.back-pill svg {
+  width: 1em;
+  height: 1em;
+}
+
+html[data-page='project'] .back-pill {
+  display: inline-flex;
+}
+
+html[data-page='project'] .nav {
+  display: none;
+}
+
+/* The 404, as Lando's: his "Go to home" takes the name's place and the
+   menu button stands alone at the right (pages.css .lost). */
+html[data-page='notfound'] .lockup,
+html[data-page='notfound'] .nav {
+  display: none;
+}
+
+/* ==================================================================
+   Menu button: Lando's, rebuilt in SVG (scripts/hamburger.js). On dark
+   pages a solid square in the text colour with the bars in the page
+   colour, filling with the accent on hover; on light project pages an
+   outline, as his is over light sections. Over the open menu it is
+   bone, black and ember whatever the page. Appears after scrolling;
+   always shown on small screens and on project pages.
+   His sizes: 3.47vw (50px on a 1440 screen), 4.34vw up to 1000px wide,
+   13.06vw on phones. Like his, it mirrors the logo's corner.
+   ================================================================== */
+:root {
+  --ham-size: 3.4722vw;
+}
+
+@media (max-width: 1000px) {
+  :root {
+    --ham-size: 4.34vw;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --ham-size: min(13.056vw, 3.5rem);
+  }
+}
+
+.menu-btn {
+  --ham-base: var(--fg);
+  --ham-ink: var(--bg);
+  --ham-accent: var(--accent);
+  --ham-on: var(--ham-ink);
+  position: fixed;
+  top: calc(var(--d-gap) / 2);
+  right: var(--d-gap);
+  z-index: 95;
+  width: var(--ham-size);
+  height: var(--ham-size);
+  padding: 0;
+  border: 0;
+  border-radius: 18.75%;
+  background: none;
+  cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.5s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Light pages: bars in the text colour, and in the page colour where they
+   cross the fill (the light pages' accents are dark). */
+html[data-tone='light'] .menu-btn {
+  --ham-ink: var(--fg);
+  --ham-on: var(--bg);
+}
+
+/* Over the open menu (set by the script as the menu opens), in the menu's
+   colours: on a project page menu.js gives these from the project's palette. */
+html .menu-btn.is-over-menu {
+  --ham-base: var(--menu-ink, var(--bone));
+  --ham-ink: var(--black);
+  --ham-accent: var(--menu-accent, var(--ember));
+  --ham-on: var(--menu-on, var(--black));
+}
+
+html.is-scrolled .menu-btn,
+html.menu-open .menu-btn,
+html[data-page='project'] .menu-btn,
+html[data-page='notfound'] .menu-btn,
+.menu-btn:focus-visible {
+  transform: scale(1);
+}
+
+.ham {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ham__base {
+  fill: var(--ham-base);
+}
+
+.ham__fill {
+  fill: var(--ham-accent);
+}
+
+/* The band round the edge, 6.5 units deep: a 13-wide stroke on the border,
+   half of it clipped away. Its colour, a mix of the base and the accent, is
+   set by the script. */
+.ham__band {
+  fill: none;
+  stroke: var(--ham-base);
+  stroke-width: 13;
+}
+
+.ham__edge {
+  fill: none;
+  stroke: var(--ham-ink);
+  stroke-width: 4.5;
+}
+
+/* 5 of the 120 units, as his bars and cross measure (ink coverage across
+   a bar in his recorded frames). */
+.ham__bar {
+  fill: none;
+  stroke: var(--ham-ink);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+.ham__bar--on {
+  stroke: var(--ham-on);
+}
+
+/* Until the script runs: the outline on light pages, the square elsewhere. */
+.ham__outline {
+  opacity: 0;
+}
+
+html[data-tone='light'] .ham__outline {
+  opacity: 1;
+}
+
+html[data-tone='light'] .ham__base {
+  opacity: 0;
+}
+
+/* Colours ease over when the page's colours change and when the menu opens
+   or closes (on a project page its accent eases to the menu's). */
+:is(.ham__base, .ham__fill, .ham__edge, .ham__bar) {
+  transition:
+    fill 0.3s,
+    stroke 0.3s;
+}
+
+@media (max-width: 760px) {
+  .menu-btn {
+    transform: scale(1);
+  }
+  .nav {
+    display: none;
+  }
+}
+
+/* ==================================================================
+   Menu overlay (Lando's, without the photos)
+   ================================================================== */
+/* Its colours: oxblood, bone and ember, or on a project page the project's
+   own (menu.js sets these from its palette as the menu opens). */
+.menu {
+  --menu-bg: var(--oxblood);
+  --menu-ink: var(--bone);
+  --menu-accent: var(--ember);
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  visibility: hidden;
+  color: var(--menu-ink);
+}
+
+html.menu-open .menu {
+  visibility: visible;
+}
+
+.menu__panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--menu-bg);
+  clip-path: ellipse(120% 0% at 50% 0%);
+}
+
+.menu__gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The DK monogram at the top centre, in the box and place of Lando's LN4
+   mark (his sizes and offsets, at his breakpoints): a square box with the
+   monogram fitted inside it. */
+.menu__mark {
+  --mark-size: 2.549vw;
+  --mark-top: 1.618vw;
+  position: absolute;
+  top: var(--mark-top);
+  left: calc(50% - var(--mark-size) / 2);
+  z-index: 1;
+  display: block;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  color: var(--menu-ink);
+}
+
+@media (max-width: 991px) {
+  .menu__mark {
+    --mark-size: 3.18vw;
+    --mark-top: 2.02vw;
+  }
+}
+
+@media (max-width: 767px) {
+  .menu__mark {
+    --mark-top: 6.07vw;
+  }
+}
+
+@media (max-width: 479px) {
+  .menu__mark {
+    --mark-size: 6.95vw;
+    --mark-top: 16.25vw;
+  }
+}
+
+.menu__mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.menu__mark-ink {
+  fill: currentColor;
+}
+
+.menu__mark-accent {
+  fill: var(--menu-accent);
+}
+
+/* The pen: a 44-unit stroke along each centre line, wide enough to cover the
+   monogram's bars and corners. Its dashes are set by menu.js. */
+.menu__mark-line {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 44;
+  stroke-linecap: square;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.menu__inner {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  padding: calc(var(--header-h) + 2rem) var(--gutter) clamp(1.5rem, 4vh, 3rem);
+}
+
+.menu__main {
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.5rem, 5vh, 3rem);
+}
+
+.menu__links {
+  display: grid;
+  justify-items: center;
+}
+
+.menu__link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-weight: 660;
+  font-stretch: 93%;
+  font-size: clamp(3rem, 4.9vw + 1rem, 5.5rem);
+  line-height: 0.94;
+  text-transform: uppercase;
+  color: var(--menu-ink);
+  /* The per-letter roll uses a shadow copy one line below each letter. */
+  --roll: 1.05em;
+}
+
+/* His menu links' hover: each letter rolls up a line, 0.6s power3.out,
+   0.02s apart, and back the same way. */
+.menu__link .char {
+  display: inline-block;
+  text-shadow: 0 var(--roll) 0 var(--black);
+  transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition-delay: calc(var(--i, 0) * 0.02s);
+}
+
+html:not(.is-transitioning) .menu__link:not([aria-current='page']):hover .char,
+.menu__link:not([aria-current='page']):focus-visible .char {
+  transform: translateY(calc(var(--roll) * -1));
+}
+
+/* The current page, crossed out. As on Lando's it does nothing: no hover,
+   no click (menu.js also keeps it out of the Tab order). */
+.menu__link[aria-current='page'] {
+  color: color-mix(in srgb, var(--menu-ink) 62%, var(--menu-bg));
+  pointer-events: none;
+}
+
+/* As on Lando's: the line spans the link's box, scaled to its width and
+   centred on its height, 6 units thick with square ends. */
+.menu__wave {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.menu__wave path {
+  fill: none;
+  stroke: var(--black);
+  stroke-width: 6;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+
+.menu__link:not([aria-current='page']) .menu__wave {
+  display: none;
+}
+
+/* The block of accent colour each footer item wipes in under (menu.js). */
+[data-menu-highlight] {
+  position: relative;
+}
+
+.menu__block {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--menu-accent);
+  transform-origin: right center;
+  pointer-events: none;
+}
+
+.menu__badge {
+  text-align: center;
+  font-size: var(--t-12);
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--menu-ink) 78%, transparent);
+}
+
+.menu__foot {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  font-size: var(--t-14);
+  font-weight: 600;
+}
+
+.menu__socials {
+  display: flex;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+
+.menu__foot a {
+  position: relative;
+  display: inline-block;
+}
+
+.menu__foot a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.2em;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease-out);
+}
+
+html:not(.is-transitioning) .menu__foot a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ==================================================================
+   Buttons
+   ================================================================== */
+/* Call-to-action button (casadisolare.com's): a pill with the label and a
+   circle with an arrow. Everything is sized from --h, the button's height.
+   At rest the pill is clipped back to where the circle starts, so their round
+   ends just meet. On hover the pill grows under the circle, the circle shrinks
+   by an eighth of the height and slides a quarter left into the pill's end,
+   and the arrow slides out right while a second one slides in from the left. */
+.cta {
+  --h: clamp(3rem, 2.4rem + 1.4vw, 3.75rem);
+  --pill: var(--bone);
+  --ink: var(--black);
+  --circle: var(--crimson);
+  --arrow: var(--bone);
+  --cta-ease: cubic-bezier(0.19, 1, 0.22, 1);
+  position: relative;
+  display: inline-flex;
+  height: var(--h);
+  font-size: calc(var(--h) * 0.34);
+  vertical-align: middle;
+  border-radius: calc(var(--h) / 2);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cta__label {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 calc(var(--h) * 1.55) 0 calc(var(--h) * 0.55);
+  background: var(--pill);
+  color: var(--ink);
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  clip-path: inset(0 var(--h) 0 0 round calc(var(--h) / 2));
+  transition: clip-path 0.75s var(--cta-ease);
+}
+
+.cta__circle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: var(--h);
+  height: 100%;
+  border-radius: 50%;
+  background: var(--circle);
+  color: var(--arrow);
+  clip-path: inset(0 round calc(var(--h) / 2));
+  transition: clip-path 0.75s var(--cta-ease), transform 0.75s var(--cta-ease);
+}
+
+.cta__circle svg {
+  width: calc(var(--h) * 0.3);
+  height: calc(var(--h) * 0.3);
+  overflow: hidden;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Two arrows: the first rests in place, the second waits off to the left. */
+.cta__circle path {
+  transition: transform 0.75s var(--cta-ease);
+}
+
+.cta__circle path:first-child {
+  transition-delay: 0.1s;
+}
+
+.cta__circle path:last-child {
+  transform: translateX(-100%);
+}
+
+@media (hover: hover) {
+  html:not(.is-transitioning) .cta:hover .cta__label {
+    clip-path: inset(0 calc(var(--h) * 0.25) 0 0 round calc(var(--h) / 2));
+  }
+  html:not(.is-transitioning) .cta:hover .cta__circle {
+    clip-path: inset(calc(var(--h) * 0.125) round calc(var(--h) / 2));
+    transform: translateX(calc(var(--h) * -0.25));
+  }
+  html:not(.is-transitioning) .cta:hover .cta__circle path:first-child {
+    transform: translateX(100%);
+    transition-delay: 0s;
+  }
+  html:not(.is-transitioning) .cta:hover .cta__circle path:last-child {
+    transform: translateX(0);
+    transition-delay: 0.1s;
+  }
+}
+
+/* Keyboard focus shows the same state, plus a ring. */
+.cta:focus-visible {
+  outline: 2px solid var(--circle);
+  outline-offset: 4px;
+}
+
+.cta:focus-visible .cta__label {
+  clip-path: inset(0 calc(var(--h) * 0.25) 0 0 round calc(var(--h) / 2));
+}
+
+.cta:focus-visible .cta__circle {
+  clip-path: inset(calc(var(--h) * 0.125) round calc(var(--h) / 2));
+  transform: translateX(calc(var(--h) * -0.25));
+}
+
+/* Project pages: the pill and circle take the project's own colours. */
+html[data-page='project'] .cta {
+  --pill: var(--fg);
+  --ink: var(--bg);
+  --circle: var(--accent);
+  --arrow: var(--bg);
+}
+
+/* Contact pills with Dennis's hover fill (core/pill.js). Like his, the 1px
+   edge is drawn inside the pill (an inset shadow), so the fill covers it.
+   The padding carries the pixel the old border took, keeping the size. */
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: calc(1.05em + 1px) calc(1.7em + 1px);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: var(--t-16);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* His fill: an oval 150% wide and 200% tall, centred on the pill and
+   parked above it, 76% of its own height up. */
+.pill__fill {
+  position: absolute;
+  top: -50%;
+  left: -25%;
+  z-index: -1;
+  width: 150%;
+  height: 200%;
+  border-radius: 50%;
+  background: var(--crimson);
+  transform: translate3d(0, -76%, 0);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ==================================================================
+   Footer (Dennis): the page curves into it
+   ================================================================== */
+.footer {
+  position: relative;
+  margin-top: clamp(4rem, 10vw, 9rem);
+  color: var(--bone);
+}
+
+/* Pinned to the bottom of the screen while the page lifts off it (see
+   setupFooter in common.js, which also clips it to the page's curved edge). */
+.footer.is-pinned {
+  position: sticky;
+  bottom: 0;
+}
+
+.footer__body {
+  background: color-mix(in srgb, var(--oxblood) 34%, transparent);
+  padding: clamp(6rem, 12vw, 10rem) var(--gutter) clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.footer__title {
+  font-size: var(--t-96);
+  line-height: 0.98;
+  font-weight: 460;
+  max-width: 14ch;
+}
+
+.footer__rule {
+  position: relative;
+  height: 1px;
+  margin: clamp(3.5rem, 6vw, 5rem) 0 clamp(3rem, 5vw, 4.5rem);
+  background: color-mix(in srgb, var(--bone) 22%, transparent);
+}
+
+.footer__cta {
+  position: absolute;
+  right: clamp(1rem, 12vw, 12rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.footer__contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+  margin-top: clamp(4rem, 8vw, 7rem);
+  font-size: var(--t-14);
+}
+
+.footer__meta {
+  display: flex;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.footer__socials {
+  display: flex;
+  gap: 1.25rem;
+}
+
+@media (max-width: 760px) {
+  /* Straddles the divider line, as on desktop. */
+  .footer__cta {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin-top: calc(var(--h) * -0.5);
+    margin-left: auto;
+  }
+  .footer__rule {
+    display: flex;
+    justify-content: flex-end;
+    height: auto;
+    border-top: 1px solid color-mix(in srgb, var(--bone) 22%, transparent);
+    background: none;
+  }
+}
+
+/* ==================================================================
+   Loader: Active Theory's (their LoaderView), in our red. Behind, a 220px
+   square of slashes cut to a circle (their mask, black 49% to transparent
+   50%), typed out row by row as loading goes on; over its middle, the
+   count. Both in a monospace face, its letters spaced to their NB
+   Architekt's (loader.js). Their colours turned 149 degrees round the wheel,
+   which takes their blue to our ember. The ring and the glowing bars around
+   it are WebGL (gl/loaderScene.js).
+   ================================================================== */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+  font-weight: 400;
+}
+
+.loader__behind {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  height: 220px;
+  margin: -110px 0 0 -110px;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  color: #fe81af;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(black 49%, transparent 50%);
+  mask-image: radial-gradient(black 49%, transparent 50%);
+}
+
+.loader__count {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  height: 14px;
+  margin: -7px 0 0 -110px;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: #ffe0f9;
+}
+
+html:not(.is-loading) .loader {
+  display: none;
+}
+
+/* ==================================================================
+   Page transitions
+   ================================================================== */
+/* As on Lando's: once a link is clicked, whatever was under the pointer goes
+   back to how it looks unhovered while the page changes, even if the pointer
+   stays put. The router marks the page html.is-transitioning; the hover rules
+   above and below stand down under it, and this clear layer covers the screen
+   so the pointer has left everything (scripted hovers ease out) and nothing
+   can be clicked twice. */
+.nav-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+}
+
+html.is-transitioning .nav-shield {
+  display: block;
+}
+
+/* Dennis's page transition, his shapes: a screen-sized panel, and above
+   and below it a band (0 to 10vh tall) showing the end of an ellipse 150%
+   wide, so its edges curve; the bands grow and shrink as it moves. */
+/* Oxblood with bone text; leaving a project page, that project's own menu
+   colours (transitions.js sets them). */
+.curtain {
+  --curtain-bg: var(--oxblood);
+  --curtain-ink: var(--bone);
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Its position is set by the script (GSAP), which would otherwise read a
+   transform here as an extra offset. */
+.curtain__screen {
+  position: absolute;
+  inset: 0;
+  background: var(--curtain-bg);
+}
+
+.curtain__cap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+
+.curtain__cap--top {
+  top: 0;
+  transform: translateY(-99%) scale(1, -1);
+}
+
+.curtain__cap--bottom {
+  bottom: 0;
+  transform: translateY(99%);
+}
+
+.curtain__round {
+  position: absolute;
+  left: 50%;
+  width: 150%;
+  height: 745%;
+  border-radius: 50%;
+  background: var(--curtain-bg);
+  transform: translate(-50%, -86.666%);
+}
+
+/* His label: 54px at 1440 wide, weight 450, a dot 0.19em across with the
+   word starting 0.6em from its left. */
+.curtain__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  padding: 0 0.4em 0 0.6em;
+  font-size: clamp(2.25rem, 3.75vw, 4.5rem);
+  font-weight: 450;
+  line-height: 1.065;
+  white-space: nowrap;
+  color: var(--curtain-ink);
+  opacity: 0;
+}
+
+.curtain__label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 47%;
+  width: 0.194em;
+  height: 0.194em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.project-fill {
+  position: fixed;
+  inset: 0;
+  z-index: 91;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* ==================================================================
+   Marquee (the giant name along the bottom of the opening screen)
+   ================================================================== */
+.marquee {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Dennis: 15vh up from the bottom of a 115vh hero, plus 1.25 gaps,
+     so the name sits just above the bottom of the first screen. */
+  bottom: 15vh;
+  padding-bottom: calc(var(--d-gap) * 1.25);
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.marquee__track {
+  display: inline-flex;
+  will-change: transform;
+}
+
+.marquee__item {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 104%;
+  /* Dennis: max(9em, 15vw), line-height 1 */
+  font-size: max(calc(var(--d-fs) * 9), 15vw);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--bone);
+}
+
+.marquee__dash {
+  padding: 0 3vw;
+}
+

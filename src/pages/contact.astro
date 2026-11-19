@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site.js';
+import Cta from '../components/Cta.astro';
+
+const c = site.contact;
+---
+<Base page="contact" label="Contact" title="Contact" current="/contact/" description="Get in touch with Dhanush Krishna.">
+  <section class="section page-head">
+    <h1 class="page-head__title serif" data-reveal="lusion">
+      <span class="line-mask">{c.title[0]}</span>
+      <span class="line-mask">{c.title[1]}</span>
+    </h1>
+  </section>
+
+  <section class="section contact" aria-label="Contact form and details">
+    <form class="form" data-contact-form novalidate>
+      {
+        c.questions.map((q, i) => (
+          <div class="form__q">
+            <span class="form__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <label class="form__label" for={`f-${q.id}`}>{q.label}</label>
+            {q.type === 'textarea' ? (
+              <textarea class="form__field" id={`f-${q.id}`} name={q.id} rows="4" placeholder={q.placeholder} required />
+            ) : (
+              <input class="form__field" id={`f-${q.id}`} name={q.id} type={q.type} placeholder={q.placeholder} autocomplete={q.autocomplete} required={q.id !== 'topic'} />
+            )}
+            <p class="form__error" data-error-for={q.id} hidden />
+          </div>
+        ))
+      }
+      <div class="form__send">
+        <p class="form__note">{c.note}</p>
+        <Cta type="submit" label={c.button} />
+      </div>
+    </form>
+
+    <aside class="contact__aside" aria-label="Contact details">
+      <div>
+        <span class="label">Email</span>
+        <a href={`mailto:${site.email}`} data-roll>{site.email}</a>
+      </div>
+      <div>
+        <span class="label">Elsewhere</span>
+        <ul>
+          <li><a href={site.linkedin} target="_blank" rel="noopener" data-roll>LinkedIn</a></li>
+          <li><a href={site.github} target="_blank" rel="noopener" data-roll>GitHub</a></li>
+        </ul>
+      </div>
+      <div>
+        <span class="label">Location</span>
+        {site.location.place}, {site.location.country}
+      </div>
+      <div>
+        <span class="label">Local time</span>
+        <span data-clock>--:--</span>
+        {site.timeZoneLabel}
+      </div>
+    </aside>
+  </section>
+
+  <div class="foot-row" slot="after">
+    <span>{site.edition}</span>
+    <span>{site.name}</span>
+  </div>
+</Base>

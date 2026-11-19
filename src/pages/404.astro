@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { notFoundPath } from '../data/digits.js';
+
+// Lando's 404 (landonorris.com, at any missing address), measured on his
+// site: "Go to home" top left, his mark top centre, the menu button top
+// right, the 404 across the middle and two lines at the bottom. His helmet
+// is left out, and the 404 is drawn in 3D the way the opening screen's
+// monogram is (scripts/gl/lost.js); the flat drawing stands in without WebGL.
+const flat = notFoundPath();
+// The DK monogram (public/favicon.svg), where his LN4 mark sits.
+const DK =
+  'M59.44,63.46 L143.33,63.46 L156.04,79.6 L153.98,89.28 L185.28,63.46 L224,63.46 L145.74,128 L196.57,192.54 L157.85,192.54 L137.52,166.72 L135.46,176.4 L115.9,192.54 L32,192.54 Z M78.64,102.19 L92.33,90.89 L97.17,90.89 L81.39,165.11 L65.26,165.11 Z M107.68,102.19 L121.37,90.89 L126.21,90.89 L110.44,165.11 L94.3,165.11 Z';
+---
+<Base page="notfound" label="Not found" title="Page not found">
+  <section class="lost">
+    <a class="lost__home" href="/" data-lost-home>
+      <span>Go to home</span>
+      <!-- His return arrow, measured from his button at 6x, in his icon's own
+           10.94 px box: the line round from the top to the tip, and the head. -->
+      <span class="lost__arrow" aria-hidden="true">
+        <svg viewBox="0 0 10.9375 10.9375" focusable="false">
+          <path d="M3.55 0.87H6.77A2.9 2.9 0 0 1 6.77 6.67H1.39" data-arrow-line />
+          <path d="M4.82 3.25 1.39 6.67 4.82 10.09" data-arrow-head />
+        </svg>
+      </span>
+    </a>
+
+    <svg class="lost__mark" viewBox="32 63.46 192 129.08" aria-hidden="true" focusable="false">
+      <path fill-rule="evenodd" d={DK} />
+    </svg>
+
+    <div class="lost__stage" style={`--aspect: ${flat.width.toFixed(2)} / ${flat.height}`} aria-hidden="true" data-lost-stage>
+      <svg class="lost__flat" viewBox={flat.viewBox} focusable="false"><path fill-rule="evenodd" d={flat.d} /></svg>
+    </div>
+
+    <div class="lost__text">
+      <h1 class="lost__title"><span class="visually-hidden">404: </span>Page not found</h1>
+      <p class="lost__sub">Out of distribution</p>
+    </div>
+  </section>
+</Base>

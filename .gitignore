@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+
+# Local editor and assistant settings, not part of the site.
+.claude/

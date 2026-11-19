@@ -1,0 +1,126 @@
+---
+import Base from '../layouts/Base.astro';
+import Footer from '../components/Footer.astro';
+import Cta from '../components/Cta.astro';
+import { site } from '../data/site.js';
+
+const a = site.about;
+---
+<Base page="about" label="About" title="About" current="/about/" description="About Dhanush Krishna: Computer Science graduate from BITS Pilani Dubai working on machine learning and systems software.">
+  <!-- Stays pinned while the black sheet below slides up over it (about.js) -->
+  <div class="about-top" data-about-top>
+    <section class="section page-head" data-line="about">
+      <h1 class="page-head__title serif" data-reveal="lusion">
+        <span class="line-mask">{a.title[0]}</span>
+        <span class="line-mask">{a.title[1]}</span>
+      </h1>
+    </section>
+
+    <div class="about-line">
+      <Cta href="/contact/" label={a.button} loop />
+    </div>
+
+    <section class="section about-intro" aria-label="Introduction">
+      <svg class="about-intro__arrow" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M3 3 13 13M13 5v8H5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <div class="about-intro__body prose" data-reveal="ripple">
+        {a.body.map((p) => <p>{p}</p>)}
+      </div>
+      <dl class="about-intro__facts">
+        <div>
+          <dt class="label">Location</dt>
+          <dd>{site.location.place}, {site.location.country}</dd>
+        </div>
+        <div>
+          <dt class="label">Looking for</dt>
+          <dd>{site.availability}</dd>
+        </div>
+        <div>
+          <dt class="label">Languages</dt>
+          <dd>{a.languages.join(', ')}</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <!-- From here to the footer: a black sheet without the contour lines, which
+       slides up over the part above, like Lando's sections -->
+  <div class="about-sheet" data-about-sheet>
+    <!-- The giant words behind this section light up under the cursor (gl/glow.js) -->
+    <section class="section about-areas" aria-labelledby="areas-title" data-glow>
+      <div class="glow-words" aria-hidden="true" data-glow-words>
+        {a.backdrop.map((w) => <span>{w}</span>)}
+      </div>
+      <h2 id="areas-title" class="about-areas__title display" data-reveal="chars">What I work on</h2>
+      <div class="about-areas__grid">
+        {
+          a.areas.map((area) => (
+            <div class="area">
+              <h3 class="area__title serif">{area.title}</h3>
+              <ul>{area.items.map((i) => <li>{i}</li>)}</ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section about-block" aria-labelledby="exp-title">
+      <h2 id="exp-title" class="about-block__title display" data-reveal="chars">Experience</h2>
+      <ul class="rows">
+        {
+          a.experience.map((e) => (
+            <li class="rows__item">
+              <span class="rows__main">{e.role}</span>
+              <span class="rows__sub">{e.company}</span>
+              <span class="rows__note">{e.note}</span>
+              <span class="rows__date">{e.dates}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="section about-block" aria-labelledby="edu-title">
+      <h2 id="edu-title" class="about-block__title display" data-reveal="chars">Education</h2>
+      <ul class="rows">
+        {
+          a.education.map((e) => (
+            <li class="rows__item">
+              <span class="rows__main">{e.title}</span>
+              <span class="rows__sub">{e.place}</span>
+              <span class="rows__note" />
+              <span class="rows__date">{e.dates}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="section about-block" aria-labelledby="cert-title">
+      <h2 id="cert-title" class="about-block__title display" data-reveal="chars">Certifications</h2>
+      <div class="certs">
+        {
+          a.certifications.map((c) => (
+            <div>
+              <h3 class="certs__issuer">{c.issuer}</h3>
+              <ul>
+                {
+                  c.items.map((i) => (
+                    <li>
+                      <a href={i.href} target="_blank" rel="noopener">
+                        {i.title}
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+
+  <Footer slot="after" />
+</Base>

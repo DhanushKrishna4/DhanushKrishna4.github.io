@@ -1,0 +1,111 @@
+---
+import { site } from '../data/site.js';
+import { HAM } from '../data/hamburger.js';
+
+const { current = '' } = Astro.props;
+// The bars at rest, as dashes along their paths (scripts/hamburger.js moves them).
+const dash = (start) => `stroke-dasharray:${HAM.bar} 999;stroke-dashoffset:${-start}`;
+// The line through the current page's link: Lando's shape (measured from
+// his site), flat runs joined by rounded steps, top-bottom-top-bottom. It is
+// scaled to the link's width and drawn left to right (menu.js).
+const WAVE = 'M0 2H73.54C79.4 2 85.01 4.35 89.12 8.53L97.68 17.23A21.86 21.86 0 0 0 113.26 23.75H185.94C191.99 23.75 197.76 21.25 201.9 16.84L208.38 9.91A21.87 21.87 0 0 1 224.34 3H301.09A21.86 21.86 0 0 1 317.89 10.88L322.26 16.12A21.86 21.86 0 0 0 339.06 24H412';
+// The DK monogram (its 256-unit drawing, public/favicon.svg) and the centre
+// lines it is drawn along, in order.
+const MARK = 'M59.44,63.46 L 143.33,63.46 L 156.04,79.6 L 153.98,89.28 L 185.28,63.46 L 224,63.46 L 145.74,128 L 196.57,192.54 L 157.85,192.54 L 137.52,166.72 L 135.46,176.4 L 115.9,192.54 L 32,192.54 Z M78.64,102.19 L 92.33,90.89 L 97.17,90.89 L 81.39,165.11 L 65.26,165.11 Z M107.68,102.19 L 121.37,90.89 L 126.21,90.89 L 110.44,165.11 L 94.3,165.11 Z';
+const MARK_LINES = [
+  'M70.23 77.2L48.64 178.8L121.24 178.8L142.83 77.2L70.23 77.2',
+  'M106.53 77.2L84.93 178.8',
+  'M204.67 63.46L137.91 118.51L133.8 137.4L177.23 192.54',
+];
+---
+<!-- Lando's menu button, rebuilt in SVG; scripts/hamburger.js animates it.
+     Bottom to top: the square, the hover fill, the band round the edge, the
+     outline (light pages), the dark edge after a click, the bars, and the
+     bars again in the colour that reads on the fill. -->
+<button class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu" data-menu-toggle>
+  <svg class="ham" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+    <defs>
+      <clipPath id="ham-shape"><rect width="120" height="120" rx="22.5" /></clipPath>
+      <clipPath id="ham-fill"><path d={HAM.fill} data-ham="fill" /></clipPath>
+      <clipPath id="ham-drain"><path d={HAM.drain} data-ham="drain" /></clipPath>
+    </defs>
+    <g clip-path="url(#ham-shape)">
+      <rect class="ham__base" width="120" height="120" data-ham="base" />
+      <rect class="ham__fill" width="120" height="120" clip-path="url(#ham-fill)" />
+      <rect class="ham__band" width="120" height="120" rx="22.5" opacity="0" data-ham="band" />
+      <rect class="ham__edge ham__outline" x="2.75" y="2.75" width="114.5" height="114.5" rx="19.75" data-ham="outline" />
+      <g clip-path="url(#ham-drain)" display="none" data-ham="dark">
+        <rect class="ham__edge" x="2.75" y="2.75" width="114.5" height="114.5" rx="19.75" data-ham="dark-edge" />
+      </g>
+      <path class="ham__bar" d={HAM.a} pathLength={HAM.len.a} style={dash(HAM.rest.a[0])} data-ham="a" />
+      <path class="ham__bar" d={HAM.b} pathLength={HAM.len.b} style={dash(HAM.rest.b[0])} data-ham="b" />
+      <g clip-path="url(#ham-fill)">
+        <path class="ham__bar ham__bar--on" d={HAM.a} pathLength={HAM.len.a} style={dash(HAM.rest.a[0])} data-ham="a" />
+        <path class="ham__bar ham__bar--on" d={HAM.b} pathLength={HAM.len.b} style={dash(HAM.rest.b[0])} data-ham="b" />
+      </g>
+    </g>
+  </svg>
+</button>
+
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menu" data-menu>
+  <div class="menu__panel" data-menu-panel>
+    <canvas class="menu__gl" aria-hidden="true" data-menu-gl></canvas>
+    <!-- His DK monogram (public/favicon.svg) at the top centre of the menu,
+         in the box and place of Lando's LN4 mark, and animated like it: it
+         draws itself along these centre lines as the menu opens, un-draws
+         as it closes, and the accent colour draws along it on hover
+         (menu.js). Parts: the D's outline, the D's middle bar, the K's arms. -->
+    <a class="menu__mark" href="/" aria-label="Dhanush Krishna, home" data-menu-mark>
+      <svg viewBox="32 63.46 192 129.08" aria-hidden="true" focusable="false">
+        <defs>
+          {['draw', 'hover'].map((kind) => (
+            <mask id={`mark-${kind}`} maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+              {MARK_LINES.map((d) => (
+                <path class="menu__mark-line" d={d} data-mark={kind} />
+              ))}
+            </mask>
+          ))}
+        </defs>
+        <g mask="url(#mark-draw)">
+          <path class="menu__mark-ink" fill-rule="evenodd" d={MARK} />
+          <path class="menu__mark-accent" fill-rule="evenodd" d={MARK} mask="url(#mark-hover)" />
+        </g>
+      </svg>
+    </a>
+    <div class="menu__inner">
+      <div class="menu__main">
+        <nav class="menu__links" aria-label="Site">
+          {
+            site.menu.links.map((l) => (
+              <a class="menu__link" href={l.href} aria-current={current === l.href ? 'page' : undefined} tabindex={current === l.href ? -1 : undefined} data-menu-link>
+                <span class="visually-hidden">{l.label}</span>
+                <span class="menu__text" aria-hidden="true">
+                  {[...l.label.toUpperCase()].map((c, i) => (
+                    <span class="char" style={`--i:${i}`}>
+                      {c}
+                    </span>
+                  ))}
+                </span>
+                <svg class="menu__wave" viewBox="0 0 412 26" aria-hidden="true">
+                  <path d={WAVE} />
+                </svg>
+              </a>
+            ))
+          }
+        </nav>
+        <!-- These wipe in under a block of the accent colour, like the
+             caption, "Business enquiries" and socials in Lando's menu -->
+        <p class="menu__badge" data-menu-highlight>{site.availability}</p>
+      </div>
+
+      <div class="menu__foot">
+        <a href="/contact/" data-menu-highlight>{site.menu.contact}</a>
+        <ul class="menu__socials">
+          <li><a href={site.github} target="_blank" rel="noopener" data-menu-highlight>GitHub</a></li>
+          <li><a href={site.linkedin} target="_blank" rel="noopener" data-menu-highlight>LinkedIn</a></li>
+          <li><a href={`mailto:${site.email}`} data-menu-highlight>Email</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

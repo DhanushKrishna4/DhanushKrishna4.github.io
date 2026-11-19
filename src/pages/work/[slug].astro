@@ -1,0 +1,113 @@
+---
+import Base from '../../layouts/Base.astro';
+import { projects, nextProject } from '../../data/projects.js';
+import { galleryFor } from '../../data/media.js';
+import Cta from '../../components/Cta.astro';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const next = nextProject(project.slug);
+const gallery = galleryFor(project.slug);
+const { demo, source } = project.links;
+const nextStyle = `--next-bg:${next.colors.bg};--next-fg:${next.colors.fg};--next-accent:${next.colors.accent}`;
+---
+<Base page="project" label={project.name} title={project.name} theme={project.colors} description={`${project.name}: ${project.summary}. ${project.body[0]}`}>
+  <article class="project" data-project data-next={`/work/${next.slug}/`} data-next-bg={next.colors.bg} style={nextStyle}>
+    <div class="project__track" data-track>
+      <div class="project__sticky">
+        <div class="project__rail" data-rail>
+          <div class="project__intro" data-project-intro>
+            <h1 class="project__title display" data-reveal="chars">{project.name}</h1>
+
+            <div>
+              <div class="project__body prose" data-reveal="ripple">
+                {project.body.map((p) => <p>{p}</p>)}
+              </div>
+              {
+                demo ? (
+                  <Cta class="project__launch" href={demo} label="Open the demo" external />
+                ) : (
+                  <Cta class="project__launch" href={source} label="View the source" external />
+                )
+              }
+            </div>
+
+            <div class="project__side" data-reveal="fade">
+              <div>
+                <h2>Role</h2>
+                <p>{project.role}</p>
+              </div>
+              <div>
+                <h2>Stack</h2>
+                <ul>{project.stack.map((s) => <li>{s}</li>)}</ul>
+              </div>
+              <div>
+                <h2>Links</h2>
+                <ul>
+                  {demo && (
+                    <li>
+                      <a href={demo} target="_blank" rel="noopener">Live demo</a>
+                    </li>
+                  )}
+                  <li>
+                    <a href={source} target="_blank" rel="noopener">Source code</a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h2>Date</h2>
+                <p>{project.date}</p>
+              </div>
+            </div>
+          </div>
+
+          {
+            gallery.map((m, i) => (
+              <figure class={i === 0 ? 'media media--hero' : 'media'} style={`--ar:${m.w} / ${m.h}`} data-media>
+                <div class="media__frame">
+                  {m.video ? (
+                    <video
+                      src={m.src}
+                      poster={m.poster}
+                      width={m.w}
+                      height={m.h}
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                      preload={i === 0 ? 'auto' : 'metadata'}
+                      aria-label={m.alt}
+                      data-media-video
+                    />
+                  ) : (
+                    <img src={m.src} alt={m.alt} width={m.w} height={m.h} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />
+                  )}
+                </div>
+              </figure>
+            ))
+          }
+
+          <a class="project__next" href={`/work/${next.slug}/`} data-next-panel aria-label={`Next project: ${next.name}`}>
+            <span class="label" style="color: inherit; opacity: .7">Next project</span>
+            <span class="project__next-name display">{next.name}</span>
+            <span class="project__next-foot" aria-hidden="true">
+              <span>Keep scrolling</span>
+              <span class="project__next-bar"><span data-next-bar></span></span>
+              <svg viewBox="0 0 16 16" width="16" height="16">
+                <path d="M2 8h11.5M9 3.2 13.8 8 9 12.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <p class="scroll-hint" aria-hidden="true" data-scroll-hint>
+      Scroll to explore
+      <svg viewBox="0 0 16 16"><path d="m3 3 5 5-5 5M8.5 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </p>
+  </article>
+</Base>

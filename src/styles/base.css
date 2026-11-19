@@ -1,0 +1,268 @@
+/* ------------------------------------------------------------------
+   Tokens
+   Black page, red as light. Mona Sans carries the interface and the
+   big uppercase headings (Lando's system); Fraunces is the one serif
+   voice, used for the name and for full statements.
+------------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+
+  --black: #000;
+  --bone: #efe7e2;
+  --ash: #8c7d79;
+  --crimson: #c8102e;
+  --ember: #f2475a;
+  --oxblood: #5c0a14;
+
+  /* The page theme. Project pages override these with their own palette. */
+  --bg: var(--black);
+  --fg: var(--bone);
+  --muted: var(--ash);
+  --accent: var(--ember);
+  --line: color-mix(in srgb, var(--fg) 16%, transparent);
+  --surface: color-mix(in srgb, var(--fg) 6%, transparent);
+
+  --font-sans: 'Mona Sans Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+
+  --ease-reveal: cubic-bezier(0.35, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --gutter: clamp(1rem, 4.4vw, 4rem);
+
+  /* Dennis's sizing: his body size and spacing unit, used for the header
+     and the opening screen so they match his proportions at any width. */
+  --d-fs: clamp(16px, 1.2vw, 19px);
+  --d-gap: clamp(calc(var(--d-fs) * 1.5), 4vw, calc(var(--d-fs) * 2.5));
+  --header-h: clamp(4.75rem, 7vw, 6.5rem);
+
+  /* Type scale: 12 14 16 18 21 24 36 48 72 96, fluid at the top end */
+  --t-12: 0.75rem;
+  --t-14: 0.875rem;
+  --t-16: 1rem;
+  --t-18: 1.125rem;
+  --t-21: 1.3125rem;
+  --t-24: 1.5rem;
+  --t-36: clamp(1.75rem, 1.2rem + 1.6vw, 2.25rem);
+  --t-48: clamp(2.125rem, 1.4rem + 2.4vw, 3rem);
+  --t-72: clamp(2.75rem, 1.6rem + 4.2vw, 4.5rem);
+  --t-96: clamp(3.25rem, 1.6rem + 6.4vw, 6rem);
+  --t-mega: clamp(5rem, 17vw, 16rem);
+}
+
+/* ------------------------------------------------------------------
+   Reset
+------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--t-18);
+  font-weight: 400;
+  line-height: 1.5;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.6s var(--ease-out), color 0.6s var(--ease-out);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--crimson);
+  color: var(--bone);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  left: var(--gutter);
+  top: 0.75rem;
+  z-index: 200;
+  padding: 0.6em 1em;
+  border-radius: 999px;
+  background: var(--bone);
+  color: var(--black);
+  font-size: var(--t-14);
+  transform: translateY(-160%);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ------------------------------------------------------------------
+   Type roles
+------------------------------------------------------------------- */
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 560;
+  font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 1;
+  letter-spacing: -0.01em;
+}
+
+.display {
+  font-family: var(--font-sans);
+  font-weight: 760;
+  font-stretch: 93%;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+}
+
+.label {
+  display: block;
+  color: var(--muted);
+  font-size: var(--t-12);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.prose p + p {
+  margin-top: 1em;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+/* ------------------------------------------------------------------
+   Layers
+------------------------------------------------------------------- */
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#swap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Smooth scrolling (Lenis) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* While the loader runs, only the canvas and the counter are on screen. */
+html.is-loading #swap,
+html.is-loading .header,
+html.is-loading .menu-btn {
+  visibility: hidden;
+}
+
+/* Without JavaScript or WebGL the page still reads as a plain dark site. */
+html.no-gl #gl {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import Footer from '../components/Footer.astro';
+import WorkCard from '../components/WorkCard.astro';
+import Cta from '../components/Cta.astro';
+import { site } from '../data/site.js';
+import { selectedWork } from '../data/projects.js';
+
+const { intro, work } = site.home;
+---
+<Base page="home" label="Home" current="/">
+  <!-- Opening screen: mostly empty, like Dennis's. WebGL draws the 3D DK
+       monogram in the middle; this flat one shows only without WebGL. -->
+  <section class="hero" data-hero aria-labelledby="hero-title">
+    <h1 id="hero-title" class="visually-hidden">{site.name}, {site.role.join(' ')}, based in {site.location.place}</h1>
+
+    <svg class="hero__mark" viewBox="32 63.46 192 129.08" aria-hidden="true" focusable="false">
+      <path
+        fill-rule="evenodd"
+        d="M59.44,63.46 L143.33,63.46 L156.04,79.6 L153.98,89.28 L185.28,63.46 L224,63.46 L145.74,128 L196.57,192.54 L157.85,192.54 L137.52,166.72 L135.46,176.4 L115.9,192.54 L32,192.54 Z M78.64,102.19 L92.33,90.89 L97.17,90.89 L81.39,165.11 L65.26,165.11 Z M107.68,102.19 L121.37,90.89 L126.21,90.89 L110.44,165.11 L94.3,165.11 Z"
+      />
+    </svg>
+
+    <!-- Location pill, built like Dennis's: a pill shape with a circle cut
+         out of its right end, and an animated line globe inside the cut-out. -->
+    <div class="hero__place" data-hero-item>
+      <svg class="hero__place-shape" viewBox="0 0 300 121" aria-hidden="true" focusable="false">
+        <path
+          fill-rule="evenodd"
+          d="M239.633657,0 C272.770742,0 299.633657,26.862915 299.633657,60 C299.633657,93.137085 272.770742,120 239.633657,120 L0,120 L0,0 L239.633657,0 Z M239.633657,18.7755102 C216.866,18.7755102 198.409167,37.232343 198.409167,60 C198.409167,82.767657 216.866,101.22449 239.633657,101.22449 C262.401314,101.22449 280.858147,82.767657 280.858147,60 C280.858147,37.232343 262.401314,18.7755102 239.633657,18.7755102 Z"
+        />
+      </svg>
+      <p class="hero__place-text">{site.location.pill.map((line) => <span>{line}</span>)}</p>
+      <div class="globe-ball" aria-hidden="true">
+        <div class="globe">
+          <div class="globe-wrap">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle-hor"></div>
+            <div class="circle-hor-middle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__role" data-hero-item>
+      <p>{site.role[0]}<br />{site.role[1]}</p>
+    </div>
+
+    <div class="marquee" aria-hidden="true" data-marquee>
+      <div class="marquee__track" data-marquee-track>
+        <span class="marquee__item">{site.name}<span class="marquee__dash">—</span></span>
+        <span class="marquee__item">{site.name}<span class="marquee__dash">—</span></span>
+        <span class="marquee__item">{site.name}<span class="marquee__dash">—</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Intro: Lusion-style heading reveal, the red line draws through here -->
+  <section class="section intro" data-intro data-line="home" aria-labelledby="intro-title">
+    <h2 id="intro-title" class="intro__title serif" data-reveal="lusion">
+      <span class="line-mask">{intro.lines[0]}</span>
+      <span class="line-mask">{intro.lines[1]}</span>
+    </h2>
+    <div class="intro__grid">
+      <div class="intro__body">
+        <div class="prose" data-reveal="ripple">
+          {intro.body.map((p) => <p>{p}</p>)}
+        </div>
+        <Cta class="intro__button" href="/about/" label={intro.button} loop />
+      </div>
+    </div>
+  </section>
+
+  <!-- Selected work: Lusion's "Featured Work" section, with Unseen's fold -->
+  <section class="section grid-section" data-grid="home" aria-labelledby="work-title">
+    <div class="featured-head">
+      <h2 id="work-title" class="featured-head__title">{work.title}</h2>
+      <p class="featured-head__note">{work.note}</p>
+    </div>
+    <div class="cards" data-cards>
+      {selectedWork.map((p, i) => <WorkCard project={p} eager={i < 2} />)}
+    </div>
+    <div class="grid-more">
+      <Cta href="/work/" label={work.button} />
+    </div>
+  </section>
+
+  <Footer slot="after" />
+</Base>

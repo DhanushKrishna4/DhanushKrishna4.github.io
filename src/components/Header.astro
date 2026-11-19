@@ -1,0 +1,33 @@
+---
+import { site } from '../data/site.js';
+
+const { current = '' } = Astro.props;
+const nav = [
+  { label: 'Work', href: '/work/' },
+  { label: 'About', href: '/about/' },
+  { label: 'Contact', href: '/contact/' },
+];
+---
+<header class="header" data-header>
+  <a class="lockup" href="/" aria-label={`${site.name}, home`} data-lockup>
+    <span class="lockup__first" aria-hidden="true"><span class="lockup__inner">{site.first}</span></span>
+    <span class="lockup__last" aria-hidden="true"><span class="lockup__inner">{site.last}</span></span>
+  </a>
+
+  <a class="back-pill" href="/work/" data-back>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M14 8H2.5M7 3.2 2.2 8 7 12.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    Back
+  </a>
+
+  <nav class="nav" aria-label="Main">
+    {
+      nav.map((l) => (
+        <a class="nav__link" href={l.href} aria-current={current === l.href ? 'page' : undefined} data-nav-link data-roll>
+          {l.label}
+        </a>
+      ))
+    }
+  </nav>
+</header>

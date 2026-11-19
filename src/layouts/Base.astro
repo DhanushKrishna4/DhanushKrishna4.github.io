@@ -1,0 +1,117 @@
+---
+import '@fontsource-variable/mona-sans/wdth.css';
+import '@fontsource-variable/fraunces/full.css';
+import '../styles/base.css';
+import '../styles/ui.css';
+import '../styles/pages.css';
+import Header from '../components/Header.astro';
+import Menu from '../components/Menu.astro';
+import { site } from '../data/site.js';
+
+const { title, description = site.description, page = 'page', label = title ?? 'Home', theme, current = '' } = Astro.props;
+
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — Machine learning & systems`;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+// Share cards need an absolute address. Bump ?v= whenever the card is redrawn,
+// as sites that show it keep the old picture for a given address.
+const ogImage = new URL('/og.png?v=1', site.url).href;
+// Project pages bring their own palette; everything else uses the black theme.
+const themeStyle = theme
+  ? `--bg:${theme.bg};--fg:${theme.fg};--accent:${theme.accent};--muted:color-mix(in srgb, ${theme.fg} 60%, ${theme.bg});`
+  : undefined;
+// Light or dark page, by the background's relative luminance. Light project
+// pages get the outlined menu button (scripts/hamburger.js).
+const luminance = (hex) => {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const tone = theme && luminance(theme.bg) > 0.5 ? 'light' : 'dark';
+---
+<!doctype html>
+<html lang="en" data-page={page} data-tone={tone} style={themeStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content={theme?.bg ?? '#000000'} />
+    <!-- Dhanush's DK monogram, the same files and tags as his Rust project sites -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2" />
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <!-- The share card, laid out as Lando's (drawn by scripts/og-card.mjs) -->
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${site.name}, over contour lines`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <script is:inline>
+      // Runs before first paint. The loader only plays on the first visit of a
+      // session, never with reduced motion, and only when WebGL2 is available.
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var gl = false;
+        try {
+          gl = !!document.createElement('canvas').getContext('webgl2');
+        } catch (e) {}
+        if (!gl) d.classList.add('no-gl');
+        var seen = false;
+        try {
+          seen = sessionStorage.getItem('dk:loaded') === '1';
+        } catch (e) {}
+        if (gl && !reduce && !seen) d.classList.add('is-loading');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="loader" aria-hidden="true">
+      <div class="loader__behind" data-loader-behind>000000000000000000000000000000000000</div>
+      <div class="loader__count" data-loader-count>0</div>
+    </div>
+
+    <Header current={current} />
+    <Menu current={current} />
+
+    <div id="swap" data-page={page} data-label={label} data-theme={theme ? JSON.stringify(theme) : ''}>
+      <main id="main">
+        <slot />
+      </main>
+      <slot name="after" />
+    </div>
+
+    <!-- Dennis's page transition (scripts/core/transitions.js): a panel with
+         a curved cap above it and one below, both slices of a wide ellipse -->
+    <div class="curtain" aria-hidden="true" data-curtain>
+      <div class="curtain__screen" data-curtain-screen>
+        <div class="curtain__cap curtain__cap--top" data-curtain-top><div class="curtain__round"></div></div>
+        <span class="curtain__label" data-curtain-label></span>
+        <div class="curtain__cap curtain__cap--bottom" data-curtain-bottom><div class="curtain__round"></div></div>
+      </div>
+    </div>
+    <div class="project-fill" aria-hidden="true" data-project-fill></div>
+
+    <script>
+      import '../scripts/app.js';
+    </script>
+  </body>
+</html>
