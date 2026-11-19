@@ -92,6 +92,10 @@ export function goneLine(w, h) {
   return h / 2 - 2 * (bx + 0.83 * (by - bx));
 }
 
+// Whether a card is laid out at all: the home page hides its second half on
+// phones and tablets (pages.css), and the Work page's filters hide some.
+const showing = (card) => getComputedStyle(card).display !== 'none';
+
 
 // Lusion's SecondOrderDynamics (the robust form): a spring with frequency f,
 // damping z and response r that follows `target`.
@@ -750,7 +754,9 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         };
         if (img.complete && img.naturalWidth) useImage();
         else img.addEventListener('load', useImage, { once: true });
-        img.loading = 'eager';
+        // Fetched now, ready before it scrolls on; a hidden card's waits
+        // until it shows (a phone never downloads the home page's second half).
+        if (showing(card)) img.loading = 'eager';
       }
 
       // Their hover: over the card for the name, over the image for the image.
@@ -925,10 +931,12 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       change();
       fadeIn();
     },
-    // The card that opens a project page (its path, e.g. /work/forge/).
+    // The card that opens a project page (its path, e.g. /work/forge/), if
+    // it is showing: leaving a project whose card is hidden here (the home
+    // page on a phone) comes back without the zoom, as from any other page.
     async find(path) {
       await built;
-      return items.find((it) => it.path === path) ?? null;
+      return items.find((it) => it.path === path && showing(it.card)) ?? null;
     },
     // Once the card's image is in (or a second and a half has gone by).
     imageReady(item) {

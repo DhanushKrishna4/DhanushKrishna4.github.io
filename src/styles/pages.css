@@ -541,6 +541,16 @@ html:not(.is-transitioning) .filter:hover {
   margin-top: 12vh;
 }
 
+/* Phones and tablets: the home page keeps only its first four projects, as
+   Dennis's home keeps only the first half of its work there (his
+   .work-tiles-home hides the third and fourth at max-width 1024px). The Work
+   page still lists them all. */
+@media screen and (max-width: 1024px) {
+  [data-grid='home'] .card:nth-child(n + 5) {
+    display: none;
+  }
+}
+
 @media (min-aspect-ratio: 21 / 9) {
   .featured-head__title {
     font-size: 5.3vw;
