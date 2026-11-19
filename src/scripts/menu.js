@@ -14,7 +14,7 @@
 // of the timeline, so closing waits as long as his before things reverse.
 // At the top centre, his DK monogram behaves like Lando's LN4 mark (below).
 import { gsap } from 'gsap';
-import { html, reducedMotion, changingPage, PAGE_CHANGE } from './core/env.js';
+import { html, reducedMotion, unhovered, PAGE_CHANGE } from './core/env.js';
 import { lockScroll } from './core/scroll.js';
 import { createHamburger } from './hamburger.js';
 import { menuColours, pagePalette, OURS } from './core/palette.js';
@@ -77,7 +77,7 @@ function createMark(mark) {
   // The accent draws while the pointer is on the mark (not once a page
   // change has started, as on Lando's: core/env.js) or keyboard focus is.
   const sync = () => {
-    const want = shown && ((pointer && !changingPage()) || focus);
+    const want = shown && ((pointer && !unhovered()) || focus);
     if (want === lit) return;
     lit = want;
     if (want) drawIn(accent, PEN.hover);

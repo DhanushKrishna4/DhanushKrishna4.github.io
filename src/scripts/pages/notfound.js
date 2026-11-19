@@ -3,7 +3,7 @@
 import { gsap } from 'gsap';
 import { mountCommon } from './common.js';
 import { createLost } from '../gl/lost.js';
-import { reducedMotion, isTouch, changingPage, PAGE_CHANGE } from '../core/env.js';
+import { reducedMotion, isTouch, unhovered, PAGE_CHANGE } from '../core/env.js';
 
 // His arrow (a Rive animation), timed from recordings of his button. While
 // the pointer is on the button it loops every 1.5s, starting a beat after
@@ -54,7 +54,7 @@ function setupArrow(link) {
   let pointer = false;
   let focus = false;
   let round = null;
-  const wanted = () => ((pointer && !changingPage()) || focus) && !reducedMotion();
+  const wanted = () => ((pointer && !unhovered()) || focus) && !reducedMotion();
   const loop = (delay = 0) => {
     rest();
     round = gsap

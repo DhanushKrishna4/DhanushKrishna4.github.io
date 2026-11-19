@@ -104,11 +104,15 @@ export function createRouter({ mount, onLeave, gl = null }) {
   shield.className = 'nav-shield';
   shield.setAttribute('aria-hidden', 'true');
   document.body.append(shield);
-  // Lando's: the clicked link (and anything else under the pointer) goes
-  // back to its unhovered look while the page changes (ui.css .nav-shield,
-  // core/env.js changingPage).
+  // Lando's: the clicked link (and anything else under the mouse) goes back
+  // to its unhovered look while the page changes. A link tapped on a phone
+  // keeps its look, as his do, so only a change begun with a mouse or pen
+  // unhovers (ui.css, core/env.js unhovered). The shield goes up either way.
+  let lastPointer = 'mouse';
+  addEventListener('pointerdown', (e) => (lastPointer = e.pointerType), { capture: true, passive: true });
   const changing = (on) => {
     html.classList.toggle('is-transitioning', on);
+    html.classList.toggle('is-unhovered', on && lastPointer !== 'touch');
     dispatchEvent(new Event(PAGE_CHANGE));
   };
 

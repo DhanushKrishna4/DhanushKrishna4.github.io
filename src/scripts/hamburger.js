@@ -17,7 +17,7 @@
 // Over the open menu it takes the menu's colours whatever the page, easing
 // over as it opens (ui.css).
 import { gsap } from 'gsap';
-import { html, reducedMotion, changingPage, PAGE_CHANGE } from './core/env.js';
+import { html, reducedMotion, unhovered, PAGE_CHANGE } from './core/env.js';
 import { HAM } from '../data/hamburger.js';
 
 // Timing curves: [ms after the trigger, progress 0..1].
@@ -223,7 +223,7 @@ export function createHamburger(button) {
   let pointerIn = false;
   let keyFocus = false;
   const sync = () => {
-    const want = (pointerIn && !changingPage()) || keyFocus;
+    const want = (pointerIn && !unhovered()) || keyFocus;
     if (want === hover.want) return;
     hover.want = want;
     hover.wantAt = performance.now();

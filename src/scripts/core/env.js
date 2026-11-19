@@ -12,10 +12,21 @@ export const isSmall = () => innerWidth <= 760;
 export const hasGL = () => !html.classList.contains('no-gl');
 
 // As on Lando's: from the click until the new page is in, whatever is under
-// the pointer looks as it does unhovered. The router marks the page and sends
-// PAGE_CHANGE as a change starts and ends; scripted hovers listen for it.
+// the mouse looks as it does unhovered. His comes from the page change
+// sliding in under the pointer, so on a phone the tapped link keeps its look:
+// the router marks html.is-unhovered only for changes begun with a mouse or
+// pen, and sends PAGE_CHANGE as a change starts and ends; scripted hovers
+// listen for it.
 export const PAGE_CHANGE = 'dk:pagechange';
-export const changingPage = () => html.classList.contains('is-transitioning');
+export const unhovered = () => html.classList.contains('is-unhovered');
+
+// Lando's sets up his link animations only on screens at least 992px wide
+// (his script runs them only when window.innerWidth >= 992). Below that a
+// link that also changes colour just changes colour, and one that only
+// animates does nothing. For the effects copied from his: the link roll
+// (core/roll.js) and the menu links' roll (ui.css, the same min-width: 992px).
+const wideQuery = matchMedia('(min-width: 992px)');
+export const hoverMotion = () => wideQuery.matches;
 
 export const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 export const lerp = (a, b, t) => a + (b - a) * t;

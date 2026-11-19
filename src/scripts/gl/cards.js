@@ -53,7 +53,7 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { scrollVelocity } from '../core/scroll.js';
-import { reducedMotion, isTouch, hexToRgb, changingPage } from '../core/env.js';
+import { reducedMotion, isTouch, hexToRgb, unhovered } from '../core/env.js';
 import { fullscreenVert } from './glsl.js';
 import { cubicInOut, fit, expoOut, expoInOut, lusionEase } from '../core/projectZoom.js';
 
@@ -788,7 +788,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
     // arrow showing (the stylesheet does that).
     // Once a page change starts the card counts as unhovered, pointer or
     // not, as links do on Lando's (core/env.js).
-    const leaving = changingPage();
+    const leaving = unhovered();
     const overCard = it.overCard && !leaving;
     const overImage = it.overImage && !leaving;
     const was = it.nameRatio;

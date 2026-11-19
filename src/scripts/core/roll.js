@@ -4,9 +4,10 @@
 // letter carries a copy of itself one line lower (a text-shadow) and the word
 // is clipped to its line, so only one copy shows at a time. Same timing as
 // theirs: 0.6s, power3.out, 0.02s between letters. Links opt in with data-roll;
-// keyboard focus rolls them too. Nothing moves with reduced motion.
+// keyboard focus rolls them too. Nothing moves with reduced motion, and as on
+// Lando's, nothing rolls on screens under 992px wide (core/env.js hoverMotion).
 import { gsap } from 'gsap';
-import { reducedMotion, changingPage, PAGE_CHANGE } from './env.js';
+import { reducedMotion, unhovered, hoverMotion, PAGE_CHANGE } from './env.js';
 
 const TIMING = { duration: 0.6, stagger: 0.02, ease: 'power3.out', overwrite: true };
 
@@ -65,7 +66,7 @@ export function setupRoll(scope) {
     // Up while the pointer is on it (not once a page change has started,
     // as on Lando's: core/env.js) or keyboard focus is.
     const sync = () => {
-      const want = (pointer && !changingPage()) || focus;
+      const want = (pointer && hoverMotion() && !unhovered()) || focus;
       if (want === up) return;
       up = want;
       if (want) boxes ||= split(link);

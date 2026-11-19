@@ -7,7 +7,7 @@
 // is left out. Keyboard focus fills the pill too; with reduced motion the
 // fill comes and goes at once.
 import { gsap } from 'gsap';
-import { reducedMotion, changingPage, PAGE_CHANGE } from './env.js';
+import { reducedMotion, unhovered, PAGE_CHANGE } from './env.js';
 
 export function setupPills(scope) {
   if (!scope) return () => {};
@@ -22,7 +22,7 @@ export function setupPills(scope) {
     // Filled while the pointer is on it (not once a page change has
     // started, as on Lando's: core/env.js) or keyboard focus is.
     const sync = () => {
-      const want = (pointer && !changingPage()) || focus;
+      const want = (pointer && !unhovered()) || focus;
       if (want === filled) return;
       filled = want;
       if (want) gsap.to(fill, { duration: duration(), startAt: { y: '76%' }, y: '0%', ease: 'power2.inOut' });

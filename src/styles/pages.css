@@ -431,7 +431,7 @@ html:not(.js) .hero__mark {
   line-height: 0;
 }
 
-html:not(.is-transitioning) .filter:hover {
+html:not(.is-unhovered) .filter:hover {
   background: var(--surface);
 }
 
@@ -846,7 +846,7 @@ html:not(.is-transitioning) .filter:hover {
 
 /* Each links to its credential, and turns red when hovered, as the
    project pages' links do. */
-html:not(.is-transitioning) .certs a:hover {
+html:not(.is-unhovered) .certs a:hover {
   color: var(--accent);
 }
 
@@ -1037,7 +1037,7 @@ html:not(.is-transitioning) .certs a:hover {
   margin-bottom: 0.45rem;
 }
 
-html:not(.is-transitioning) .project__side a:hover {
+html:not(.is-unhovered) .project__side a:hover {
   color: var(--accent);
 }
 

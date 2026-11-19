@@ -440,9 +440,16 @@ html.menu-open .menu {
   transition-delay: calc(var(--i, 0) * 0.02s);
 }
 
-html:not(.is-transitioning) .menu__link:not([aria-current='page']):hover .char,
 .menu__link:not([aria-current='page']):focus-visible .char {
   transform: translateY(calc(var(--roll) * -1));
+}
+
+/* As on Lando's, links animate only on screens at least 992px wide; below
+   that a tap leaves these as they are (core/env.js hoverMotion). */
+@media (min-width: 992px) {
+  html:not(.is-unhovered) .menu__link:not([aria-current='page']):hover .char {
+    transform: translateY(calc(var(--roll) * -1));
+  }
 }
 
 /* The current page, crossed out. As on Lando's it does nothing: no hover,
@@ -527,7 +534,7 @@ html:not(.is-transitioning) .menu__link:not([aria-current='page']):hover .char,
   transition: transform 0.45s var(--ease-out);
 }
 
-html:not(.is-transitioning) .menu__foot a:hover::after {
+html:not(.is-unhovered) .menu__foot a:hover::after {
   transform: scaleX(1);
   transform-origin: left;
 }
@@ -611,18 +618,18 @@ html:not(.is-transitioning) .menu__foot a:hover::after {
 }
 
 @media (hover: hover) {
-  html:not(.is-transitioning) .cta:hover .cta__label {
+  html:not(.is-unhovered) .cta:hover .cta__label {
     clip-path: inset(0 calc(var(--h) * 0.25) 0 0 round calc(var(--h) / 2));
   }
-  html:not(.is-transitioning) .cta:hover .cta__circle {
+  html:not(.is-unhovered) .cta:hover .cta__circle {
     clip-path: inset(calc(var(--h) * 0.125) round calc(var(--h) / 2));
     transform: translateX(calc(var(--h) * -0.25));
   }
-  html:not(.is-transitioning) .cta:hover .cta__circle path:first-child {
+  html:not(.is-unhovered) .cta:hover .cta__circle path:first-child {
     transform: translateX(100%);
     transition-delay: 0s;
   }
-  html:not(.is-transitioning) .cta:hover .cta__circle path:last-child {
+  html:not(.is-unhovered) .cta:hover .cta__circle path:last-child {
     transform: translateX(0);
     transition-delay: 0.1s;
   }
@@ -828,12 +835,14 @@ html:not(.is-loading) .loader {
 /* ==================================================================
    Page transitions
    ================================================================== */
-/* As on Lando's: once a link is clicked, whatever was under the pointer goes
+/* As on Lando's: once a link is clicked, whatever was under the mouse goes
    back to how it looks unhovered while the page changes, even if the pointer
-   stays put. The router marks the page html.is-transitioning; the hover rules
-   above and below stand down under it, and this clear layer covers the screen
-   so the pointer has left everything (scripted hovers ease out) and nothing
-   can be clicked twice. */
+   stays put. A link tapped on a phone keeps its look, as his do. The router
+   marks the page html.is-transitioning, and also html.is-unhovered when the
+   change was begun with a mouse or pen; the hover rules above and below stand
+   down under that. This clear layer covers the screen for every change, so
+   nothing can be clicked twice (and a mouse has left everything, so scripted
+   hovers ease out). */
 .nav-shield {
   position: fixed;
   inset: 0;
