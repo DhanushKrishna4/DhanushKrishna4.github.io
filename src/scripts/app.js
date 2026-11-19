@@ -8,6 +8,7 @@ import { fitLockup } from './core/lockup.js';
 import { startClock } from './core/clock.js';
 import { createMenu } from './menu.js';
 import { setupRoll } from './core/roll.js';
+import { picturesIn, fetchTheRest } from './core/pictures.js';
 import { mountPage } from './pages/index.js';
 
 async function boot() {
@@ -87,27 +88,20 @@ async function boot() {
   router.setCurrent(page);
 
   const fontsReady = document.fonts.ready;
+  // All the pictures this page loads straight away (core/pictures.js), each
+  // sent to the graphics chip as it arrives; the loader waits for them.
+  const pictures = picturesIn(document.getElementById('swap'));
   if (gl && html.classList.contains('is-loading')) {
     const { runLoader } = await import('./loader.js');
-    // Wait only for images the page loads straight away. Lazy ones (further
-    // along a project's gallery) don't start until they're near the screen,
-    // so waiting for them would hold the loader until its 4-second timeout.
-    const loaded = (img) =>
-      new Promise((done) => {
-        img.addEventListener('load', done, { once: true });
-        img.addEventListener('error', done, { once: true });
-      });
-    const images = [...document.querySelectorAll('#swap img')]
-      .filter((img) => img.loading !== 'lazy' && !img.complete)
-      .slice(0, 4)
-      .map(loaded);
-    await runLoader(gl, { ready: Promise.all([fontsReady, ...images]) });
+    await runLoader(gl, { ready: Promise.all([fontsReady, pictures]) });
     page.intro?.({ fromLoader: true });
   } else {
     html.classList.remove('is-loading');
     await fontsReady;
     page.intro?.({ fromLoader: false });
   }
+  // Then the rest of the site's pictures, in the background.
+  pictures.then(() => setTimeout(fetchTheRest, 1500));
 }
 
 boot();

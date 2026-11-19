@@ -170,7 +170,12 @@ export function createGallery(engine, items, { root = null, motion = () => 0, ve
       texture.generateMipmaps = !isVideo;
       texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
       if (!isVideo) {
-        const upload = () => (texture.needsUpdate = true);
+        // Sent to the graphics chip as soon as it has loaded, not on its first
+        // draw mid-scroll (see gl/cards.js).
+        const upload = () => {
+          texture.needsUpdate = true;
+          renderer.initTexture(texture);
+        };
         if (it.el.complete && it.el.naturalWidth) upload();
         else it.el.addEventListener('load', upload, { once: true });
       }

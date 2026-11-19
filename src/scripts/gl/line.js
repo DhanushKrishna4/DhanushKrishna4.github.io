@@ -377,6 +377,15 @@ export function createLine(engine, section, kind = 'home') {
   let ownRenderer = null;
   let drawn = false;
   let box = null; // its own canvas in the section: top, width, height (px)
+  // There its drawing also eases toward where the scroll puts it, at our
+  // desktop smooth scroll's pace (Lenis, lerp 0.1: 1 - e^(-6t)), so it draws
+  // in and out as fluidly as on desktop even when the phone reports the
+  // scroll in uneven steps or a frame is missed.
+  const pace = { to: 0, at: 0 };
+  // And the browser bar showing or hiding, which only changes the screen's
+  // height, neither rebuilds it nor changes its width: that is worked out
+  // from the tallest the screen has been at this width.
+  let tall = { w: 0, h: 0 };
   if (own) {
     ownCanvas = document.createElement('canvas');
     ownCanvas.className = 'line-gl';
@@ -400,7 +409,12 @@ export function createLine(engine, section, kind = 'home') {
   const build = () => {
     const L = measure(section, kind);
     if (!L) return;
-    const radius = ribbonRadius(L.vw, L.vh);
+    let vh = L.vh;
+    if (own) {
+      if (tall.w !== L.vw) tall = { w: L.vw, h: 0 };
+      vh = tall.h = Math.max(tall.h, L.vh);
+    }
+    const radius = ribbonRadius(L.vw, vh);
     const next = buildRibbon(resample(segments(PATHS[kind](L)), 6), radius);
     if (mesh) {
       group.remove(mesh);
@@ -433,16 +447,24 @@ export function createLine(engine, section, kind = 'home') {
     start: `top ${start * 100}%`,
     end: () => `+=${span * innerHeight}`,
     onUpdate: (self) => {
-      if (!reducedMotion()) progress.value = quadInOut(self.progress);
+      if (reducedMotion()) return;
+      if (own) pace.to = self.progress;
+      else progress.value = quadInOut(self.progress);
     },
     onRefresh: (self) => {
       build();
-      if (!reducedMotion()) progress.value = quadInOut(self.progress);
+      if (reducedMotion()) return;
+      // A refresh puts it straight where it belongs.
+      pace.to = pace.at = self.progress;
+      progress.value = quadInOut(self.progress);
     },
   });
   let disposed = false;
   build();
-  if (!reducedMotion()) progress.value = quadInOut(trigger.progress);
+  if (!reducedMotion()) {
+    pace.to = pace.at = trigger.progress;
+    progress.value = quadInOut(trigger.progress);
+  }
   // Text settles once the fonts arrive; measure again then.
   document.fonts?.ready.then(() => !disposed && build());
   let built = { w: state.width, h: state.height, s: section.offsetHeight };
@@ -455,11 +477,18 @@ export function createLine(engine, section, kind = 'home') {
     },
     update() {
       const rect = section.getBoundingClientRect();
+      if (own && !reducedMotion()) {
+        pace.at += (pace.to - pace.at) * (1 - Math.exp(-6 * state.delta));
+        if (Math.abs(pace.to - pace.at) < 1e-4) pace.at = pace.to;
+        progress.value = quadInOut(pace.at);
+      }
       const t = progress.value;
       const showing = !!line && t > 0.0005 && rect.bottom > -state.height && rect.top < state.height * 2;
       // With its own canvas the shared one draws nothing of it.
       layer.visible = showing && !own;
-      if (state.width !== built.w || state.height !== built.h || section.offsetHeight !== built.s) {
+      // On its own canvas a change in the screen's height alone (the browser
+      // bar) is no reason to rebuild.
+      if (state.width !== built.w || (!own && state.height !== built.h) || section.offsetHeight !== built.s) {
         build();
         built = { w: state.width, h: state.height, s: section.offsetHeight };
       }

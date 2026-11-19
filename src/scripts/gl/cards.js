@@ -751,6 +751,11 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
           uniforms.uImage.value = tex;
           uniforms.uHasImage.value = 1;
           uniforms.uImageSize.value.set(img.naturalWidth || 16, img.naturalHeight || 10);
+          // Sent to the graphics chip now, mipmaps and all, not on its first
+          // draw: that costs a frame, and mid-scroll a missed frame shows (on
+          // a phone the page carries on while what we draw stalls). Pictures
+          // load under the loader or the page-change cover (app.js, router.js).
+          engine.renderer.initTexture(tex);
         };
         if (img.complete && img.naturalWidth) useImage();
         else img.addEventListener('load', useImage, { once: true });

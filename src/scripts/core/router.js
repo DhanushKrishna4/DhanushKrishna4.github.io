@@ -5,6 +5,7 @@
 import { html, reducedMotion, PAGE_CHANGE } from './env.js';
 import { jumpTo, lockScroll, refreshScroll, smoothTo, scrollY } from './scroll.js';
 import { fillCover, fillReveal, curtain, riseIn } from './transitions.js';
+import { picturesIn } from './pictures.js';
 import { run, zoomFor, textIn, textOut, OPEN, CLOSE } from './projectZoom.js';
 import { menuColours, pagePalette } from './palette.js';
 
@@ -178,9 +179,14 @@ export function createRouter({ mount, onLeave, gl = null }) {
       lockScroll(false);
 
       if (toProject) {
+        // Its pictures load under the cover first (core/pictures.js).
+        await picturesIn(document.getElementById('swap'), 800);
         current.intro?.();
         await fillReveal();
       } else {
+        // Its pictures load under the panel first, holding it at most 0.8s
+        // past when it would lift anyway (core/pictures.js).
+        await picturesIn(document.getElementById('swap'), Math.max(0, 1150 - cover.elapsed() * 1000) + 800);
         // As on Dennis's: the new page's blocks rise into place under the
         // panel, which then lifts; this page's own entrance starts just
         // after the lift begins.
@@ -224,6 +230,8 @@ export function createRouter({ mount, onLeave, gl = null }) {
     if (gl?.field) gl.field.uniforms.uFade.value = 0;
     current = await mount(root, { first: false, instant: true });
     refreshScroll();
+    // Its pictures load while the card covers the screen (core/pictures.js).
+    await picturesIn(root, 800);
     if (current.show) await current.show();
     else {
       root.style.opacity = '';
@@ -265,6 +273,8 @@ export function createRouter({ mount, onLeave, gl = null }) {
     refreshScroll();
     current.cards.zoom(card, 1, 0);
     await current.cards.imageReady(card);
+    // The list's other pictures load while the card still fills the screen.
+    await picturesIn(root, 800);
     gl.setTheme(null, true);
     gl.field.uniforms.uFade.value = 1;
     await run(CLOSE, (show) => {
