@@ -349,6 +349,23 @@ html:not(.js) .hero__mark {
   padding: 50px 5vw;
 }
 
+/* On touch screens the cards have their own canvas here (gl/cards.js): a
+   strip a little taller than the screen, kept over it and scrolled by the
+   browser with the page, behind the section's text as the shared canvas is.
+   The section clips it, so it never makes the page any longer. */
+.has-cards-gl {
+  position: relative;
+  overflow: clip;
+}
+
+.cards-gl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* Home: their "Featured Work" heading, 8vw, with a note in the bottom right
    corner as wide as 3 of the 12 columns and 2 gaps. */
 .featured-head {
@@ -720,6 +737,23 @@ html:not(.is-unhovered) .filter:hover {
 .about-sheet {
   position: relative;
   z-index: 1;
+}
+
+/* On touch screens the giant words and their paint have their own canvas in
+   the sheet (gl/glow.js), behind its text, and the sheet is black itself,
+   so its edge moves exactly with the page; the sheet clips the canvas, so
+   it never makes the page any longer. */
+.about-sheet.has-glow-gl {
+  background: var(--bg);
+  overflow: clip;
+}
+
+.glow-gl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .about-line {
@@ -1136,6 +1170,26 @@ html:not(.is-unhovered) .project__side a:hover {
   to {
     --spin: 360deg;
   }
+}
+
+/* On touch screens the gallery has its own canvas inside the rail
+   (gl/gallery.js), which the browser moves with the pictures' frames:
+   behind the rail's contents, as the shared canvas is. The track clips it,
+   so it never makes the page any longer. */
+.gallery-host {
+  position: relative;
+}
+
+.gallery-clip {
+  overflow: clip;
+}
+
+.gallery-gl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* With WebGL the gallery is drawn by gl/gallery.js on top of these frames,

@@ -73,8 +73,13 @@ export function mountProject(root, { router, gl }) {
     }
   };
   gsap.ticker.add(reveal);
-  // With WebGL the gallery is drawn there, through Lusion's screen pass.
-  const gallery = gl && items.length ? gl.add(createGallery(gl, items, { root, motion: () => moved, vertical: isSmall })) : null;
+  // With WebGL the gallery is drawn there, through Lusion's screen pass. It
+  // moves the rail into place itself before measuring the pictures (place,
+  // below), as the engine draws before this page's own ticker step runs.
+  const gallery =
+    gl && items.length
+      ? gl.add(createGallery(gl, items, { root, host: rail, clip: track, motion: () => moved, vertical: isSmall, place: () => place() }))
+      : null;
 
   // The clip of the demo in use plays on its own, muted and looping; for
   // anyone who prefers less motion it waits, with controls, at its first frame.
@@ -103,7 +108,10 @@ export function mountProject(root, { router, gl }) {
   measure();
   addEventListener('resize', measure);
 
-  const tick = () => {
+  // The rail where the scroll has it, and how far into the extra scroll the
+  // page is (0..1). The same all frame, so running it twice does no harm.
+  let over = 0;
+  const place = () => {
     if (isSmall()) return;
     const top = track.getBoundingClientRect().top + scrollY();
     const local = scrollY() - top;
@@ -112,8 +120,12 @@ export function mountProject(root, { router, gl }) {
     railX = x;
     intro.style.opacity = String(clamp(1 - x / (innerWidth * 0.45), 0, 1));
     if (hint) hint.style.opacity = String(clamp(1 - x / 200, 0, 1));
-    const over = clamp((local - max) / OVERSCROLL(), 0, 1);
+    over = clamp((local - max) / OVERSCROLL(), 0, 1);
     bar?.style.setProperty('--p', over.toFixed(3));
+  };
+  const tick = () => {
+    if (isSmall()) return;
+    place();
     if (over >= 0.995 && !opened) {
       opened = true;
       router?.go(root.querySelector('[data-project]').dataset.next, { trigger: nextPanel });

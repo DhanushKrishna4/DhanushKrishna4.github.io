@@ -62,7 +62,10 @@ function setupFooter(root, gl) {
     if (field) {
       const dpr = gl.state.dpr;
       const max = document.documentElement.scrollHeight - vh;
-      lines((top + edge) * dpr, depth * dpr, w * dpr, (max / gl.state.height) * 0.12);
+      // The page's bottom edge where it really is, below the screen too: on
+      // touch screens the project cards draw past the screen's bottom
+      // (gl/cards.js), and nothing there may be cut off until the page ends.
+      lines(Math.max(top, natural) * dpr, depth * dpr, w * dpr, (max / gl.state.height) * 0.12);
     }
   };
 

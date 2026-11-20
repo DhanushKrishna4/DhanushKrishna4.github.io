@@ -50,9 +50,18 @@
 // Filtering plays Unseen's filter change, and the page's first showing plays
 // its second half (filter()). Opening a project zooms the whole grid into its
 // card, Lusion's way (zoom(), driven by core/projectZoom.js and the router).
+//
+// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// browserScrolls), anything drawn on the shared canvas trails the page by a
+// frame in a fast flick, so each picture rode down over its own caption. There
+// the cards get their own see-through canvas inside the grid section, which the
+// browser scrolls with the page: the screen's height and 30% more above and
+// below it, moved back over the screen each frame and redrawn, so whatever the
+// browser scrolls into view before the next frame is already drawn there. The
+// zoom into a project stays on the shared canvas, as the page fades around it.
 import * as THREE from 'three';
 import { gsap } from 'gsap';
-import { scrollVelocity } from '../core/scroll.js';
+import { scrollVelocity, browserScrolls } from '../core/scroll.js';
 import { reducedMotion, isTouch, hexToRgb, unhovered } from '../core/env.js';
 import { fullscreenVert } from './glsl.js';
 import { cubicInOut, fit, expoOut, expoInOut, lusionEase } from '../core/projectZoom.js';
@@ -307,7 +316,8 @@ void main() {
 // from 70% (uShow 0) to all of the card, the picture settles from 1.33 times
 // its size, and while scrolling the image is pushed sideways by uRipple times
 // how far it is from the middle of the screen, most at the screen's top and
-// bottom. Then their hover, as on the Work page.
+// bottom. Then their hover, as on the Work page. uScreen is the screen's size
+// and uOrigin its bottom-left corner in the canvas drawn to (device px).
 const lusionFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uImage;
@@ -317,7 +327,8 @@ uniform vec2 uSize;
 uniform float uRadius;
 uniform float uShow;
 uniform float uRipple;
-uniform vec2 uRes;
+uniform vec2 uScreen;
+uniform vec2 uOrigin;
 uniform float uZoom;
 uniform vec2 uFocus;
 uniform vec2 uJolt;
@@ -333,7 +344,7 @@ float sdRoundedBox(vec2 p, vec2 b, float r) {
 }
 
 void main() {
-  vec2 screenUv = gl_FragCoord.xy / uRes;
+  vec2 screenUv = (gl_FragCoord.xy - uOrigin) / uScreen;
   vec2 base = vUv;
   base.x -= (screenUv.x - 0.5) * (1.0 - sin(screenUv.y * 3.141592)) * uRipple;
   float d = sdRoundedBox((base - 0.5) * uSize, uSize * 0.5 * mix(0.7, 1.0, uShow), uRadius);
@@ -358,6 +369,8 @@ void main() {
 // settles back to zero when the page stops. Nothing is copied below the
 // page's bottom edge once the footer shows under it (its curved top, as the
 // background draws it: uFootEdge at the sides, uFootDepth lower mid-way).
+// uTop: how far the canvas's top sits above the screen's (device px; a touch
+// screen's own canvas reaches past it).
 const postFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uScene;
@@ -366,10 +379,11 @@ uniform float uShift;
 uniform float uFootEdge;
 uniform float uFootDepth;
 uniform float uFootW;
+uniform float uTop;
 varying vec2 vUv;
 void main() {
   float fx = clamp(gl_FragCoord.x / uFootW, 0.0, 1.0);
-  if (uRes.y - gl_FragCoord.y >= uFootEdge + uFootDepth * 4.0 * fx * (1.0 - fx)) {
+  if (uRes.y - gl_FragCoord.y - uTop >= uFootEdge + uFootDepth * 4.0 * fx * (1.0 - fx)) {
     gl_FragColor = vec4(0.0);
     return;
   }
@@ -460,7 +474,33 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
   const lusion = mode === 'home';
   const { state } = engine;
   const html = document.documentElement;
-  const anisotropy = Math.min(8, engine.renderer.capabilities.getMaxAnisotropy());
+
+  // Touch screens: the cards' own canvas (see the top of this file), a strip
+  // `win.height` tall whose top sits `win.margin` above the screen's. Its
+  // height comes from the tallest the screen has been at this width, so the
+  // browser bar showing or hiding never resizes it.
+  const own = browserScrolls();
+  let ownCanvas = null;
+  let ownRenderer = null;
+  let ownRt = null;
+  let ownDrawn = false;
+  const ownBuffer = new THREE.Vector2();
+  const win = { w: 0, tall: 0, margin: 0, height: 0, sized: 0 };
+  if (own) {
+    ownCanvas = document.createElement('canvas');
+    ownCanvas.className = 'cards-gl';
+    ownCanvas.setAttribute('aria-hidden', 'true');
+    section.prepend(ownCanvas);
+    section.classList.add('has-cards-gl');
+    ownRenderer = new THREE.WebGLRenderer({ canvas: ownCanvas, antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
+    ownRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.setPixelRatio(state.dpr);
+    ownRt = new THREE.WebGLRenderTarget(1, 1, { samples: 4, depthBuffer: false });
+  }
+  // The renderer the pictures are sent to ahead of time.
+  const drawer = ownRenderer ?? engine.renderer;
+  const anisotropy = Math.min(8, drawer.capabilities.getMaxAnisotropy());
   const bg = hexToRgb(getComputedStyle(html).getPropertyValue('--bg').trim() || '#000000');
 
   const scene = new THREE.Scene();
@@ -475,7 +515,10 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
     uFootEdge: foot?.uFootEdge ?? { value: 1e6 },
     uFootDepth: foot?.uFootDepth ?? { value: 0 },
     uFootW: foot?.uFootW ?? { value: 1 },
+    uTop: { value: 0 },
   };
+  // The screen in the canvas being drawn to, for Lusion's ripple (lusionFrag).
+  const screenUniforms = { uScreen: { value: new THREE.Vector2(1, 1) }, uOrigin: { value: new THREE.Vector2() } };
   const post = new THREE.Mesh(
     new THREE.PlaneGeometry(2, 2),
     new THREE.ShaderMaterial({
@@ -679,7 +722,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         uTurn: { value: 0 },
         uShow: { value: 1 },
         uRipple: ripple,
-        uRes: postUniforms.uRes,
+        ...screenUniforms,
       };
       const metaUniforms = {
         ...shared,
@@ -755,7 +798,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
           // draw: that costs a frame, and mid-scroll a missed frame shows (on
           // a phone the page carries on while what we draw stalls). Pictures
           // load under the loader or the page-change cover (app.js, router.js).
-          engine.renderer.initTexture(tex);
+          drawer.initTexture(tex);
         };
         if (img.complete && img.naturalWidth) useImage();
         else img.addEventListener('load', useImage, { once: true });
@@ -845,6 +888,20 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
     u.uZoom.value = it.zoom.update(dt);
   };
 
+  // The image's place in Lusion's scroll-in: shown over 1.5s, slid and turned
+  // into place over 2s, from the side of the screen's middle (the left column
+  // from the right).
+  const pose = (it, w) => {
+    const still = reducedMotion();
+    const side = (it.index % 2) - 0.5;
+    const settle = still ? 1 : fit(it.showTime, 0, 2, 0, 1, expoOut);
+    const u = it.uniforms;
+    u.uShow.value = still ? 1 : fit(it.showTime, 0, 1.5, 0, 1, expoOut);
+    u.uSlide.value = (1 - settle) * side * -w * 0.1;
+    u.uTurn.value = (1 - settle) * side * 0.1;
+    u.uPad.value.set(side < 0 ? 1000 : 0, side < 0 ? 0 : 1000);
+  };
+
   // Lusion's scroll-in (their ProjectItem.update), for a card on the home
   // page. Returns whether it is on screen.
   const lusionStep = (it, dt, w, h, mobile) => {
@@ -852,10 +909,12 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
     const on = !it.card.hidden && r.top < h && r.bottom > 0;
     if (!on) {
       // Off screen: everything starts again next time it comes on (the tags
-      // keep their whole text meanwhile, for screen readers).
+      // keep their whole text meanwhile, for screen readers). The image waits
+      // in its first pose, which the own canvas draws just off the screen.
       it.showTime = it.tagsTime = it.nameTime = 0;
       it.typed = false;
       if (it.tags && it.tags.textContent !== it.tagsText) it.tags.textContent = it.tagsText;
+      pose(it, w);
       return false;
     }
     const still = reducedMotion();
@@ -900,16 +959,54 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       it.mobile = mobile;
     }
 
-    // The image: shown over 1.5s, slid and turned into place over 2s, from
-    // the side of the screen's middle (the left column from the right).
-    const side = (it.index % 2) - 0.5;
-    const settle = still ? 1 : fit(it.showTime, 0, 2, 0, 1, expoOut);
-    const u = it.uniforms;
-    u.uShow.value = still ? 1 : fit(it.showTime, 0, 1.5, 0, 1, expoOut);
-    u.uSlide.value = (1 - settle) * side * -w * 0.1;
-    u.uTurn.value = (1 - settle) * side * 0.1;
-    u.uPad.value.set(side < 0 ? 1000 : 0, side < 0 ? 0 : 1000);
+    pose(it, w);
     return true;
+  };
+
+  // The cards' own canvas (touch screens): the screen's width, and as tall as
+  // the tallest the screen has been at this width plus 30% of that above and
+  // below. Resized only when that changes.
+  const sizeOwn = () => {
+    if (win.w !== state.width) win.tall = 0;
+    win.w = state.width;
+    win.tall = Math.max(win.tall, state.height);
+    const margin = Math.round(win.tall * 0.3);
+    const height = win.tall + 2 * margin;
+    if (margin === win.margin && height === win.height && win.sized === win.w) return;
+    win.margin = margin;
+    win.height = height;
+    win.sized = win.w;
+    ownRenderer.setSize(win.w, height);
+    ownRenderer.getDrawingBufferSize(ownBuffer);
+    ownRt.setSize(ownBuffer.x, ownBuffer.y);
+    ownDrawn = false;
+  };
+
+  // Moves the own canvas back over the screen (its top `margin` whole pixels
+  // above the screen's, so it lands on whole device pixels and the cards stay
+  // sharp) and draws the cards on it, seen as on the shared canvas: the camera
+  // frames the screen and the strip beyond it.
+  let placed = '';
+  const drawOwn = () => {
+    sizeOwn();
+    const dpr = state.dpr;
+    const box = (ownCanvas.offsetParent ?? section).getBoundingClientRect();
+    const top = -win.margin; // its top on the screen now
+    const move = `translate3d(${-box.left}px, ${top - box.top}px, 0)`;
+    if (move !== placed) ownCanvas.style.transform = placed = move;
+    camera.setViewOffset(state.width, state.height, 0, top, state.width, win.height);
+    postUniforms.uScene.value = ownRt.texture;
+    postUniforms.uRes.value.copy(ownBuffer);
+    postUniforms.uTop.value = -top * dpr;
+    screenUniforms.uScreen.value.set(state.width * dpr, state.height * dpr);
+    screenUniforms.uOrigin.value.set(0, (top + win.height - state.height) * dpr);
+    ownRenderer.setRenderTarget(ownRt);
+    ownRenderer.clear(true, false, false);
+    ownRenderer.render(scene, camera);
+    ownRenderer.setRenderTarget(null);
+    ownRenderer.clear(true, false, false);
+    ownRenderer.render(postScene, postCamera);
+    ownDrawn = true;
   };
 
   const layer = {
@@ -995,10 +1092,8 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       camera.updateProjectionMatrix();
       shared.uView.value.set(w, h);
       shared.uDist.value = dist;
-      // Same size as the screen's drawing buffer, so the copy is one to one.
-      engine.renderer.getDrawingBufferSize(bufferSize);
-      rt.setSize(bufferSize.x, bufferSize.y);
-      postUniforms.uRes.value.copy(bufferSize);
+      // The offscreen images are sized as they are drawn (render, drawOwn).
+      if (own) sizeOwn();
       // Text may have rewrapped: redraw every caption on the next frame.
       items.forEach((it) => (it.metaDirty = true));
     },
@@ -1024,7 +1119,13 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         ripple.value = reducedMotion() ? 0 : Math.min(0.15, strength * 0.5);
         for (const it of items) {
           hover(it, dt, mobile);
-          const show = lusionStep(it, dt, w, h, mobile);
+          let show = lusionStep(it, dt, w, h, mobile);
+          // On the own canvas, cards within its margins are drawn too, so one
+          // the browser scrolls on before the next frame is already there.
+          if (!show && own && !it.card.hidden) {
+            const r = it.card.getBoundingClientRect();
+            show = r.top < h + win.margin && r.bottom > -win.margin;
+          }
           it.image.visible = show;
           if (!show) continue;
           any = true;
@@ -1044,7 +1145,9 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         hover(it, dt, mobile);
         const m = it.media.getBoundingClientRect();
         const c = it.meta.getBoundingClientRect();
-        const show = !it.card.hidden && c.bottom > gone && m.top < h + 200;
+        // Drawn from 200px below the screen (on the own canvas, from the
+        // bottom of its margin) up to where it has folded away.
+        const show = !it.card.hidden && c.bottom > gone && m.top < h + Math.max(200, own ? win.margin : 0);
         it.image.visible = show;
         it.caption.visible = show;
         if (!show) continue;
@@ -1092,8 +1195,33 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         shared.uZoomTurn.value.set(0, 0);
       }
       uCaption.value = zoom.caption;
+
+      // Touch screens: drawn on the cards' own canvas now, unless zooming into
+      // or out of a project, which the shared canvas draws (render).
+      if (own) {
+        const draw = layer.visible;
+        if (!zoom.item) {
+          layer.visible = false;
+          if (draw) drawOwn();
+        }
+        if ((zoom.item || !draw) && ownDrawn) {
+          // It keeps its last picture until told otherwise.
+          ownRenderer.setRenderTarget(null);
+          ownRenderer.clear(true, false, false);
+          ownDrawn = false;
+        }
+      }
     },
+    // On the shared canvas: the screen as it is, at its own size.
     render(renderer) {
+      renderer.getDrawingBufferSize(bufferSize);
+      if (rt.width !== bufferSize.x || rt.height !== bufferSize.y) rt.setSize(bufferSize.x, bufferSize.y);
+      if (camera.view?.enabled) camera.clearViewOffset();
+      postUniforms.uScene.value = rt.texture;
+      postUniforms.uRes.value.copy(bufferSize);
+      postUniforms.uTop.value = 0;
+      screenUniforms.uScreen.value.copy(bufferSize);
+      screenUniforms.uOrigin.value.set(0, 0);
       renderer.setRenderTarget(rt);
       renderer.setClearColor(0x000000, 0);
       renderer.clear(true, false, false);
@@ -1119,6 +1247,14 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       geometry.dispose();
       quad.dispose();
       rt.dispose();
+      // Hand its own canvas's WebGL context back, or each visit would leave one.
+      if (ownRenderer) {
+        ownRt.dispose();
+        ownRenderer.dispose();
+        ownRenderer.forceContextLoss();
+        ownCanvas.remove();
+        section.classList.remove('has-cards-gl');
+      }
       post.material.dispose();
     },
   };

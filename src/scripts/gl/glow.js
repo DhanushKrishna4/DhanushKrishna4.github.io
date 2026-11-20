@@ -16,9 +16,19 @@
 // the lines slide sideways with it as you scroll (pages/about.js).
 // Markup: an element with data-glow-words holding one <span> per line (see
 // .glow-words). The paint runs while the black sheet is on screen.
+//
+// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// browserScrolls), anything on the shared canvas trails the page by a frame
+// in a fast flick: the words slid down behind the title under them, and the
+// sheet's black edge (drawn by field.js) lagged its text. There the words, the
+// fringe and the paint get their own see-through canvas inside the sheet,
+// which the browser moves with the page (the screen's height and 30% more
+// above and below it, moved back over the screen and redrawn each frame), and
+// the sheet gets a black background of its own, so its edge is the page's.
 import * as THREE from 'three';
 import { fullscreenVert } from './glsl.js';
 import { createPaint } from './paint.js';
+import { browserScrolls } from '../core/scroll.js';
 
 // Their gradient (award_gradient.png): 256 colours, read left to right,
 // wrapping round from the last to the first.
@@ -98,13 +108,16 @@ vec4 textureBicubic(sampler2D t, vec2 texCoords, vec2 textureSize) {
 }
 `;
 
+// uScreen: the screen's size, and uOrigin its bottom-left corner in the canvas
+// drawn to (device px), so the wave and the paint stay put on the screen.
 const wordsFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uMask;
 uniform sampler2D uPaint;
 uniform vec2 uPaintSize;
 uniform sampler2D uGradient;
-uniform vec2 uRes;
+uniform vec2 uScreen;
+uniform vec2 uOrigin;
 uniform float uTime;
 uniform float uSeed;
 varying vec2 vUv;
@@ -121,7 +134,7 @@ void main() {
   float edgeA = mask.g * (1.0 - fillA);
   float alpha = fillA + edgeA;
   if (alpha < 0.002) discard;
-  vec2 screenUv = gl_FragCoord.xy / uRes;
+  vec2 screenUv = (gl_FragCoord.xy - uOrigin) / uScreen;
   vec4 paint = textureBicubic(uPaint, screenUv, uPaintSize);
   float painted = max(paint.z, paint.w);
   float hue = (paint.x + paint.y) * 1.5;
@@ -140,11 +153,15 @@ void main() {
 `;
 
 // The colour their distortion pass adds where the paint is fading, on the
-// black sheet only (the region field.js leaves without lines).
+// black sheet only (the region field.js leaves without lines). y is measured
+// from the screen's top (device px; uTop is how far the canvas's top is above
+// it), and nothing is read from the paint beyond the screen.
 const fringeFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uPaint;
 uniform vec2 uRes;
+uniform vec2 uScreen;
+uniform float uTop;
 uniform float uSheetTop;
 uniform float uFootEdge;
 uniform float uFootDepth;
@@ -152,9 +169,10 @@ uniform float uFootW;
 void main() {
   float fx = clamp(gl_FragCoord.x / uFootW, 0.0, 1.0);
   float foot = uFootEdge + uFootDepth * 4.0 * fx * (1.0 - fx);
-  float y = uRes.y - gl_FragCoord.y;
+  float y = uRes.y - gl_FragCoord.y - uTop;
   if (y < uSheetTop || y >= foot) discard;
-  vec4 data = texture2D(uPaint, gl_FragCoord.xy / uRes);
+  vec2 screenUv = vec2(gl_FragCoord.x / uScreen.x, 1.0 - y / uScreen.y);
+  vec4 data = screenUv.y < 0.0 || screenUv.y > 1.0 ? vec4(0.5, 0.5, 0.0, 0.0) : texture2D(uPaint, screenUv);
   float weight = (data.z + data.w) * 0.5;
   vec2 vel = (0.5 - data.xy - 0.001) * 2.0 * weight;
   // Their smoothstep(0.4, -0.9, weight), written out: strongest as it fades.
@@ -168,18 +186,46 @@ void main() {
 export function createGlow(engine, section) {
   const words = section?.querySelector('[data-glow-words]');
   if (!words) return null;
-  const { state, renderer, field } = engine;
+  const { state, field } = engine;
   const sheet = section.closest('[data-about-sheet]') ?? section;
+
+  // Touch screens: the own canvas (see the top of this file), its top
+  // `win.margin` above the screen's. Its height comes from the tallest the
+  // screen has been at this width, so the browser bar never resizes it.
+  const own = browserScrolls();
+  let ownCanvas = null;
+  let ownRenderer = null;
+  let ownDrawn = false;
+  const win = { w: 0, tall: 0, margin: 0, height: 0 };
+  if (own) {
+    ownCanvas = document.createElement('canvas');
+    ownCanvas.className = 'glow-gl';
+    ownCanvas.setAttribute('aria-hidden', 'true');
+    sheet.prepend(ownCanvas);
+    sheet.classList.add('has-glow-gl');
+    ownRenderer = new THREE.WebGLRenderer({ canvas: ownCanvas, antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
+    ownRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.setPixelRatio(state.dpr);
+  }
+  const renderer = ownRenderer ?? engine.renderer;
   const paint = createPaint(renderer, state);
   const gradient = gradientTexture();
 
   const res = { value: new THREE.Vector2(1, 1) };
+  // The screen in the canvas drawn to (device px): its size, and where its
+  // bottom-left corner is (wordsFrag), or how far the canvas's top is above
+  // the screen's (fringeFrag).
+  const screen = { value: new THREE.Vector2(1, 1) };
+  const origin = { value: new THREE.Vector2() };
+  const canvasTop = { value: 0 };
   const paintTexture = { value: paint.texture };
   const shared = {
     uPaint: paintTexture,
     uPaintSize: { value: paint.size },
     uGradient: { value: gradient },
-    uRes: res,
+    uScreen: screen,
+    uOrigin: origin,
     uTime: { value: 0 },
     uSeed: { value: 0 },
   };
@@ -217,13 +263,18 @@ export function createGlow(engine, section) {
     return { span, canvas, ctx, mask, material, mesh, w: 0, h: 0, ox: 0, pad: 0, padLeft: 0 };
   });
 
+  // On the own canvas the sheet's top is measured here, this frame; on the
+  // shared one it is the background's (pages/about.js sets it).
+  const sheetTop = own ? { value: 1e6 } : field.uniforms.uSheetTop;
   const fringeMaterial = new THREE.ShaderMaterial({
     vertexShader: fullscreenVert,
     fragmentShader: fringeFrag,
     uniforms: {
       uPaint: paintTexture,
       uRes: res,
-      uSheetTop: field.uniforms.uSheetTop,
+      uScreen: screen,
+      uTop: canvasTop,
+      uSheetTop: sheetTop,
       uFootEdge: field.uniforms.uFootEdge,
       uFootDepth: field.uniforms.uFootDepth,
       uFootW: field.uniforms.uFootW,
@@ -301,14 +352,61 @@ export function createGlow(engine, section) {
   let running = false;
   let anyLine = false;
 
+  // The camera shows the screen, or on the own canvas the screen and its
+  // margins (`top` is the canvas's top on screen, CSS px), and the shaders
+  // are told where the screen is in it.
+  const frame = (top, height) => {
+    const dpr = state.dpr;
+    camera.left = 0;
+    camera.right = state.width;
+    camera.top = -top;
+    camera.bottom = -(top + height);
+    camera.updateProjectionMatrix();
+    res.value.set(state.width * dpr, height * dpr);
+    screen.value.set(state.width * dpr, state.height * dpr);
+    origin.value.set(0, (top + height - state.height) * dpr);
+    canvasTop.value = -top * dpr;
+  };
+
+  // The own canvas: the screen's width, and as tall as the tallest the screen
+  // has been at this width plus 30% of that above and below. Resized only
+  // when that changes.
+  const sizeOwn = () => {
+    if (win.w !== state.width) win.tall = 0;
+    win.tall = Math.max(win.tall, state.height);
+    const margin = Math.round(win.tall * 0.3);
+    const height = win.tall + 2 * margin;
+    if (win.w === state.width && margin === win.margin && height === win.height) return;
+    win.w = state.width;
+    win.margin = margin;
+    win.height = height;
+    ownRenderer.setSize(win.w, height);
+    ownDrawn = false;
+  };
+
+  // Moves the own canvas back over the screen, its top `margin` whole pixels
+  // above the screen's, and draws the fringe and the words on it.
+  let moved = '';
+  const drawOwn = (s) => {
+    const top = -win.margin;
+    const move = `translate3d(${-s.left}px, ${top - s.top}px, 0)`;
+    if (move !== moved) ownCanvas.style.transform = moved = move;
+    frame(top, win.height);
+    sheetTop.value = s.top * state.dpr;
+    ownRenderer.setRenderTarget(null);
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.clear(true, false, false);
+    ownRenderer.render(fringeScene, fringeCamera);
+    if (anyLine) ownRenderer.render(scene, camera);
+    ownDrawn = true;
+  };
+
   const layer = {
     order: 3,
     visible: false,
     resize() {
-      camera.right = state.width;
-      camera.bottom = -state.height;
-      camera.updateProjectionMatrix();
-      res.value.set(state.width * state.dpr, state.height * state.dpr);
+      if (own) sizeOwn();
+      else frame(0, state.height);
       paint.resize();
       if (ready && lastW !== state.width) draw();
       lastW = state.width;
@@ -320,24 +418,36 @@ export function createGlow(engine, section) {
       const on = s.bottom > 0 && s.top < state.height;
       if (on && !running) paint.reset();
       running = on;
-      layer.visible = on;
-      if (!on) return;
+      // On touch screens nothing is drawn on the shared canvas.
+      layer.visible = on && !own;
+      if (!on) {
+        if (own && ownDrawn) {
+          // The own canvas keeps its last picture until told otherwise.
+          ownRenderer.setRenderTarget(null);
+          ownRenderer.clear(true, false, false);
+          ownDrawn = false;
+        }
+        return;
+      }
+      if (own) sizeOwn();
       paint.update();
       paintTexture.value = paint.texture;
       // Each line's quad goes where the page's copy of the line is now (it
-      // slides sideways as you scroll).
+      // slides sideways as you scroll); on the own canvas its margins count.
+      const reach = own ? win.margin : 0;
       anyLine = false;
       for (const line of lines) {
         const r = line.span.getBoundingClientRect();
         const x = r.left + line.padLeft - line.ox;
         const y = r.top - line.pad;
-        line.mesh.visible = ready && y + line.h > 0 && y < state.height && x + line.w > 0 && x < state.width;
+        line.mesh.visible = ready && y + line.h > -reach && y < state.height + reach && x + line.w > 0 && x < state.width;
         anyLine ||= line.mesh.visible;
         line.mesh.scale.set(line.w, line.h, 1);
         line.mesh.position.set(x + line.w / 2, -(y + line.h / 2), 0);
       }
       shared.uTime.value = state.time;
       shared.uSeed.value = Math.random() * 128;
+      if (own) drawOwn(s);
     },
     render(r) {
       r.render(fringeScene, fringeCamera);
@@ -354,6 +464,13 @@ export function createGlow(engine, section) {
       plane.dispose();
       fringeMaterial.dispose();
       fringe.geometry.dispose();
+      // Hand its own canvas's WebGL context back, or each visit would leave one.
+      if (ownRenderer) {
+        ownRenderer.dispose();
+        ownRenderer.forceContextLoss();
+        ownCanvas.remove();
+        sheet.classList.remove('has-glow-gl');
+      }
     },
   };
   return layer;

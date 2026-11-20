@@ -12,8 +12,18 @@
 // screen, at most 0.15). The first image keeps its glowing edge, drawn here
 // too: a 2px ring and a soft halo in the project's colours, turning slowly.
 // The page's own elements stay underneath for layout, links and readers.
+//
+// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// browserScrolls), anything on the shared canvas trails the page by a frame
+// in a fast flick, so the pictures rode down over what follows them. There
+// the gallery gets its own see-through canvas inside the rail (`host`), which
+// the browser moves with the page: on phones, where the gallery is a column,
+// the screen's height and 30% more above and below it, moved back over the
+// screen and redrawn each frame; where it slides sideways, just the screen,
+// in the pinned part of the page.
 import * as THREE from 'three';
 import { fullscreenVert } from './glsl.js';
+import { browserScrolls } from '../core/scroll.js';
 
 const vert = /* glsl */ `
 uniform vec4 uQuad; // x, y, w, h in CSS px, y down
@@ -86,26 +96,34 @@ void main() {
 
 // Their screen pass: a wave across the gallery and a smear along the way it
 // moves, both by the strength of the movement (their u_scrollXStrength).
+// Both are measured on the screen: uScreen is its size and uOrigin its
+// bottom-left corner in the canvas drawn to (device px), and k turns a share
+// of the screen into a share of that canvas.
 const postFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uScene;
 uniform float uStrength;
 uniform float uVertical;
+uniform vec2 uRes;
+uniform vec2 uScreen;
+uniform vec2 uOrigin;
 varying vec2 vUv;
 float noise(vec2 p) {
   return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));
 }
 void main() {
   vec2 uv = vUv;
-  float moveAxis = uVertical > 0.5 ? 1.0 - vUv.y : vUv.x;
+  vec2 screenUv = (gl_FragCoord.xy - uOrigin) / uScreen;
+  vec2 k = uScreen / uRes;
+  float moveAxis = uVertical > 0.5 ? 1.0 - screenUv.y : screenUv.x;
   float wave = cos(moveAxis * 6.2831853) * 2.0 * uStrength * uStrength;
   vec2 bit = vec2(0.0);
   if (uVertical > 0.5) {
-    uv.x += wave;
-    bit.y = uStrength / 8.0;
+    uv.x += wave * k.x;
+    bit.y = uStrength / 8.0 * k.y;
   } else {
-    uv.y += wave;
-    bit.x = uStrength / 8.0;
+    uv.y += wave * k.y;
+    bit.x = uStrength / 8.0 * k.x;
   }
   uv += bit * noise(gl_FragCoord.xy);
   vec4 sum = vec4(0.0);
@@ -134,9 +152,40 @@ const toRgb = (() => {
 // which keeps open (0.6..1) and ready (0..1) up to date.
 // motion(): how far the gallery moved this frame, as a share of the screen.
 // root: the page (its opacity fades the gallery during project transitions).
-export function createGallery(engine, items, { root = null, motion = () => 0, vertical = () => false } = {}) {
-  const { state, renderer } = engine;
+// host: the element the pictures move with (the rail), for the own canvas.
+// clip: the element that cuts that canvas off, so it never lengthens the page.
+// place(): puts the rail where this frame's scroll has it, before the
+// pictures are measured (project.js would otherwise do it after them).
+export function createGallery(
+  engine,
+  items,
+  { root = null, host = null, clip = null, motion = () => 0, vertical = () => false, place = null } = {},
+) {
+  const { state } = engine;
   const html = document.documentElement;
+
+  // Touch screens: the gallery's own canvas (see the top of this file), its
+  // top `win.margin` above the screen's. Its height comes from the tallest the
+  // screen has been at this width, so the browser bar never resizes it.
+  const own = browserScrolls() && !!host;
+  let ownCanvas = null;
+  let ownRenderer = null;
+  let ownDrawn = false;
+  const win = { w: 0, tall: 0, margin: -1, height: 0 };
+  if (own) {
+    ownCanvas = document.createElement('canvas');
+    ownCanvas.className = 'gallery-gl';
+    ownCanvas.setAttribute('aria-hidden', 'true');
+    host.prepend(ownCanvas);
+    host.classList.add('gallery-host');
+    clip?.classList.add('gallery-clip');
+    ownRenderer = new THREE.WebGLRenderer({ canvas: ownCanvas, antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
+    ownRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.setPixelRatio(state.dpr);
+  }
+  const renderer = ownRenderer ?? engine.renderer;
+
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(0, 1, 0, -1, -10, 10);
   const geometry = new THREE.PlaneGeometry(1, 1);
@@ -147,7 +196,14 @@ export function createGallery(engine, items, { root = null, motion = () => 0, ve
     new THREE.ShaderMaterial({
       vertexShader: fullscreenVert,
       fragmentShader: postFrag,
-      uniforms: { uScene: { value: rt.texture }, uStrength: { value: 0 }, uVertical: { value: 0 } },
+      uniforms: {
+        uScene: { value: rt.texture },
+        uStrength: { value: 0 },
+        uVertical: { value: 0 },
+        uRes: { value: new THREE.Vector2(1, 1) },
+        uScreen: { value: new THREE.Vector2(1, 1) },
+        uOrigin: { value: new THREE.Vector2() },
+      },
       transparent: true,
       premultipliedAlpha: true,
       depthTest: false,
@@ -215,28 +271,87 @@ export function createGallery(engine, items, { root = null, motion = () => 0, ve
   readRadius();
   html.classList.add('gl-gallery');
 
+  // The strip of the screen the camera shows: the screen, or on the own
+  // canvas the screen and its margins (`top` is the canvas's top on screen).
+  const frame = (top, height) => {
+    camera.left = 0;
+    camera.right = state.width;
+    camera.top = -top;
+    camera.bottom = -(top + height);
+    camera.updateProjectionMatrix();
+  };
+  // Draws the scene through the screen pass into whatever is current.
+  const draw = (r, height, top) => {
+    const dpr = state.dpr;
+    r.getDrawingBufferSize(bufferSize);
+    if (rt.width !== bufferSize.x || rt.height !== bufferSize.y) rt.setSize(bufferSize.x, bufferSize.y);
+    const u = post.material.uniforms;
+    u.uRes.value.copy(bufferSize);
+    u.uScreen.value.set(state.width * dpr, state.height * dpr);
+    u.uOrigin.value.set(0, (top + height - state.height) * dpr);
+    r.setRenderTarget(rt);
+    r.setClearColor(0x000000, 0);
+    r.clear(true, false, false);
+    r.render(scene, camera);
+    r.setRenderTarget(null);
+  };
+
+  // The own canvas: the screen's width, and as tall as the tallest the screen
+  // has been at this width, plus 30% of that above and below while the
+  // gallery is a column (sideways, it sits in the pinned part, which never
+  // scrolls). Resized only when that changes.
+  const sizeOwn = () => {
+    if (win.w !== state.width) win.tall = 0;
+    win.tall = Math.max(win.tall, state.height);
+    const margin = vertical() ? Math.round(win.tall * 0.3) : 0;
+    const height = win.tall + 2 * margin;
+    if (win.w === state.width && margin === win.margin && height === win.height) return;
+    win.w = state.width;
+    win.margin = margin;
+    win.height = height;
+    ownRenderer.setSize(win.w, height);
+    ownDrawn = false;
+  };
+  // Moves the own canvas back over the screen, its top `margin` whole pixels
+  // above the screen's, and draws the gallery on it.
+  let moved = '';
+  const drawOwn = () => {
+    sizeOwn();
+    const hb = host.getBoundingClientRect();
+    const top = -win.margin;
+    const move = `translate3d(${-hb.left}px, ${top - hb.top}px, 0)`;
+    if (move !== moved) ownCanvas.style.transform = moved = move;
+    frame(top, win.height);
+    draw(ownRenderer, win.height, top);
+    ownRenderer.setClearColor(0x000000, 0);
+    ownRenderer.clear(true, false, false);
+    ownRenderer.render(postScene, postCamera);
+    ownDrawn = true;
+  };
+
   const layer = {
     order: 4,
     visible: true,
     resize() {
-      camera.left = 0;
-      camera.right = state.width;
-      camera.top = 0;
-      camera.bottom = -state.height;
-      camera.updateProjectionMatrix();
-      renderer.getDrawingBufferSize(bufferSize);
-      rt.setSize(bufferSize.x, bufferSize.y);
+      if (own) sizeOwn();
+      else frame(0, state.height);
       readRadius();
     },
     update() {
+      // The rail first, so the pictures are measured where the page shows them.
+      place?.();
       time.value = state.time;
-      const pageOpacity = parseFloat(root?.style.opacity);
+      // On the shared canvas the gallery fades with the page; the own canvas
+      // is in the page, which fades it.
+      const pageOpacity = own ? NaN : parseFloat(root?.style.opacity);
       const fade = Number.isFinite(pageOpacity) ? pageOpacity : 1;
       let any = false;
+      // On the own canvas, everything in its margins counts as showing.
+      const reach = own ? win.margin : 0;
       for (const { it, mesh, uniforms } of meshes) {
         const r = it.frame.getBoundingClientRect();
         const pad = it.hero ? 60 : 2;
-        const show = r.right + pad > 0 && r.left - pad < state.width && r.bottom + pad > 0 && r.top - pad < state.height;
+        const show = r.right + pad > 0 && r.left - pad < state.width && r.bottom + pad > -reach && r.top - pad < state.height + reach;
         mesh.visible = show;
         if (!show) continue;
         any = true;
@@ -247,16 +362,24 @@ export function createGallery(engine, items, { root = null, motion = () => 0, ve
         const o = parseFloat(it.fig.style.opacity);
         uniforms.uOpacity.value = (Number.isFinite(o) ? o : 1) * fade;
       }
-      layer.visible = any;
       post.material.uniforms.uStrength.value = Math.min(0.15, motion());
       post.material.uniforms.uVertical.value = vertical() ? 1 : 0;
+      if (!own) {
+        layer.visible = any;
+        return;
+      }
+      // Touch screens: drawn on the own canvas now; the shared one has none.
+      layer.visible = false;
+      if (any) drawOwn();
+      else if (ownDrawn) {
+        // It keeps its last picture until told otherwise.
+        ownRenderer.setRenderTarget(null);
+        ownRenderer.clear(true, false, false);
+        ownDrawn = false;
+      }
     },
     render(r) {
-      r.setRenderTarget(rt);
-      r.setClearColor(0x000000, 0);
-      r.clear(true, false, false);
-      r.render(scene, camera);
-      r.setRenderTarget(null);
+      draw(r, state.height, 0);
       r.setClearColor(0x000000, 1);
       r.render(postScene, postCamera);
     },
@@ -269,6 +392,14 @@ export function createGallery(engine, items, { root = null, motion = () => 0, ve
       geometry.dispose();
       rt.dispose();
       post.material.dispose();
+      // Hand its own canvas's WebGL context back, or each visit would leave one.
+      if (ownRenderer) {
+        ownRenderer.dispose();
+        ownRenderer.forceContextLoss();
+        ownCanvas.remove();
+        host.classList.remove('gallery-host');
+        clip?.classList.remove('gallery-clip');
+      }
     },
   };
   return layer;
