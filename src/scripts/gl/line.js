@@ -6,14 +6,15 @@
 // up to a tenth near the crossing once the stretch on top has been drawn. A
 // round cap rides the tip as it draws. The ribbon's width follows Lusion's
 // formula: 0.8% of the screen's diagonal, doubled on narrow screens.
-// Each path is a few pen strokes in the manner of theirs: long, even curves
-// joined smoothly, placed from the layout of the section it runs through.
+// The paths are Lusion's own pen strokes, placed as theirs are wherever our
+// layout allows (see Paths).
 // It draws itself as you scroll, eased in and out, and retracts on the way up.
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isSmall, reducedMotion } from '../core/env.js';
 import { browserScrolls } from '../core/scroll.js';
+import { LINE_SHAPES } from '../../data/lines.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -110,45 +111,75 @@ void main() {
 }
 `;
 
-// --- Pen paths -------------------------------------------------------------
-// Nodes: { p: [x, y], a: direction in degrees (0 = right, 90 = down) }. Each
-// pair is joined by a cubic Bezier with its handles along the node
-// directions, sized so the curve is the circular arc that fits both
-// directions (a third of the chord when they agree). Bends stay even.
-const rad = (d) => (d * Math.PI) / 180;
-const wrap = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
-
-function segments(nodes) {
-  const out = [];
-  for (let i = 0; i < nodes.length - 1; i++) {
-    const A = nodes[i];
-    const B = nodes[i + 1];
-    const c = Math.hypot(B.p[0] - A.p[0], B.p[1] - A.p[1]);
-    const turn = Math.abs(wrap(B.a - A.a));
-    let h = c / 3;
-    if (turn > 1) {
-      const th = rad(turn);
-      h = (4 / 3) * Math.tan(th / 4) * (c / (2 * Math.sin(th / 2)));
-    }
-    const da = [Math.cos(rad(A.a)), Math.sin(rad(A.a))];
-    const db = [Math.cos(rad(B.a)), Math.sin(rad(B.a))];
-    out.push([A.p, [A.p[0] + da[0] * h, A.p[1] + da[1] * h], [B.p[0] - db[0] * h, B.p[1] - db[1] * h], B.p]);
-  }
-  return out;
-}
-
-const bezier = (s, t) => {
-  const u = 1 - t;
-  return [0, 1].map((k) => u * u * u * s[0][k] + 3 * u * u * t * s[1][k] + 3 * u * t * t * s[2][k] + t * t * t * s[3][k]);
+// --- Paths -----------------------------------------------------------------
+// Each line is one of Lusion's own pen strokes (data/lines.js), placed as they
+// place theirs: drawn at the size of the screen's diagonal (the same shape on
+// any screen, and always wider than it, so it runs in and out past the
+// edges), with its corner `at` (x, y) diagonals from the section's top-left,
+// y down (their margin), and drawing itself in from when the section's top
+// is `start` of the way down the screen, over `span` screens of scrolling
+// (their scrollToRatioFactors). `spot` picks the stroke and its corner for a
+// screen w by h (d its diagonal), since on narrow screens only part of a
+// stroke fits across and the layout changes under it.
+// Their pages grow with the screen; ours stop growing at about 1700px wide.
+// So on screens wider for their height than the 1512 by 982 one these were
+// set on, a stroke is no taller than it is there next to the part of the page
+// it runs through (`frame`, its section if not given): at most 1.73 times
+// that part's height. Only its width follows the diagonal, so it still runs
+// in and out past both edges without dipping into the next section.
+const DEPTH = 1.73;
+const LINES = {
+  // Their intro's line (line_reel, in the section with their reel): in from
+  // past the left edge behind the heading, one loop, and out past the right.
+  // Where they put it, its way out runs behind our About me button (they have
+  // no button there), so it sits 0.06 diagonals higher and passes beside it,
+  // at least 30px clear on any screen. On phones (760px wide and below, where
+  // the intro goes to one column) it sits a quarter of a diagonal higher than
+  // theirs, so the loop rides the heading as theirs does on their phone
+  // layout. Either way it starts drawing as much sooner as it sits higher
+  // (`lead`), so it draws where theirs would on the screen.
+  home: {
+    start: 0.4,
+    span: 1.3,
+    spot: () =>
+      isSmall() ? { shape: 'reel', at: [-0.05, 0.55], lead: 0.25 } : { shape: 'reel', at: [-0.05, 0.74], lead: 0.06 },
+  },
+  // Their About page's line (line_goal): in from the top right behind the
+  // heading's first line, round past the left edge and back under the intro,
+  // then up in an arch and down again between the intro and the facts. It
+  // keeps this page's own timing, mostly drawn on arrival and finished before
+  // the sheet comes up (theirs sits further down their page).
+  // The nearer the screen is to square, the wider the stroke is next to it,
+  // and the arch would reach round the Contact button (which starts 65% of
+  // the way across or further): there the stroke moves left until the arch
+  // (its right side 0.562 diagonals right of the corner) ends 62% across.
+  // On screens taller than wide (their About lines don't show on phones or
+  // tablets) the arch would land round the button whatever the shift, so it
+  // is the last third of their intro's line instead, the stretch that draws
+  // as the page starts to scroll: in from the left under the Contact button,
+  // across the intro, and out past the right with its end just beyond it.
+  // It starts drawing a touch later (a negative lead), so that on arrival its
+  // tip is still off the left edge and none of it shows until the page moves.
+  about: {
+    frame: '[data-about-top]',
+    start: 0.4,
+    span: 0.667,
+    spot: (w, h, d) =>
+      w < h
+        ? { shape: 'reel', at: [w / d - 0.97, 0.78], lead: -0.03 }
+        : { shape: 'goal', at: [Math.min(-0.05, (0.62 * w - ribbonRadius(w, h)) / d - 0.562), 0.8] },
+  },
 };
 
-// Points evenly spaced along the whole path, about `step` px apart, as
-// Lusion's are (each point's share of the length is its place along it).
-function resample(segs, step) {
-  const dense = [];
-  segs.forEach((s, si) => {
-    for (let i = si ? 1 : 0; i <= 160; i++) dense.push(bezier(s, i / 160));
-  });
+// The stroke in px from the section's top-left: d across (the screen's
+// diagonal) and dy down (the same, or less on wide screens; see DEPTH).
+function place({ shape, at }, d, dy) {
+  return LINE_SHAPES[shape].map(([x, y]) => [(at[0] + x) * d, (at[1] - y) * dy]);
+}
+
+// Points evenly spaced along a path, about `step` px apart, as Lusion's are
+// (each point's share of the length is its place along it).
+function resample(dense, step) {
   const acc = [0];
   for (let i = 1; i < dense.length; i++) {
     acc.push(acc[i - 1] + Math.hypot(dense[i][0] - dense[i - 1][0], dense[i][1] - dense[i - 1][1]));
@@ -165,109 +196,6 @@ function resample(segs, step) {
   }
   return pts;
 }
-
-// --- Layout ----------------------------------------------------------------
-// Boxes relative to the section's top-left. Heading lines are measured from
-// their line boxes (height) and their text (width), since the reveal moves the
-// words while it plays; line one slides in from its indent.
-function measure(section, kind) {
-  const s = section.getBoundingClientRect();
-  const box = (el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height };
-  };
-  const title = [...section.querySelectorAll('.line-mask')].map((line, i) => {
-    const b = box(line);
-    const range = document.createRange();
-    range.selectNodeContents(line);
-    const ink = range.getBoundingClientRect();
-    const indent = i === 0 ? parseFloat(getComputedStyle(line).paddingLeft) || 0 : 0;
-    return { x: b.x + indent, y: b.y, w: ink.width, h: b.h };
-  });
-  const button = kind === 'home' ? section.querySelector('[data-line-loop]') : document.querySelector('.about-line [data-line-loop]');
-  const body = kind === 'home' ? [...section.querySelectorAll('.intro__body .prose p')] : [...document.querySelectorAll('.about-intro__body p, .about-intro__facts')];
-  if (!title.length || !button || !body.length) return null;
-  return { vw: innerWidth, vh: innerHeight, title, button: box(button), body: body.map(box) };
-}
-
-// The paths, as pen nodes in px from the section's top-left.
-const PATHS = {
-  // Sweeps in from the left behind the heading, crossing between "systems,"
-  // and "from", comes down beside the paragraph, loops the "About me" button
-  // (hanging from halfway between the paragraph and the button), crosses
-  // itself and drifts out to the left. Phones: a swoop under the button.
-  home(L) {
-    const { vw } = L;
-    const b = L.button;
-    const [t1, t2 = t1] = L.title;
-    if (isSmall()) {
-      const cy = b.y + b.h / 2;
-      return [
-        { p: [vw + 60, b.y - 80], a: 160 },
-        { p: [b.x + b.w + 44, cy], a: 100 },
-        { p: [b.x + b.w * 0.45, b.y + b.h + 42], a: 180 },
-        { p: [-60, b.y + b.h + 22], a: 192 },
-      ];
-    }
-    const textEnd = Math.max(...L.body.map((r) => r.y + r.h));
-    const cx = b.x + b.w / 2;
-    const top = (textEnd + b.y) / 2 - 4;
-    const rx = b.w / 2 + b.h * 1.29;
-    const ry = b.h * 1.8;
-    const cy = top + ry;
-    const low = cy + ry;
-    return [
-      { p: [-0.0625 * vw, t1.y - 0.063 * vw], a: 6 },
-      { p: [t2.x + t2.w * 0.504, t2.y + t2.h * 0.65], a: 62 },
-      { p: [cx - rx, cy], a: 90 },
-      { p: [cx, low], a: 0 },
-      { p: [cx + rx, cy], a: -90 },
-      { p: [cx, top], a: 180 },
-      { p: [0.3 * vw, low - 85], a: 168 },
-      { p: [0.139 * vw, low - 85], a: 188 },
-      { p: [-0.0625 * vw, low - 40], a: 172 },
-    ];
-  },
-  // Sweeps in from the top right behind the heading, loops the Contact button,
-  // crosses itself and runs out to the left halfway between the button and the
-  // text below. Phones: a swoop round the end of the button and under it.
-  about(L) {
-    const { vw } = L;
-    const b = L.button;
-    const [t1] = L.title;
-    const cx = b.x + b.w / 2;
-    const cy = b.y + b.h / 2;
-    if (isSmall()) {
-      return [
-        { p: [vw + 60, b.y - 70], a: 165 },
-        { p: [b.x + b.w + 36, cy], a: 95 },
-        { p: [cx, b.y + b.h + 40], a: 180 },
-        { p: [-60, b.y + b.h + 28], a: 186 },
-      ];
-    }
-    const bodyTop = Math.min(...L.body.map((r) => r.y));
-    const rx = b.w / 2 + 80;
-    const ry = b.h / 2 + 64;
-    const tailY = (b.y + b.h + bodyTop) / 2;
-    return [
-      { p: [1.0625 * vw, t1.y - 0.047 * vw], a: 172 },
-      { p: [cx - rx, cy], a: 90 },
-      { p: [cx, cy + ry], a: 0 },
-      { p: [cx + rx, cy], a: -90 },
-      { p: [cx, cy - ry], a: 180 },
-      { p: [cx - rx - 0.1125 * vw, cy + 8], a: 130 },
-      { p: [0.389 * vw, tailY], a: 175 },
-      { p: [-0.0625 * vw, tailY - 10], a: 180 },
-    ];
-  },
-};
-
-// How the drawing follows the scroll: it starts when the section's top is
-// `start` of the way down the screen and is done `span` screen heights later.
-const DRAW = {
-  home: { start: 0.55, span: 1.25 },
-  about: { start: 0.4, span: 0.667 },
-};
 
 // Lusion's ribbon width: 0.8% of the screen's diagonal, times 2 at 540px wide
 // and below, easing to 1 at 1920px.
@@ -330,8 +258,11 @@ function buildRibbon(pts, radius) {
 }
 
 export function createLine(engine, section, kind = 'home') {
-  if (!section || !PATHS[kind]) return null;
+  if (!section || !LINES[kind]) return null;
   const { state } = engine;
+  // The part of the page the line runs through, which sets its height on
+  // wide screens (DEPTH).
+  const frame = (LINES[kind].frame && section.closest(LINES[kind].frame)) || section;
 
   const colors = { u_color0: { value: new THREE.Color(COLOR_END) }, u_color1: { value: new THREE.Color(COLOR_START) } };
   const material = new THREE.ShaderMaterial({
@@ -406,16 +337,23 @@ export function createLine(engine, section, kind = 'home') {
     camera.updateProjectionMatrix();
   };
 
-  const build = () => {
-    const L = measure(section, kind);
-    if (!L) return;
-    let vh = L.vh;
+  // The screen (on its own canvas, the tallest it has been at this width) and
+  // where the stroke goes on it.
+  const measure = () => {
+    const vw = innerWidth;
+    let vh = innerHeight;
     if (own) {
-      if (tall.w !== L.vw) tall = { w: L.vw, h: 0 };
-      vh = tall.h = Math.max(tall.h, L.vh);
+      if (tall.w !== vw) tall = { w: vw, h: 0 };
+      vh = tall.h = Math.max(tall.h, vh);
     }
-    const radius = ribbonRadius(L.vw, vh);
-    const next = buildRibbon(resample(segments(PATHS[kind](L)), 6), radius);
+    const d = Math.hypot(vw, vh);
+    return { vw, vh, d, dy: Math.min(d, DEPTH * (frame.offsetHeight || Infinity)), spot: LINES[kind].spot(vw, vh, d) };
+  };
+
+  const build = () => {
+    const { vw, vh, d, dy, spot } = measure();
+    const radius = ribbonRadius(vw, vh);
+    const next = buildRibbon(resample(place(spot, d, dy), 6), radius);
     if (mesh) {
       group.remove(mesh);
       mesh.geometry.dispose();
@@ -441,10 +379,13 @@ export function createLine(engine, section, kind = 'home') {
     }
   };
 
-  const { start, span } = DRAW[kind];
+  const { start, span } = LINES[kind];
   const trigger = ScrollTrigger.create({
     trigger: section,
-    start: `top ${start * 100}%`,
+    start: () => {
+      const { dy, spot } = measure();
+      return `top ${start * innerHeight + (spot.lead || 0) * dy}px`;
+    },
     end: () => `+=${span * innerHeight}`,
     onUpdate: (self) => {
       if (reducedMotion()) return;
@@ -467,7 +408,7 @@ export function createLine(engine, section, kind = 'home') {
   }
   // Text settles once the fonts arrive; measure again then.
   document.fonts?.ready.then(() => !disposed && build());
-  let built = { w: state.width, h: state.height, s: section.offsetHeight };
+  let built = { w: state.width, h: state.height, s: frame.offsetHeight };
 
   const layer = {
     order: 2,
@@ -488,9 +429,9 @@ export function createLine(engine, section, kind = 'home') {
       layer.visible = showing && !own;
       // On its own canvas a change in the screen's height alone (the browser
       // bar) is no reason to rebuild.
-      if (state.width !== built.w || (!own && state.height !== built.h) || section.offsetHeight !== built.s) {
+      if (state.width !== built.w || (!own && state.height !== built.h) || frame.offsetHeight !== built.s) {
         build();
-        built = { w: state.width, h: state.height, s: section.offsetHeight };
+        built = { w: state.width, h: state.height, s: frame.offsetHeight };
       }
       if (own && !showing && drawn) {
         // Its own canvas keeps its last picture until told otherwise.

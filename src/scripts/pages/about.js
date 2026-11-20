@@ -1,4 +1,4 @@
-// About: a red line sweeps under the heading and loops the Contact button, and
+// About: a red line sweeps through the heading and the intro, and
 // the giant words behind "What I work on" light up under the cursor the way
 // Lusion's awards title does (gl/glow.js). From there down to the footer the
 // page is a black sheet without the contour lines, which slides up over the

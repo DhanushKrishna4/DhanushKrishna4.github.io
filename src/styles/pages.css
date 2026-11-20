@@ -320,7 +320,7 @@ html:not(.js) .hero__mark {
   line-height: 1.45;
 }
 
-/* Room above for the red line, which loops around this button. */
+/* The button stands well clear of the paragraph above it. */
 .intro__button {
   margin-top: clamp(3.5rem, 6.5vw, 6rem);
 }
@@ -708,6 +708,13 @@ html:not(.is-unhovered) .filter:hover {
 .about-top.is-pinnable {
   position: sticky;
   top: var(--pin-top);
+}
+
+/* On touch screens the red line draws on its own canvas inside the top part
+   (gl/line.js), and may reach past its bottom: it ends at the sheet's edge,
+   as the shared canvas's copy does. */
+.about-top {
+  overflow: clip;
 }
 
 .about-sheet {
