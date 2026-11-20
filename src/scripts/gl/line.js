@@ -120,7 +120,8 @@ void main() {
 // is `start` of the way down the screen, over `span` screens of scrolling
 // (their scrollToRatioFactors). `spot` picks the stroke and its corner for a
 // screen w by h (d its diagonal), since on narrow screens only part of a
-// stroke fits across and the layout changes under it.
+// stroke fits across and the layout changes under it; it can also set its
+// own `start`, `span` and `ease` (Lusion's quadInOut if not given).
 // Their pages grow with the screen; ours stop growing at about 1700px wide.
 // So on screens wider for their height than the 1512 by 982 one these were
 // set on, a stroke is no taller than it is there next to the part of the page
@@ -146,9 +147,18 @@ const LINES = {
   },
   // Their About page's line (line_goal): in from the top right behind the
   // heading's first line, round past the left edge and back under the intro,
-  // then up in an arch and down again between the intro and the facts. It
-  // keeps this page's own timing, mostly drawn on arrival and finished before
-  // the sheet comes up (theirs sits further down their page).
+  // then up in an arch and down again between the intro and the facts. Ours
+  // is at the top of the page, so it has its own timing (theirs sits further
+  // down their page): none of it shows on arrival, and it draws from the
+  // first pixel of scrolling over 0.4 screens, evenly with the scroll rather
+  // than eased in and out. The sheet covers the top part from the bottom as
+  // soon as it pins, so the lowest stretches of the loop and of the arch's
+  // far side draw under it on most screens (about a fifth of what is on
+  // screen at 1512 by 982, where the loop's bottom draws just above the
+  // sheet's edge; almost none at 1280 or 1440 wide). Drawing faster would
+  // show more; evenly shows as much as eased drawing would at about twice the
+  // speed. At most it is 1.5 times as fast as the eased drawing it had before
+  // (which started 42% drawn, over 1.2 screens).
   // The nearer the screen is to square, the wider the stroke is next to it,
   // and the arch would reach round the Contact button (which starts 65% of
   // the way across or further): there the stroke moves left until the arch
@@ -158,16 +168,15 @@ const LINES = {
   // is the last third of their intro's line instead, the stretch that draws
   // as the page starts to scroll: in from the left under the Contact button,
   // across the intro, and out past the right with its end just beyond it.
-  // It starts drawing a touch later (a negative lead), so that on arrival its
+  // It draws from when the top is 40% of the way down the screen over 0.667
+  // screens, starting a touch later (a negative lead), so that on arrival its
   // tip is still off the left edge and none of it shows until the page moves.
   about: {
     frame: '[data-about-top]',
-    start: 0.4,
-    span: 0.667,
     spot: (w, h, d) =>
       w < h
-        ? { shape: 'reel', at: [w / d - 0.97, 0.78], lead: -0.03 }
-        : { shape: 'goal', at: [Math.min(-0.05, (0.62 * w - ribbonRadius(w, h)) / d - 0.562), 0.8] },
+        ? { shape: 'reel', at: [w / d - 0.97, 0.78], lead: -0.03, start: 0.4, span: 0.667 }
+        : { shape: 'goal', at: [Math.min(-0.05, (0.62 * w - ribbonRadius(w, h)) / d - 0.562), 0.8], start: 0, span: 0.4, ease: (t) => t },
   },
 };
 
@@ -350,8 +359,12 @@ export function createLine(engine, section, kind = 'home') {
     return { vw, vh, d, dy: Math.min(d, DEPTH * (frame.offsetHeight || Infinity)), spot: LINES[kind].spot(vw, vh, d) };
   };
 
+  // How the drawing follows the scroll: eased in and out, or the spot's own.
+  let ease = quadInOut;
+
   const build = () => {
     const { vw, vh, d, dy, spot } = measure();
+    ease = spot.ease || quadInOut;
     const radius = ribbonRadius(vw, vh);
     const next = buildRibbon(resample(place(spot, d, dy), 6), radius);
     if (mesh) {
@@ -379,32 +392,36 @@ export function createLine(engine, section, kind = 'home') {
     }
   };
 
-  const { start, span } = LINES[kind];
+  // The line's timing, or its spot's on this screen.
+  const timing = () => {
+    const { dy, spot } = measure();
+    return { start: spot.start ?? LINES[kind].start, span: spot.span ?? LINES[kind].span, lead: (spot.lead || 0) * dy };
+  };
   const trigger = ScrollTrigger.create({
     trigger: section,
     start: () => {
-      const { dy, spot } = measure();
-      return `top ${start * innerHeight + (spot.lead || 0) * dy}px`;
+      const { start, lead } = timing();
+      return `top ${start * innerHeight + lead}px`;
     },
-    end: () => `+=${span * innerHeight}`,
+    end: () => `+=${timing().span * innerHeight}`,
     onUpdate: (self) => {
       if (reducedMotion()) return;
       if (own) pace.to = self.progress;
-      else progress.value = quadInOut(self.progress);
+      else progress.value = ease(self.progress);
     },
     onRefresh: (self) => {
       build();
       if (reducedMotion()) return;
       // A refresh puts it straight where it belongs.
       pace.to = pace.at = self.progress;
-      progress.value = quadInOut(self.progress);
+      progress.value = ease(self.progress);
     },
   });
   let disposed = false;
   build();
   if (!reducedMotion()) {
     pace.to = pace.at = trigger.progress;
-    progress.value = quadInOut(trigger.progress);
+    progress.value = ease(trigger.progress);
   }
   // Text settles once the fonts arrive; measure again then.
   document.fonts?.ready.then(() => !disposed && build());
@@ -421,7 +438,7 @@ export function createLine(engine, section, kind = 'home') {
       if (own && !reducedMotion()) {
         pace.at += (pace.to - pace.at) * (1 - Math.exp(-6 * state.delta));
         if (Math.abs(pace.to - pace.at) < 1e-4) pace.at = pace.to;
-        progress.value = quadInOut(pace.at);
+        progress.value = ease(pace.at);
       }
       const t = progress.value;
       const showing = !!line && t > 0.0005 && rect.bottom > -state.height && rect.top < state.height * 2;
