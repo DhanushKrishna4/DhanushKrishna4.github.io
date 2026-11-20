@@ -9,6 +9,7 @@ import { startClock } from './core/clock.js';
 import { createMenu } from './menu.js';
 import { setupRoll } from './core/roll.js';
 import { picturesIn, fetchTheRest } from './core/pictures.js';
+import { setupScrollIndicator } from './core/scrollIndicator.js';
 import { mountPage } from './pages/index.js';
 
 async function boot() {
@@ -71,6 +72,8 @@ async function boot() {
   const menu = createMenu({ field: menuField });
   // The header lives outside the swapped page, so its links are set up once.
   setupRoll(document.querySelector('[data-header]'));
+  // So does the scroll indicator that stands in for the browser's scroll bar.
+  setupScrollIndicator();
 
   // The menu button appears once you scroll past the opening screen's top.
   gsap.ticker.add(() => html.classList.toggle('is-scrolled', scrollY() > innerHeight * 0.35));

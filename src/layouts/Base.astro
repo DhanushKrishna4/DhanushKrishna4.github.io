@@ -99,6 +99,10 @@ const tone = theme && luminance(theme.bg) > 0.5 ? 'light' : 'dark';
       <slot name="after" />
     </div>
 
+    <!-- Lando's scroll indicator (scripts/core/scrollIndicator.js), in place of
+         the browser's scroll bar -->
+    <div class="scroll-indicator" aria-hidden="true" data-scroll-indicator><div class="scroll-indicator__bar" data-scroll-indicator-bar></div></div>
+
     <!-- Dennis's page transition (scripts/core/transitions.js): a panel with
          a curved cap above it and one below, both slices of a wide ellipse -->
     <div class="curtain" aria-hidden="true" data-curtain>
