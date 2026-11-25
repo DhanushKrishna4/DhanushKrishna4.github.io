@@ -1,0 +1,86 @@
+{
+  "ai-summarizer": {
+    "src": "/media/ai-summarizer/card.webp",
+    "depth": "/media/ai-summarizer/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "escapement": {
+    "src": "/media/escapement/card.webp",
+    "depth": "/media/escapement/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "forge": {
+    "src": "/media/forge/card.webp",
+    "depth": "/media/forge/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "loom": {
+    "src": "/media/loom/card.webp",
+    "depth": "/media/loom/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "lucida": {
+    "src": "/media/lucida/card.webp",
+    "depth": "/media/lucida/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "meridian": {
+    "src": "/media/meridian/card.webp",
+    "depth": "/media/meridian/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "mycelium": {
+    "src": "/media/mycelium/card.webp",
+    "depth": "/media/mycelium/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "nexus": {
+    "src": "/media/nexus/card.webp",
+    "depth": "/media/nexus/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "orrery": {
+    "src": "/media/orrery/card.webp",
+    "depth": "/media/orrery/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "posterior": {
+    "src": "/media/posterior/card.webp",
+    "depth": "/media/posterior/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "price-tracker": {
+    "src": "/media/price-tracker/card.webp",
+    "depth": "/media/price-tracker/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "stock-dashboard": {
+    "src": "/media/stock-dashboard/card.webp",
+    "depth": "/media/stock-dashboard/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "url-shortener": {
+    "src": "/media/url-shortener/card.webp",
+    "depth": "/media/url-shortener/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  },
+  "voiceguide-ai": {
+    "src": "/media/voiceguide-ai/card.webp",
+    "depth": "/media/voiceguide-ai/card-depth.webp",
+    "w": 1600,
+    "h": 1040
+  }
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- The page scripts/covers/render.mjs opens to draw one card cover (?cover=<slug>&w=&h=). -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: #222; }
+</style>
+</head>
+<body>
+<script type="module">
+  import * as L from './lib.js';
+  const q = new URLSearchParams(location.search);
+  const W = +q.get('w'), H = +q.get('h');
+  try {
+    const mod = await import('./scenes/' + q.get('cover') + '.js?v=' + Date.now());
+    const out = await mod.default({ L, W, H, variant: q.get('variant') || '' });
+    // The depth layer, softened as Lusion's are.
+    const d = L.canvas(W, H);
+    d.ctx.filter = `blur(${Math.max(0.5, W * (out.depthBlur ?? 0.006))}px)`;
+    d.ctx.drawImage(out.depth.c, 0, 0);
+    window.__result = { color: out.color.c.toDataURL('image/png'), depth: d.c.toDataURL('image/png') };
+  } catch (e) {
+    window.__result = { error: String(e && e.stack || e) };
+  }
+</script>
+</body>
+</html>

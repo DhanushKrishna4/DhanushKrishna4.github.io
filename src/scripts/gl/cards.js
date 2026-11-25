@@ -214,23 +214,93 @@ float farFade() { return smoothstep(2000.0, 1500.0, vDepth) * uOpacity; }
 vec3 mist(vec3 c) { return mix(c, uBg, smoothstep(500.0, 4500.0, vDepth)); }
 `;
 
-// Lusion's card image (their ProjectItem shader), for an image with no depth
-// map: a flat plate at middle depth.
-const imageFrag = /* glsl */ `
-precision highp float;
+// Lusion's card picture (their ProjectItem shader). p is a point on the card,
+// px from its middle, y up. With a depth map (white far, up to 0.15
+// card-heights deep), a ray from a camera 10 card-heights away (5 when
+// hovered), aimed at uFocus, is marched 12 steps into the relief it
+// describes (and the crossing found between the last two), so near things
+// shift against far ones as the focus moves; then
+// six samples blur it by its distance from the focus depth (uFocusZ) while
+// hovered, less as the hover goes on (uDofOffset). Without one, the picture
+// is a flat plate at middle depth. Jolted by uJolt; covering the card.
+const picture = /* glsl */ `
 uniform sampler2D uImage;
+uniform sampler2D uDepth;
 uniform float uHasImage;
+uniform float uHasDepth;
 uniform vec2 uImageSize;
 uniform vec2 uSize;
-uniform float uRadius;
 uniform float uZoom;
 uniform vec2 uFocus;
+uniform float uFocusZ;
+uniform float uDofOffset;
 uniform vec2 uJolt;
 uniform vec3 uPlaceholder;
+float pictureNoise(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+vec3 picture(vec2 p) {
+  vec2 toUv = 1.0 / (uImageSize * max(uSize.x / uImageSize.x, uSize.y / uImageSize.y));
+  // Gradients from the unmarched point, so the march never upsets mipmapping.
+  vec2 base = p * toUv + 0.5;
+  vec2 gx = dFdx(base), gy = dFdy(base);
+  vec2 q;
+  if (uHasDepth > 0.5) {
+    float zm = uSize.y * 0.15;
+    vec3 pos = vec3(p, -zm);
+    float cam = uSize.y * mix(10.0, 5.0, uZoom);
+    vec3 ro = vec3(uFocus, cam);
+    float dist = length(pos - ro);
+    vec3 rd = (pos - ro) / dist;
+    float skip = cam / -rd.z;
+    dist -= skip;
+    float stepD = dist / 12.0;
+    vec3 rp = ro + rd * (skip + stepD * pictureNoise(gl_FragCoord.xy));
+    vec3 above = rp;
+    float hAbove = 1.0;
+    for (int i = 0; i < 12; i++) {
+      float h = rp.z + textureGrad(uDepth, rp.xy * toUv + 0.5, gx, gy).r * zm;
+      if (h < 0.0) {
+        // Through the relief: where the line from the last step above it
+        // crosses it, rather than this step's random overshoot, which would
+        // stipple every crisp edge away from the focus.
+        rp = mix(above, rp, hAbove / (hAbove - h));
+        break;
+      }
+      above = rp;
+      hAbove = h;
+      rp += rd * stepD;
+    }
+    q = rp.xy;
+  } else {
+    float cam = mix(10.0, 5.0, uZoom);
+    q = uFocus + (p - uFocus) * (cam + 0.075) / (cam + 0.15);
+  }
+  vec2 uv = q * toUv + 0.5 + uJolt * 0.015;
+  float dz = textureGrad(uDepth, uv, gx, gy).r;
+  float blur = mix(0.0, 0.01, uZoom) * clamp((abs(dz - uFocusZ) + uDofOffset) / 0.5, 0.0, 1.0) * uHasDepth;
+  float ang = 6.2831853 * pictureNoise(gl_FragCoord.yx + 17.0);
+  float inv = uImageSize.y / uImageSize.x;
+  vec3 col = vec3(0.0);
+  for (int i = 0; i < 6; i++) {
+    float r = sqrt((float(i) + 0.5) / 6.0) * blur;
+    ang += 10.16640738;
+    col += textureGrad(uImage, uv + r * vec2(cos(ang) * inv, sin(ang)), gx, gy).rgb;
+  }
+  col /= 6.0;
+  // No picture (yet): a plain panel in the project's own colour.
+  if (uHasImage < 0.5) col = uPlaceholder;
+  return col;
+}
+`;
+
+// The Work page's card image: Lusion's picture, folded as Unseen's are.
+const imageFrag = /* glsl */ `
+precision highp float;
+uniform float uRadius;
 uniform float uFog;
 uniform vec3 uFogColor;
 varying vec2 vUv;
 ${fade}
+${picture}
 
 float sdRoundedBox(vec2 p, vec2 b, float r) {
   vec2 q = abs(p) - b + r;
@@ -242,20 +312,8 @@ void main() {
   float d = sdRoundedBox((vUv - 0.5) * uSize, uSize * 0.5, uRadius);
   float edge = smoothstep(0.0, -fwidth(d), d);
 
-  // Their image: zoomed 2.5% in at rest and not at all once hovered (uZoom),
-  // seen from a camera 10 card-heights away (5 when hovered) aimed at uFocus
-  // (px from the middle, y up), through a plate 0.15 card-heights deep whose
-  // surface sits halfway down; jolted by uJolt; and covering the card.
-  vec2 p = (vUv - 0.5) * uSize * mix(0.975, 1.0, uZoom);
-  float cam = mix(10.0, 5.0, uZoom);
-  p = uFocus + (p - uFocus) * (cam + 0.075) / (cam + 0.15);
-  vec2 cover = uImageSize * max(uSize.x / uImageSize.x, uSize.y / uImageSize.y);
-  vec2 uv = p / cover + 0.5 + uJolt * 0.015;
-  // Sampled before any branching: mipmap selection needs screen-space
-  // derivatives, which are only reliable there.
-  vec4 col = texture2D(uImage, uv);
-  // No image (yet): a plain panel in the project's own colour.
-  if (uHasImage < 0.5) col = vec4(uPlaceholder, 1.0);
+  // Their picture, zoomed 2.5% in at rest and not at all once hovered.
+  vec4 col = vec4(picture((vUv - 0.5) * uSize * mix(0.975, 1.0, uZoom)), 1.0);
   // Opening its project, the image dissolves into the project's colour.
   col.rgb = mix(col.rgb, uFogColor, uFog);
   float a = farFade() * edge;
@@ -320,23 +378,16 @@ void main() {
 // and uOrigin its bottom-left corner in the canvas drawn to (device px).
 const lusionFrag = /* glsl */ `
 precision highp float;
-uniform sampler2D uImage;
-uniform float uHasImage;
-uniform vec2 uImageSize;
-uniform vec2 uSize;
 uniform float uRadius;
 uniform float uShow;
 uniform float uRipple;
 uniform vec2 uScreen;
 uniform vec2 uOrigin;
-uniform float uZoom;
-uniform vec2 uFocus;
-uniform vec2 uJolt;
-uniform vec3 uPlaceholder;
 uniform float uFog;
 uniform vec3 uFogColor;
 uniform float uOpacity;
 varying vec2 vUv;
+${picture}
 
 float sdRoundedBox(vec2 p, vec2 b, float r) {
   vec2 q = abs(p) - b + r;
@@ -350,13 +401,7 @@ void main() {
   float d = sdRoundedBox((base - 0.5) * uSize, uSize * 0.5 * mix(0.7, 1.0, uShow), uRadius);
   float edge = smoothstep(0.0, -fwidth(d), d);
 
-  vec2 p = (base - 0.5) * uSize * mix(0.75, 1.0, uShow) * mix(0.975, 1.0, uZoom);
-  float cam = mix(10.0, 5.0, uZoom);
-  p = uFocus + (p - uFocus) * (cam + 0.075) / (cam + 0.15);
-  vec2 cover = uImageSize * max(uSize.x / uImageSize.x, uSize.y / uImageSize.y);
-  vec2 uv = p / cover + 0.5 + uJolt * 0.015;
-  vec4 col = texture2D(uImage, uv);
-  if (uHasImage < 0.5) col = vec4(uPlaceholder, 1.0);
+  vec4 col = vec4(picture((base - 0.5) * uSize * mix(0.75, 1.0, uShow) * mix(0.975, 1.0, uZoom)), 1.0);
   col.rgb = mix(col.rgb, uFogColor, uFog);
   float a = edge * uOpacity;
   gl_FragColor = vec4(col.rgb * a, a);
@@ -709,6 +754,10 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         uImage: { value: null },
         uHasImage: { value: 0 },
         uImageSize: { value: new THREE.Vector2(16, 10) },
+        uDepth: { value: null },
+        uHasDepth: { value: 0 },
+        uFocusZ: { value: -1 },
+        uDofOffset: { value: 0 },
         uRadius: { value: 15 },
         uZoom: { value: 0 },
         uFocus: { value: new THREE.Vector2() },
@@ -767,6 +816,8 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         zoom: new Spring(0, 2.2, 0.7, 3),
         focusX: new Spring(0, 1, 0.6, 2),
         focusY: new Spring(0, 1, 0.6, 2),
+        focusZ: new Spring(-1, 1, 0.6, 2),
+        dofRatio: 0,
         jolt: new THREE.Vector2(),
         joltTarget: new THREE.Vector2(),
         // Lusion's scroll-in (home page): time on screen for the image, the
@@ -802,6 +853,22 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         };
         if (img.complete && img.naturalWidth) useImage();
         else img.addEventListener('load', useImage, { once: true });
+        // Its depth map gives the hover its parallax; only fetched where a
+        // pointer can hover.
+        if (img.dataset.depth && !isTouch()) {
+          const dimg = new Image();
+          dimg.decoding = 'async';
+          dimg.addEventListener('load', () => {
+            const dt = new THREE.Texture(dimg);
+            dt.minFilter = THREE.LinearFilter;
+            dt.generateMipmaps = false;
+            dt.needsUpdate = true;
+            uniforms.uDepth.value = dt;
+            uniforms.uHasDepth.value = 1;
+            drawer.initTexture(dt);
+          }, { once: true });
+          dimg.src = img.dataset.depth;
+        }
         // Fetched now, ready before it scrolls on; a hidden card's waits
         // until it shows (a phone never downloads the home page's second half).
         if (showing(card)) img.loading = 'eager';
@@ -884,7 +951,16 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       it.focusY.target = 0;
     }
     it.zoom.target = overImage || opening ? 1 : 0;
+    // Their focus depth: middle depth while hovered or opening, else nearer
+    // than anything in the picture; and their focus pull, which eases the
+    // blur away as the hover goes on (0.75 a second in, 1 a second out). It
+    // carries on while the project opens, so the picture fills the screen
+    // sharp, as it did before the depth maps.
+    it.focusZ.target = (overImage && !zoom.item) || opening ? 0.5 : -1;
+    it.dofRatio = Math.min(1, Math.max(0, it.dofRatio + (overImage || opening ? 0.75 : -1) * dt));
     u.uFocus.value.set(it.focusX.update(dt), it.focusY.update(dt));
+    u.uFocusZ.value = it.focusZ.update(dt);
+    u.uDofOffset.value = -0.5 * it.dofRatio;
     u.uZoom.value = it.zoom.update(dt);
   };
 
@@ -1243,6 +1319,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
         it.caption?.material.dispose();
         it.metaUniforms.uMeta.value?.dispose();
         it.uniforms.uImage.value?.dispose();
+        it.uniforms.uDepth.value?.dispose();
       });
       geometry.dispose();
       quad.dispose();

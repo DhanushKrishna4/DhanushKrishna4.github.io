@@ -3,11 +3,13 @@
 // the image, then a line of tags (here the project's stack) and the name,
 // with an arrow waiting just left of the name for the hover. Each of the
 // name's letters is a column of four copies, as theirs is, so it can slide
-// on its own and roll into place like a slot machine (gl/cards.js).
-import { coverFor } from '../data/media.js';
+// on its own and roll into place like a slot machine (gl/cards.js). The
+// picture is drawn for the card, with a depth map (data-depth) that gives the
+// hover its parallax, as Lusion's do.
+import { cardFor } from '../data/media.js';
 
 const { project, eager = false } = Astro.props;
-const cover = coverFor(project.slug);
+const cover = cardFor(project.slug);
 const letters = [...project.name];
 ---
 <a
@@ -22,7 +24,7 @@ const letters = [...project.name];
 >
   <div class="card__visual">
     <div class="card__media">
-      {cover && <img src={cover.src} alt="" width={cover.w} height={cover.h} loading={eager ? 'eager' : 'lazy'} decoding="async" data-card-img />}
+      {cover && <img src={cover.src} alt="" width={cover.w} height={cover.h} loading={eager ? 'eager' : 'lazy'} decoding="async" data-card-img data-depth={cover.depth} />}
     </div>
     <div class="card__meta">
       <p class="card__tags">{project.stack.join(' • ')}</p>

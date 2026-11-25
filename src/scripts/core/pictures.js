@@ -11,6 +11,7 @@
 // only the page on screen keeps its pictures on the graphics chip.
 import { wait } from './env.js';
 import manifest from '../../data/media.json';
+import cardArt from '../../data/card-art.json';
 
 const loaded = (img) =>
   new Promise((done) => {
@@ -37,7 +38,10 @@ export function fetchTheRest() {
   if (fetching || navigator.connection?.saveData) return;
   fetching = true;
   const have = new Set([...document.images].map((img) => new URL(img.currentSrc || img.src, location.href).pathname));
-  const urls = [...new Set(Object.values(manifest).flat().map((m) => (m.video ? m.poster : m.src)).filter(Boolean))].filter((u) => !have.has(u));
+  // the cards' pictures too, and their depth maps where a pointer can hover
+  const hover = matchMedia('(hover: hover)').matches;
+  const cards = Object.values(cardArt).flatMap((c) => (hover ? [c.src, c.depth] : [c.src]));
+  const urls = [...new Set([...cards, ...Object.values(manifest).flat().map((m) => (m.video ? m.poster : m.src))].filter(Boolean))].filter((u) => !have.has(u));
   let i = 0;
   const next = () => {
     if (i >= urls.length) return;
