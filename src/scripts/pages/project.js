@@ -6,7 +6,7 @@
 import { gsap } from 'gsap';
 import { mountCommon } from './common.js';
 import { isSmall, reducedMotion, clamp } from '../core/env.js';
-import { scrollY } from '../core/scroll.js';
+import { scrollY, touchDrag } from '../core/scroll.js';
 import { run, fit, expoOut, expoInOut, textIn, textOut, setBack, SHOW, HIDE } from '../core/projectZoom.js';
 import { createGallery } from '../gl/gallery.js';
 
@@ -123,9 +123,24 @@ export function mountProject(root, { router, gl }) {
     over = clamp((local - max) / OVERSCROLL(), 0, 1);
     bar?.style.setProperty('--p', over.toFixed(3));
   };
-  const tick = () => {
-    if (isSmall()) return;
-    place();
+  // Phones, where the gallery is a column ending in the panel: Lusion's own
+  // way on (their ScrollNavSection). Once the page can scroll no further,
+  // dragging on fills the bar, 2 a second; it holds for 0.3s after the finger
+  // stops pushing, then empties slowly (0.2 a second), or fast (5 a second)
+  // while dragging back. Full, the next project opens.
+  let pushing = 0; // their downWaitTime
+  const stepPhone = (dt) => {
+    const drag = touchDrag();
+    pushing = drag > 0 ? 0.3 : Math.max(0, pushing - dt);
+    const r = nextPanel.getBoundingClientRect();
+    const showing = r.top < innerHeight && r.bottom > 0;
+    const end = scrollY() >= document.documentElement.scrollHeight - innerHeight - 5;
+    over = showing ? clamp(over + dt * (end && drag > 0 ? 2 : pushing > 0 ? 0 : drag < 0 ? -5 : -0.2), 0, 1) : 0;
+    bar?.style.setProperty('--p', over.toFixed(3));
+  };
+  const tick = (time, deltaMs) => {
+    if (!isSmall()) place();
+    else if (!opened) stepPhone(Math.min(deltaMs / 1000, 1 / 20));
     if (over >= 0.995 && !opened) {
       opened = true;
       router?.go(root.querySelector('[data-project]').dataset.next, { trigger: nextPanel });

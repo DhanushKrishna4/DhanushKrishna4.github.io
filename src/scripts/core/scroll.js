@@ -52,6 +52,7 @@ const pane = {
   velocity: 0, // px/s, while gliding
   at: 0, // where it last put the page (px, unrounded)
   delta: 0, // how far it moved the page this frame
+  drag: 0, // how far the finger dragged it this frame, moved or not
   noClick: false,
 };
 
@@ -119,6 +120,7 @@ function onClick(e) {
 // One frame of it (their ScrollPane.update): dtMs from the ticker.
 function stepPane(dtMs) {
   pane.delta = 0;
+  pane.drag = 0;
   if (lenis.isStopped) {
     stopPane();
     return;
@@ -135,7 +137,7 @@ function stepPane(dtMs) {
   if (pane.down && pane.axis === 1) {
     pane.history.push({ time: pane.clock, dt, delta: pane.pending });
     while (pane.history.length && pane.clock - pane.history[0].time > HISTORY) pane.history.shift();
-    move = pane.pending;
+    move = pane.drag = pane.pending;
   } else if (pane.down) {
     stopPane();
   } else {
@@ -189,6 +191,9 @@ export function initScroll() {
 export const scrollY = () => (lenis ? lenis.scroll : window.scrollY);
 // How far the page moved this frame (px).
 export const scrollVelocity = () => pane.delta || (lenis ? lenis.velocity : 0);
+// How far a finger dragged the page this frame (px, + down the page), even
+// where it could go no further (their input.deltaDragScrollY).
+export const touchDrag = () => pane.drag;
 
 export function jumpTo(y = 0) {
   stopPane();
