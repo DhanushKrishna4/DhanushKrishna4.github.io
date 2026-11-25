@@ -41,6 +41,16 @@ html[data-page='project'] .header {
   line-height: 0.8;
   color: inherit;
   white-space: nowrap;
+  /* Lusion's #header-logo: a change of colour fades over 0.5s. */
+  transition: color 0.5s;
+}
+
+/* On a project page the mark takes the project's accent, the colour of the
+   page's side headings and scroll hint, as Lusion's takes each project's
+   highlight (.is-project-details-active #header-logo). It changes as the
+   project page arrives and changes back as the list returns. */
+html[data-page='project'] .lockup {
+  color: var(--accent);
 }
 
 .lockup__first,
