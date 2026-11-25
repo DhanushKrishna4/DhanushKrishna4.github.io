@@ -51,8 +51,9 @@ export const site = {
       'Most of my projects take something that is usually a library call and build it myself, then check it against an independent reference. They run in the browser, so every step is on screen.',
     ],
     button: 'Contact',
-    // Giant words behind "What I work on" that light up under the cursor.
-    backdrop: ['Built', 'from', 'scratch'],
+    // Giant words behind "What I work on" that light up under the cursor: six
+    // lines, laid out as Lusion's awards title is (see .glow-words).
+    backdrop: ['Machine', 'learning', 'and', 'systems built', 'from', 'scratch'],
     areas: [
       {
         title: 'Machine learning',

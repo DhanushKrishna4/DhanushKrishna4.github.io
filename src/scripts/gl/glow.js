@@ -110,6 +110,9 @@ vec4 textureBicubic(sampler2D t, vec2 texCoords, vec2 textureSize) {
 
 // uScreen: the screen's size, and uOrigin its bottom-left corner in the canvas
 // drawn to (device px), so the wave and the paint stay put on the screen.
+// The words are taller than their section and run on under the ones below
+// it, but stop at the page's bottom edge, where the footer shows (as the
+// fringe below; uTop is how far the canvas's top is above the screen's).
 const wordsFrag = /* glsl */ `
 precision highp float;
 uniform sampler2D uMask;
@@ -120,6 +123,11 @@ uniform vec2 uScreen;
 uniform vec2 uOrigin;
 uniform float uTime;
 uniform float uSeed;
+uniform vec2 uRes;
+uniform float uTop;
+uniform float uFootEdge;
+uniform float uFootDepth;
+uniform float uFootW;
 varying vec2 vUv;
 ${bicubic}
 // A grain of 1/250 that moves every frame (their blue noise does the same).
@@ -129,6 +137,8 @@ float grain(vec2 p) {
 }
 
 void main() {
+  float fx = clamp(gl_FragCoord.x / uFootW, 0.0, 1.0);
+  if (uRes.y - gl_FragCoord.y - uTop >= uFootEdge + uFootDepth * 4.0 * fx * (1.0 - fx)) discard;
   vec4 mask = texture2D(uMask, vUv);
   float fillA = mask.r;
   float edgeA = mask.g * (1.0 - fillA);
@@ -228,6 +238,11 @@ export function createGlow(engine, section) {
     uOrigin: origin,
     uTime: { value: 0 },
     uSeed: { value: 0 },
+    uRes: res,
+    uTop: canvasTop,
+    uFootEdge: field.uniforms.uFootEdge,
+    uFootDepth: field.uniforms.uFootDepth,
+    uFootW: field.uniforms.uFootW,
   };
   const plane = new THREE.PlaneGeometry(1, 1);
   const scene = new THREE.Scene();
@@ -300,7 +315,7 @@ export function createGlow(engine, section) {
       const { span, canvas, ctx } = line;
       const cs = getComputedStyle(span);
       const size = parseFloat(cs.fontSize);
-      const font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+      const font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
       const spacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
       const setFont = () => {
         ctx.font = font;
@@ -341,7 +356,13 @@ export function createGlow(engine, section) {
   };
 
   let ready = false;
-  document.fonts.ready.then(() => {
+  // Every line's face loaded first (two lines are italic, a face the page may
+  // not have needed yet), or its mask would be drawn in a stand-in font.
+  const faces = lines.map(({ span }) => {
+    const cs = getComputedStyle(span);
+    return document.fonts.load(`${cs.fontStyle} ${cs.fontWeight} 16px ${cs.fontFamily}`, span.textContent);
+  });
+  Promise.allSettled([document.fonts.ready, ...faces]).then(() => {
     draw();
     ready = true;
     // Drawn here now, so the page's own outline copy can hide.

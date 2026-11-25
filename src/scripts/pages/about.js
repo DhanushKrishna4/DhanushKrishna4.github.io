@@ -30,13 +30,15 @@ const unclampedFit = (v, a, b, c, d) => c + ((v - a) / (b - a)) * (d - c);
 //  - their line k (of six, 0.225 screen widths apart) moves left between
 //    progress 0.4k/6 and 0.56 + 0.4k/6, linearly, by half the screen width.
 //    So the lines set off one after another as they come up the screen.
-// Ours sit closer together, so each of our lines is timed by where it is on
-// screen, as theirs at the same height would be: its section top is taken
-// to be k line gaps of theirs above the line's own top. Measured on their
-// site (the value their shader is given), these give the same numbers.
-// The lines start level (no indent, see .glow-words). The page's copy of
-// each line is moved; gl/glow.js draws each line where its copy is, so
-// without WebGL the outline copy slides too. Reduced motion keeps them still.
+// Each of our lines is timed by where it is on screen, as theirs at the same
+// height would be: its section top is taken to be k line gaps of theirs
+// above the line's own top (ours now have their gap, so that is the
+// section's top). Measured on their site (the value their shader is given),
+// these give the same numbers. The lines are laid out as theirs are (see
+// .glow-words), and slide by half the section's width, not the words'
+// (drawn 1.5 times as wide). The page's copy of each line is moved;
+// gl/glow.js draws each line where its copy is, so without WebGL the outline
+// copy slides too. Reduced motion keeps them still.
 const LUSION = { pitch: 0.225, wide: 1.302, phone: 1.35, breakpoint: 812 };
 
 function setupWordsSlide(section, gl) {
@@ -67,7 +69,7 @@ function setupWordsSlide(section, gl) {
   const update = () => {
     const still = reducedMotion();
     const vh = innerHeight;
-    const width = words.clientWidth;
+    const width = section.clientWidth;
     const tall = width > LUSION.breakpoint ? LUSION.wide * width : LUSION.phone * vh;
     const offset = capOffset(width);
     lines.forEach((line, k) => {

@@ -675,18 +675,34 @@ html:not(.is-unhovered) .filter:hover {
    The section needs position: relative and its content drawn over them.
    The weight gives Lusion's title its thickness: strokes 0.124 of the
    capital height (21px on 168px letters in their drawing), which Mona
-   Sans reaches at 423. Like their title's lines, ours start level (no
-   indent); they slide left as you scroll (setupWordsSlide in about.js).
+   Sans reaches at 423.
+   Laid out as their title is: six lines in a box 1440 by 1250, drawn at
+   1.5 times the section's width from its top left corner. Capitals 169
+   tall, 215.6 apart; the first three lines start 40 in, the fourth is
+   centred, the last two end at 1455, and the second and fifth are italic.
+   So their capitals are 0.176 of the screen's width tall (Mona Sans's are
+   0.729 of its size: 24.15vw) and 0.2246 apart (line height 0.93). The
+   first line's capitals start --words-top below the section's top (they
+   sit 0.121em below the top of its line). The right-hand part starts past
+   the edge of the screen: the lines slide left as you scroll
+   (setupWordsSlide in about.js).
    ================================================================== */
 .glow-words {
   position: absolute;
-  inset: clamp(2rem, 6vw, 6rem) 0 auto 0;
+  /* At the back of the sheet, so they run on under the sections that
+     follow, as Lusion's run under their articles and talks. */
+  z-index: -1;
+  top: calc(var(--words-top) - 0.121em);
+  left: 0;
+  width: 150%;
   display: grid;
+  /* One column exactly the box's width, however long a line is. */
+  grid-template-columns: minmax(0, 1fr);
   font-family: var(--font-sans);
   font-weight: 423;
   font-stretch: 100%;
-  font-size: 23.5vw;
-  line-height: 0.8;
+  font-size: 24.15vw;
+  line-height: 0.93;
   letter-spacing: -0.03em;
   text-transform: uppercase;
   color: transparent;
@@ -694,6 +710,29 @@ html:not(.is-unhovered) .filter:hover {
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
+}
+
+.glow-words > span:nth-child(-n + 3) {
+  justify-self: start;
+  padding-left: 4.167vw;
+}
+
+/* Centred even where it is longer than the box (`translate`, as the slide
+   sets `transform`). */
+.glow-words > span:nth-child(4) {
+  justify-self: start;
+  margin-left: 50%;
+  translate: -50% 0;
+}
+
+.glow-words > span:nth-child(n + 5) {
+  justify-self: end;
+  margin-right: -1.6vw;
+}
+
+.glow-words > span:nth-child(2),
+.glow-words > span:nth-child(5) {
+  font-style: italic;
 }
 
 .glow-words.is-drawn {
@@ -740,6 +779,10 @@ html:not(.is-unhovered) .filter:hover {
 .about-sheet {
   position: relative;
   z-index: 1;
+  /* The glowing words run on under its sections; on very wide screens they
+     would reach past its end, so they stop there (gl/glow.js stops their
+     drawing at the same edge). */
+  overflow-y: clip;
 }
 
 /* Where the browser scrolls the page itself (reduced motion) the giant words
@@ -803,12 +846,15 @@ html:not(.is-unhovered) .filter:hover {
   font-size: var(--t-18);
 }
 
-/* Holds the glowing words: tall enough for all three lines (0.8 x 23.5vw
-   each, below their top inset), with the title and lists drawn over them. */
+/* Holds the glowing words, with the title and lists drawn over them. The
+   words are taller than the section (1.302 screen widths: 1.5 x 1250 /
+   1440) and carry on down under the sections that follow; only their
+   sideways overflow is cut. */
 .about-areas {
+  /* The space above the words, below the sheet's edge. */
+  --words-top: clamp(2rem, 6vw, 6rem);
   position: relative;
-  overflow: hidden;
-  min-height: calc(clamp(2rem, 6vw, 6rem) + 58.4vw);
+  overflow-x: clip;
   padding-block: clamp(8rem, 20vw, 16rem) clamp(6rem, 12vw, 10rem);
 }
 
@@ -817,11 +863,12 @@ html:not(.is-unhovered) .filter:hover {
   position: relative;
 }
 
-/* On phones the words are no bigger than the title, so overlapping it reads
-   as clutter: the title starts below them instead. */
+/* On phones the title and lists run over the words from their first line,
+   as Lusion's awards header and list run over their giant title on a phone
+   (measured at 393px wide: the header starts 15px below the top of it). */
 @media (max-width: 600px) {
   .about-areas {
-    padding-top: calc(clamp(2rem, 6vw, 6rem) + 56.4vw + 2rem);
+    padding-top: calc(var(--words-top) + 15px);
   }
 }
 
