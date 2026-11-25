@@ -636,22 +636,23 @@ html:not(.is-unhovered) .menu__foot a:hover::after {
   transform: translateX(-100%);
 }
 
-@media (hover: hover) {
-  html:not(.is-unhovered) .cta:hover .cta__label {
-    clip-path: inset(0 calc(var(--h) * 0.25) 0 0 round calc(var(--h) / 2));
-  }
-  html:not(.is-unhovered) .cta:hover .cta__circle {
-    clip-path: inset(calc(var(--h) * 0.125) round calc(var(--h) / 2));
-    transform: translateX(calc(var(--h) * -0.25));
-  }
-  html:not(.is-unhovered) .cta:hover .cta__circle path:first-child {
-    transform: translateX(100%);
-    transition-delay: 0s;
-  }
-  html:not(.is-unhovered) .cta:hover .cta__circle path:last-child {
-    transform: translateX(0);
-    transition-delay: 0.1s;
-  }
+/* Not only where a pointer can hover: theirs isn't, so on a phone a tap plays
+   it (the browser treats the tapped button as hovered) and it stays through
+   the page change, as touches never mark html.is-unhovered (core/router.js). */
+html:not(.is-unhovered) .cta:hover .cta__label {
+  clip-path: inset(0 calc(var(--h) * 0.25) 0 0 round calc(var(--h) / 2));
+}
+html:not(.is-unhovered) .cta:hover .cta__circle {
+  clip-path: inset(calc(var(--h) * 0.125) round calc(var(--h) / 2));
+  transform: translateX(calc(var(--h) * -0.25));
+}
+html:not(.is-unhovered) .cta:hover .cta__circle path:first-child {
+  transform: translateX(100%);
+  transition-delay: 0s;
+}
+html:not(.is-unhovered) .cta:hover .cta__circle path:last-child {
+  transform: translateX(0);
+  transition-delay: 0.1s;
 }
 
 /* Keyboard focus shows the same state, plus a ring. */
