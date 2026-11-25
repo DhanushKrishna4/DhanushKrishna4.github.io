@@ -51,7 +51,7 @@
 // its second half (filter()). Opening a project zooms the whole grid into its
 // card, Lusion's way (zoom(), driven by core/projectZoom.js and the router).
 //
-// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// Where the browser scrolls the page itself (reduced motion; core/scroll.js
 // browserScrolls), anything drawn on the shared canvas trails the page by a
 // frame in a fast flick, so each picture rode down over its own caption. There
 // the cards get their own see-through canvas inside the grid section, which the
@@ -275,17 +275,27 @@ vec3 picture(vec2 p) {
     q = uFocus + (p - uFocus) * (cam + 0.075) / (cam + 0.15);
   }
   vec2 uv = q * toUv + 0.5 + uJolt * 0.015;
-  float dz = textureGrad(uDepth, uv, gx, gy).r;
-  float blur = mix(0.0, 0.01, uZoom) * clamp((abs(dz - uFocusZ) + uDofOffset) / 0.5, 0.0, 1.0) * uHasDepth;
-  float ang = 6.2831853 * pictureNoise(gl_FragCoord.yx + 17.0);
-  float inv = uImageSize.y / uImageSize.x;
-  vec3 col = vec3(0.0);
-  for (int i = 0; i < 6; i++) {
-    float r = sqrt((float(i) + 0.5) / 6.0) * blur;
-    ang += 10.16640738;
-    col += textureGrad(uImage, uv + r * vec2(cos(ang) * inv, sin(ang)), gx, gy).rgb;
+  float blur = 0.0;
+  if (uHasDepth > 0.5 && uZoom != 0.0) {
+    float dz = textureGrad(uDepth, uv, gx, gy).r;
+    blur = 0.01 * uZoom * clamp((abs(dz - uFocusZ) + uDofOffset) / 0.5, 0.0, 1.0);
   }
-  col /= 6.0;
+  vec3 col;
+  if (blur != 0.0) {
+    float ang = 6.2831853 * pictureNoise(gl_FragCoord.yx + 17.0);
+    float inv = uImageSize.y / uImageSize.x;
+    col = vec3(0.0);
+    for (int i = 0; i < 6; i++) {
+      float r = sqrt((float(i) + 0.5) / 6.0) * blur;
+      ang += 10.16640738;
+      col += textureGrad(uImage, uv + r * vec2(cos(ang) * inv, sin(ang)), gx, gy).rgb;
+    }
+    col /= 6.0;
+  } else {
+    // Unblurred (no depth map, as on phones, or not hovered): the six samples
+    // would all be this one.
+    col = textureGrad(uImage, uv, gx, gy).rgb;
+  }
   // No picture (yet): a plain panel in the project's own colour.
   if (uHasImage < 0.5) col = uPlaceholder;
   return col;
@@ -520,7 +530,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
   const { state } = engine;
   const html = document.documentElement;
 
-  // Touch screens: the cards' own canvas (see the top of this file), a strip
+  // Reduced motion: the cards' own canvas (see the top of this file), a strip
   // `win.height` tall whose top sits `win.margin` above the screen's. Its
   // height comes from the tallest the screen has been at this width, so the
   // browser bar showing or hiding never resizes it.
@@ -1039,7 +1049,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
     return true;
   };
 
-  // The cards' own canvas (touch screens): the screen's width, and as tall as
+  // The cards' own canvas (reduced motion): the screen's width, and as tall as
   // the tallest the screen has been at this width plus 30% of that above and
   // below. Resized only when that changes.
   const sizeOwn = () => {
@@ -1272,7 +1282,7 @@ export function createCards(engine, section, { mode = 'work' } = {}) {
       }
       uCaption.value = zoom.caption;
 
-      // Touch screens: drawn on the cards' own canvas now, unless zooming into
+      // Reduced motion: drawn on the cards' own canvas now, unless zooming into
       // or out of a project, which the shared canvas draws (render).
       if (own) {
         const draw = layer.visible;

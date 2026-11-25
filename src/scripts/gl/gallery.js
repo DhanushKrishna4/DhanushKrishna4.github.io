@@ -13,7 +13,7 @@
 // too: a 2px ring and a soft halo in the project's colours, turning slowly.
 // The page's own elements stay underneath for layout, links and readers.
 //
-// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// Where the browser scrolls the page itself (reduced motion; core/scroll.js
 // browserScrolls), anything on the shared canvas trails the page by a frame
 // in a fast flick, so the pictures rode down over what follows them. There
 // the gallery gets its own see-through canvas inside the rail (`host`), which
@@ -164,7 +164,7 @@ export function createGallery(
   const { state } = engine;
   const html = document.documentElement;
 
-  // Touch screens: the gallery's own canvas (see the top of this file), its
+  // Reduced motion: the gallery's own canvas (see the top of this file), its
   // top `win.margin` above the screen's. Its height comes from the tallest the
   // screen has been at this width, so the browser bar never resizes it.
   const own = browserScrolls() && !!host;
@@ -368,7 +368,7 @@ export function createGallery(
         layer.visible = any;
         return;
       }
-      // Touch screens: drawn on the own canvas now; the shared one has none.
+      // Reduced motion: drawn on the own canvas now; the shared one has none.
       layer.visible = false;
       if (any) drawOwn();
       else if (ownDrawn) {

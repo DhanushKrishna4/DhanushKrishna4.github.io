@@ -376,9 +376,10 @@ export function createMonogram(engine, hero) {
       const s = steer.step(cx, centerY, width);
 
       // Scrolling away: it tilts back, lags a little behind the page (not on
-      // its own canvas) and fades.
+      // touch screens, where it moves with the page as Dennis's photo does on
+      // his phone, nor on its own canvas) and fades.
       const tiltBack = progress * 0.8;
-      const lag = own ? 0 : progress * rect.height * 0.28;
+      const lag = own || isTouch() ? 0 : progress * rect.height * 0.28;
 
       piece.rotation.set(REST.x + intro.rx + s.x - tiltBack, REST.y + intro.ry + s.y, s.z);
       piece.scale.setScalar((width / WIDTH) * intro.scale);

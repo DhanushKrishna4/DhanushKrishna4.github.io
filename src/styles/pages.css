@@ -40,7 +40,8 @@
   font-size: var(--d-fs);
 }
 
-/* On touch screens the 3D monogram has its own canvas here (gl/monogram.js),
+/* Where the browser scrolls the page itself (reduced motion) the 3D monogram
+   has its own canvas here (gl/monogram.js),
    one screen tall, which the browser scrolls with the page. First in the
    hero, so the text draws over it. */
 .hero__gl {
@@ -50,7 +51,7 @@
   pointer-events: none;
 }
 
-/* Likewise the red lines' own canvases on touch screens (gl/line.js): a
+/* Likewise the red lines' own canvases there (gl/line.js): a
    strip of the section, behind its text as the shared canvas is. */
 .line-gl {
   position: absolute;
@@ -349,7 +350,8 @@ html:not(.js) .hero__mark {
   padding: 50px 5vw;
 }
 
-/* On touch screens the cards have their own canvas here (gl/cards.js): a
+/* Where the browser scrolls the page itself (reduced motion) the cards have
+   their own canvas here (gl/cards.js): a
    strip a little taller than the screen, kept over it and scrolled by the
    browser with the page, behind the section's text as the shared canvas is.
    The section clips it, so it never makes the page any longer. */
@@ -727,7 +729,8 @@ html:not(.is-unhovered) .filter:hover {
   top: var(--pin-top);
 }
 
-/* On touch screens the red line draws on its own canvas inside the top part
+/* Where the browser scrolls the page itself (reduced motion) the red line
+   draws on its own canvas inside the top part
    (gl/line.js), and may reach past its bottom: it ends at the sheet's edge,
    as the shared canvas's copy does. */
 .about-top {
@@ -739,7 +742,8 @@ html:not(.is-unhovered) .filter:hover {
   z-index: 1;
 }
 
-/* On touch screens the giant words and their paint have their own canvas in
+/* Where the browser scrolls the page itself (reduced motion) the giant words
+   and their paint have their own canvas in
    the sheet (gl/glow.js), behind its text, and the sheet is black itself,
    so its edge moves exactly with the page; the sheet clips the canvas, so
    it never makes the page any longer. */
@@ -1172,7 +1176,8 @@ html:not(.is-unhovered) .project__side a:hover {
   }
 }
 
-/* On touch screens the gallery has its own canvas inside the rail
+/* Where the browser scrolls the page itself (reduced motion) the gallery has
+   its own canvas inside the rail
    (gl/gallery.js), which the browser moves with the pictures' frames:
    behind the rail's contents, as the shared canvas is. The track clips it,
    so it never makes the page any longer. */

@@ -13,23 +13,39 @@ const LABELS = { '/': 'Home', '/work/': 'Work', '/about/': 'About', '/contact/':
 const normalize = (p) => (p.endsWith('/') ? p : `${p}/`);
 const isProjectPath = (p) => /^\/work\/[^/]+\/?$/.test(p);
 
-const cache = new Map();
-function fetchDoc(href) {
-  const key = href.split('#')[0];
-  if (!cache.has(key)) {
+// Pages as text, and read into documents (separately, so a page can be
+// fetched without being read yet).
+const texts = new Map();
+const docs = new Map();
+const keyOf = (href) => href.split('#')[0];
+function fetchText(href) {
+  const key = keyOf(href);
+  if (!texts.has(key)) {
     const p = fetch(key, { credentials: 'same-origin' })
       .then((r) => {
         if (!r.ok && r.status !== 404) throw new Error(`HTTP ${r.status}`);
         return r.text();
       })
-      .then((t) => new DOMParser().parseFromString(t, 'text/html'))
       .catch((e) => {
-        cache.delete(key);
+        texts.delete(key);
         throw e;
       });
-    cache.set(key, p);
+    texts.set(key, p);
   }
-  return cache.get(key);
+  return texts.get(key);
+}
+function fetchDoc(href) {
+  const key = keyOf(href);
+  if (!docs.has(key)) {
+    const p = fetchText(key)
+      .then((t) => new DOMParser().parseFromString(t, 'text/html'))
+      .catch((e) => {
+        docs.delete(key);
+        throw e;
+      });
+    docs.set(key, p);
+  }
+  return docs.get(key);
 }
 
 function isInternal(a) {
@@ -295,12 +311,17 @@ export function createRouter({ mount, onLeave, gl = null }) {
     go(a.hasAttribute('data-back') ? lastList : a.href, { trigger: a });
   });
 
-  // Start fetching a page as soon as the pointer rests on its link.
+  // Start fetching a page as soon as the pointer rests on its link. A finger
+  // landing on one is mostly the start of a scroll, so then the page is only
+  // fetched: reading it (tens of milliseconds on a phone) waits for the tap,
+  // or it would hold up the scroll's first frames.
   document.addEventListener(
     'pointerover',
     (e) => {
       const a = e.target.closest?.('a');
-      if (isInternal(a)) fetchDoc(new URL(a.href, location.href).href).catch(() => {});
+      if (!isInternal(a)) return;
+      const href = new URL(a.href, location.href).href;
+      (e.pointerType === 'touch' ? fetchText(href) : fetchDoc(href)).catch(() => {});
     },
     { passive: true },
   );

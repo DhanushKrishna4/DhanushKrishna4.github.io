@@ -17,7 +17,7 @@
 // Markup: an element with data-glow-words holding one <span> per line (see
 // .glow-words). The paint runs while the black sheet is on screen.
 //
-// Where the browser scrolls the page itself (touch screens; core/scroll.js
+// Where the browser scrolls the page itself (reduced motion; core/scroll.js
 // browserScrolls), anything on the shared canvas trails the page by a frame
 // in a fast flick: the words slid down behind the title under them, and the
 // sheet's black edge (drawn by field.js) lagged its text. There the words, the
@@ -189,7 +189,7 @@ export function createGlow(engine, section) {
   const { state, field } = engine;
   const sheet = section.closest('[data-about-sheet]') ?? section;
 
-  // Touch screens: the own canvas (see the top of this file), its top
+  // Reduced motion: the own canvas (see the top of this file), its top
   // `win.margin` above the screen's. Its height comes from the tallest the
   // screen has been at this width, so the browser bar never resizes it.
   const own = browserScrolls();
@@ -418,7 +418,7 @@ export function createGlow(engine, section) {
       const on = s.bottom > 0 && s.top < state.height;
       if (on && !running) paint.reset();
       running = on;
-      // On touch screens nothing is drawn on the shared canvas.
+      // With its own canvas nothing is drawn on the shared one.
       layer.visible = on && !own;
       if (!on) {
         if (own && ownDrawn) {
