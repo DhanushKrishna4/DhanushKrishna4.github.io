@@ -810,8 +810,11 @@ html:not(.is-unhovered) .filter:hover {
   background: var(--line);
 }
 
+/* Centred on the line, so its lower half lies over the intro below, which
+   comes later and would otherwise take the pointer there: above it. */
 .about-line .cta {
   position: absolute;
+  z-index: 1;
   right: clamp(1rem, 12vw, 12rem);
   top: 50%;
   transform: translateY(-50%);
