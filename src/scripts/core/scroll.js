@@ -5,7 +5,7 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { reducedMotion, clamp } from './env.js';
+import { reducedMotion, isTouch, clamp } from './env.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -171,6 +171,52 @@ function stepPane(dtMs) {
   if (pane.delta) lenis.scrollTo(next, { immediate: true });
 }
 
+// Touch screens: Safari on an iPhone draws the scrolling page under its
+// see-through bars but not fixed elements, the WebGL canvas behind the page
+// among them, and with the page moved by script its bars stay out. So under
+// them the text went on while the pictures and lines stopped short. Two
+// blocks of the page's background now move with the page and cover what lies
+// just past the top and bottom of the screen, so only the area between the
+// bars shows anything. They are sized from the page's own height (#swap),
+// never past its ends, so the page gets no longer. Where the screen ends is
+// taken from the canvas itself (fixed to the whole viewport): its box stops
+// where Safari stops drawing fixed elements, the top of its controls, whatever
+// innerHeight says.
+const EDGE = 0.4; // how far past the screen they reach, in screen heights
+const edges = { top: null, bottom: null, key: '' };
+
+function makeEdges() {
+  const make = (side) => {
+    const el = document.createElement('div');
+    el.className = `screen-edge screen-edge--${side}`;
+    el.setAttribute('aria-hidden', 'true');
+    document.body.append(el);
+    return el;
+  };
+  edges.top = make('top');
+  edges.bottom = make('bottom');
+}
+
+function placeEdges() {
+  const swap = document.getElementById('swap');
+  if (!swap) return;
+  const y = window.scrollY;
+  const screen = document.getElementById('gl')?.getBoundingClientRect();
+  const shown = screen && screen.height > 0 ? screen : { top: 0, bottom: innerHeight };
+  const top = y + shown.top;
+  const bottom = y + shown.bottom;
+  const reach = Math.ceil(innerHeight * EDGE);
+  const above = Math.min(reach, Math.max(0, top));
+  const below = Math.max(0, Math.min(reach, swap.offsetHeight - bottom));
+  const key = `${top}|${bottom}|${above}|${below}`;
+  if (key === edges.key) return;
+  edges.key = key;
+  edges.top.style.transform = `translate3d(0, ${top - above}px, 0)`;
+  edges.top.style.height = `${above}px`;
+  edges.bottom.style.transform = `translate3d(0, ${bottom}px, 0)`;
+  edges.bottom.style.height = `${below}px`;
+}
+
 export function initScroll() {
   history.scrollRestoration = 'manual';
   if (reducedMotion()) return;
@@ -181,9 +227,13 @@ export function initScroll() {
   addEventListener('touchend', onTouchEnd, { passive: true });
   addEventListener('touchcancel', onTouchEnd, { passive: true });
   document.addEventListener('click', onClick, true);
+  const covered = isTouch();
+  if (covered) makeEdges();
   gsap.ticker.add((time, deltaTime) => {
     stepPane(deltaTime);
     lenis.raf(time * 1000);
+    // Where the page is now, before anything is drawn.
+    if (covered) placeEdges();
   });
   gsap.ticker.lagSmoothing(0);
 }
